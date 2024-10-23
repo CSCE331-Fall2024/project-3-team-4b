@@ -1,4 +1,3 @@
-// remember 67
 const express = require('express')
 const app = express()
 const PORT_NUMBER = 5000
