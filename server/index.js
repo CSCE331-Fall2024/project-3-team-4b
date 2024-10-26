@@ -16,8 +16,12 @@ const pool = new Pool({
     port: process.env.PORT,
   });
 
-app.get("/", async (req, res) => {
-    // res.send("Server is running.");
+app.get("/", (req, res) => {
+    res.send("Server is running.");
+});
+
+// template get api request
+app.get("/api/data", async (req,res) => {
     try{
         const result = await pool.query('SELECT * FROM container;');
         res.json({ title: 'Hello from server', body: result.rows });
@@ -26,17 +30,5 @@ app.get("/", async (req, res) => {
         res.status(500).send("Server error");
     }
 });
-
-
-// template get api request
-// app.get("/api/data", async (req,res) => {
-//     try{
-//         const result = await pool.query('SELECT * FROM container;');
-//         res.json({ title: 'Hello from server', body: result.rows });
-//     }catch(err){
-//         console.error(err.message);
-//         res.status(500).send("Server error");
-//     }
-// });
 
 app.listen(PORT_NUMBER, console.log(`Server started on PORT ${PORT_NUMBER}`));
