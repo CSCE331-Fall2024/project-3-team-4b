@@ -24,7 +24,7 @@ app.get("/", (req, res) => {
 // template get api request
 app.get("/api/data", async (req,res) => {
     try{
-        const result = await pool.query('SELECT * FROM container;');
+        // const result = await pool.query('SELECT * FROM container;');
         res.json({ title: 'Hello from server', body: result.rows });
     }catch(err){
         console.error(err.message);
