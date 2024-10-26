@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 app.get("/api/data", async (req,res) => {
     try{
         // const result = await pool.query('SELECT * FROM container;');
-        res.json({ title: 'Hello from server', body: result.rows });
+        res.json({ title: 'Hello from server' });
     }catch(err){
         console.error(err.message);
         res.status(500).send("Server error");
