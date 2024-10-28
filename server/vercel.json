@@ -2,21 +2,18 @@
   "version": 2,
   "builds": [
     {
-      "src": "server.js",
+      "src": "./index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "server.js"
+      "dest": "/"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/"
     }
-  ],
-  "env": {
-    "DB_USER": "@db_user",
-    "DB_HOST": "@db_host",
-    "DATABASE": "@database",
-    "DB_PASS": "@db_pass",
-    "PORT": "5432"
-  }
+  ]
 }
