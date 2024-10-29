@@ -1,7 +1,6 @@
 const ContainerList = ({ containers }) => {
     return (
       <div>
-        <h1>Container List</h1>
         <div>
           {containers.map((container) => (
             <div key={container.container_id} style={containerStyle}>

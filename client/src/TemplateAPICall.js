@@ -13,7 +13,7 @@ const TemplateAPICall = () => {
     const fetchData = async () => {
       try {
         // Make the API call using axios
-        const response = await axios.get('http://localhost:5000/api/data');
+        const response = await axios.get('http://localhost:5001/api/containers');
         setData(response.data); // Store the response data
         setLoading(false);      // Set loading to false after data is fetched
       } catch (err) {
