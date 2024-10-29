@@ -1,9 +1,9 @@
 const pool = require("../config/dbConfig");
 
-const getmenuItems = async (req, res) => {
+const getRecipe = async (req, res) => {
 	try {
 		const { rows } = await pool.query(
-			"SELECT * FROM menu ORDER BY menu_id ASC"
+			"SELECT * FROM recipes ORDER BY recipe_id ASC"
 		);
 		res.status(200).json(rows);
 	} catch (error) {
@@ -12,11 +12,11 @@ const getmenuItems = async (req, res) => {
 	}
 };
 
-const getmenuItemById = async (req, res) => {
+const getRecipeById = async (req, res) => {
 	try {
 		const { id } = req.params;
 		const { rows } = await pool.query(
-			"SELECT * FROM menu WHERE menu_id = $1",
+			"SELECT * FROM recipes WHERE recipe_id = $1",
 			[id]
 		);
 		if (rows.length === 0) {
@@ -30,27 +30,27 @@ const getmenuItemById = async (req, res) => {
 	}
 };
 
-const createmenuItem = async (req, res) => {
+const createRecipe = async (req, res) => {
 	try {
-		const {type, extra_cost, name, calories} = req.body;
+		const { menu_id, qty, inventory_id } = req.body;
 		const { rows } = await pool.query(
-			"INSERT INTO menu (type, extra_cost, name, calories) VALUES ($1, $2, $3, $4) RETURNING *",
-			[type, extra_cost, name, calories]
+			"INSERT INTO recipes (menu_id, qty, inventory_id) VALUES ($1, $2, $3) RETURNING *",
+			[menu_id, qty, inventory_id]
 		);
 		res.status(201).json(rows[0]);
 	} catch (error) {
-		console.error(error);
+		console.error(error.message);
 		res.status(500).json({ error: "Error 500: Internal Server Error" });
 	}
 };
 
-const updatemenuItem = async (req, res) => {
+const updateRecipe = async (req, res) => {
 	try {
-		const { menu_id } = req.params;
-		const {type, extra_cost, name, calories} = req.body;
+		const { recipe_id } = req.params;
+		const { menu_id, qty, inventory_id } = req.body;
 		const { rows } = await pool.query(
-			"UPDATE menu SET type = $2, extra_cost = $3, name = $4 calories = $5 WHERE menu_id = $1 RETURNING *",
-			[menu_id, type, extra_cost, name, calories]
+			"UPDATE recipes SET menu_id = $2, qty = $3, inventory_id = $4 WHERE recipe_id = $1 RETURNING *",
+			[recipe_id, menu_id, qty, inventory_id]
 		);
 		if (rows.length === 0) {
 			res.status(404).json({ error: "Error 404: Item Not Found" });
@@ -63,11 +63,11 @@ const updatemenuItem = async (req, res) => {
 	}
 };
 
-const deletemenuItem = async (req, res) => {
+const deleteRecipe = async (req, res) => {
 	try {
 		const { id } = req.params;
 		const { rows } = await pool.query(
-			"DELETE FROM menu WHERE menu_id = $1 RETURNING *",
+			"DELETE FROM recipes WHERE recipe_id = $1 RETURNING *",
 			[id]
 		);
 		if (rows.length === 0) {
@@ -84,9 +84,9 @@ const deletemenuItem = async (req, res) => {
 };
 
 module.exports = {
-	getmenuItems,
-	getmenuItemById,
-	createmenuItem,
-	updatemenuItem,
-	deletemenuItem,
+	getRecipe,
+	getRecipeById,
+	createRecipe,
+	updateRecipe,
+	deleteRecipe,
 };
