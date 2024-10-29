@@ -31,7 +31,7 @@ const updateMenuItem = async (req, res) => {
 			[order_item_id, menu_id, id]
 		);
 		if (result.rows.length === 0)
-			return res.status(404).json({ error: "Menu item not found" });
+			return res.status(404).json({ error: "Error: Menu Item Not Found" });
 		res.status(200).json(result.rows[0]);
 	} catch (error) {
 		res.status(500).json({ error: error.message });
@@ -46,8 +46,8 @@ const deleteMenuItem = async (req, res) => {
 			[id]
 		);
 		if (result.rows.length === 0)
-			return res.status(404).json({ error: "Menu item not found" });
-		res.status(200).json({ message: "Menu item deleted successfully" });
+			return res.status(404).json({ error: "Error: Menu Item Not Found" });
+		res.status(200).json({ message: "Success: Menu Item Deleted" });
 	} catch (error) {
 		res.status(500).json({ error: error.message });
 	}
