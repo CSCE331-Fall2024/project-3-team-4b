@@ -1,7 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const { getMenuItems } = require("../controllers/menuItemsController");
 
-router.get("/menuItems", getMenuItems);
+const {
+	getMenuItems,
+	createMenuItem,
+	updateMenuItem,
+	deleteMenuItem,
+} = require("../controllers/menuItemsController");
+
+router.get("/menu-items", getMenuItems);
+router.post("/menu-items", createMenuItem);
+router.put("/menu-items/:id", updateMenuItem);
+router.delete("/menu-items/:id", deleteMenuItem);
 
 module.exports = router;
