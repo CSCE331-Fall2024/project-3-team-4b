@@ -29,21 +29,21 @@
 - Abhinav:
 - Asir:
 - Chandler:
-- Dharkmik:
+- Dharmik:
 - Ryan:
 
 ### Scrum Meeting 2 Notes:
 - Abhinav:
 - Asir:
 - Chandler:
-- Dharkmik:
+- Dharmik:
 - Ryan:
 
 ### Scrum Meeting 3 Notes:
 - Abhinav:
 - Asir:
 - Chandler:
-- Dharkmik:
+- Dharmik:
 - Ryan:
 
 ## Sprint 3
@@ -52,19 +52,19 @@
 - Abhinav:
 - Asir:
 - Chandler:
-- Dharkmik:
+- Dharmik:
 - Ryan:
 
 ### Scrum Meeting 2 Notes:
 - Abhinav:
 - Asir:
 - Chandler:
-- Dharkmik:
+- Dharmik:
 - Ryan:
 
 ### Scrum Meeting 3 Notes:
 - Abhinav:
 - Asir:
 - Chandler:
-- Dharkmik:
+- Dharmik:
 - Ryan:
