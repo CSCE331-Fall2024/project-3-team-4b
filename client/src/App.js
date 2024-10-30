@@ -1,10 +1,12 @@
-import logo from './logo.svg';
 import './App.css';
-import TemplateAPICall from './TemplateAPICall';
-import Manager from "./Manager";
+import Login from './pages/Login';
 
 function App() {
-  return <div className="App">{/* <TemplateAPICall/> */ <Manager />}</div>;
+  return (
+    <div className="App">
+      <Login/>
+    </div>
+  );
 }
 
 export default App;
