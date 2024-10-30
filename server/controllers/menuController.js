@@ -1,92 +1,77 @@
+// menuController.js
 const pool = require("../config/dbConfig");
 
-const getmenuItems = async (req, res) => {
-	try {
-		const { rows } = await pool.query(
-			"SELECT * FROM menu ORDER BY menu_id ASC"
-		);
-		res.status(200).json(rows);
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Error 500: Internal Server Error" });
-	}
+const getMenuItems = async (req, res) => {
+try {
+const searchQuery = req.query.search;
+let query = "SELECT * FROM menu";
+let params = [];
+
+if (searchQuery) {
+query += " WHERE name ILIKE $1";
+params.push(`%${searchQuery}%`);
+}
+
+const { rows } = await pool.query(query, params);
+res.status(200).json(rows);
+} catch (error) {
+console.error("Error fetching menu items:", error);
+res.status(500).json({ error: "Internal server error" });
+}
 };
 
-const getmenuItemById = async (req, res) => {
-	try {
-		const { id } = req.params;
-		const { rows } = await pool.query(
-			"SELECT * FROM menu WHERE menu_id = $1",
-			[id]
-		);
-		if (rows.length === 0) {
-			res.status(404).json({ error: "Error 404: Item Not Found" });
-		} else {
-			res.status(200).json(rows[0]);
-		}
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Error 500: Internal Server Error" });
-	}
+const createMenuItem = async (req, res) => {
+const { type, extra_cost, name, calories } = req.body;
+try {
+const { rows } = await pool.query(
+"INSERT INTO menu (type, extra_cost, name, calories) VALUES ($1, $2, $3, $4) RETURNING *",
+[type, extra_cost, name, calories]
+);
+res.status(201).json(rows[0]);
+} catch (error) {
+console.error("Error creating menu item:", error);
+res.status(500).json({ error: "Internal server error" });
+}
 };
 
-const createmenuItem = async (req, res) => {
-	try {
-		const {type, extra_cost, name, calories} = req.body;
-		const { rows } = await pool.query(
-			"INSERT INTO menu (type, extra_cost, name, calories) VALUES ($1, $2, $3, $4) RETURNING *",
-			[type, extra_cost, name, calories]
-		);
-		res.status(201).json(rows[0]);
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Error 500: Internal Server Error" });
-	}
+const updateMenuItem = async (req, res) => {
+const { id } = req.params;
+const { type, extra_cost, name, calories } = req.body;
+try {
+const { rows } = await pool.query(
+"UPDATE menu SET type = $1, extra_cost = $2, name = $3, calories = $4 WHERE menu_id = $5 RETURNING *",
+[type, extra_cost, name, calories, id]
+);
+if (rows.length === 0) {
+return res.status(404).json({ error: "Menu item not found" });
+}
+res.status(200).json(rows[0]);
+} catch (error) {
+console.error("Error updating menu item:", error);
+res.status(500).json({ error: "Internal server error" });
+}
 };
 
-const updatemenuItem = async (req, res) => {
-	try {
-		const { menu_id } = req.params;
-		const {type, extra_cost, name, calories} = req.body;
-		const { rows } = await pool.query(
-			"UPDATE menu SET type = $2, extra_cost = $3, name = $4 calories = $5 WHERE menu_id = $1 RETURNING *",
-			[menu_id, type, extra_cost, name, calories]
-		);
-		if (rows.length === 0) {
-			res.status(404).json({ error: "Error 404: Item Not Found" });
-		} else {
-			res.status(200).json(rows[0]);
-		}
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Error 500: Internal Server Error" });
-	}
-};
-
-const deletemenuItem = async (req, res) => {
-	try {
-		const { id } = req.params;
-		const { rows } = await pool.query(
-			"DELETE FROM menu WHERE menu_id = $1 RETURNING *",
-			[id]
-		);
-		if (rows.length === 0) {
-			res.status(404).json({ error: "Error 404: Item Not Found" });
-		} else {
-			res
-				.status(200)
-				.json({ message: "Status 200: Item Deleted Successfully" });
-		}
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Error 500: Internal Server Error" });
-	}
+const deleteMenuItem = async (req, res) => {
+const { id } = req.params;
+try {
+const { rows } = await pool.query(
+"DELETE FROM menu WHERE menu_id = $1 RETURNING *",
+[id]
+);
+if (rows.length === 0) {
+return res.status(404).json({ error: "Menu item not found" });
+}
+res.status(200).json({ message: "Menu item deleted successfully" });
+} catch (error) {
+console.error("Error deleting menu item:", error);
+res.status(500).json({ error: "Internal server error" });
+}
 };
 
 module.exports = {
-	getmenuItems,
-	getmenuItemById,
-	createmenuItem,
-	updatemenuItem,
-	deletemenuItem,
+getMenuItems,
+createMenuItem,
+updateMenuItem,
+deleteMenuItem,
 };
