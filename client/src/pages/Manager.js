@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Navbar from "./ManagerComponents/Navbar";
+import Navbar from "../ManagerComponents/Navbar";
 
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
