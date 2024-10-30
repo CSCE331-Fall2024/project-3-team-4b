@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import Navbar from "../ManagerComponents/Navbar";
+
+import Navbar from "./ManagerComponents/Navbar";
+import Menu from "./ManagerComponents/Menu";
 
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
@@ -16,7 +18,9 @@ function Manager() {
 				selectedSection={selectedSection}
 				onSectionChange={handleSectionChange}
 			/>
-			<h1>Manager Components</h1>
+			<div style={{ flexGrow: 1 }}>
+				{selectedSection === "Menu" && <Menu />}
+			</div>
 		</div>
 	);
 }
