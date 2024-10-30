@@ -1,8 +1,7 @@
 import React, { useState } from "react";
-
-import Navbar from "../ManagerComponents/Navbar";
-import Menu from "../ManagerComponents/Menu";
-import Inventory from "../ManagerComponents/Inventory";
+import Navbar from "./ManagerComponents/Navbar";
+import Menu from "./ManagerComponents/Menu";
+import Inventory from "./ManagerComponents/Inventory";
 
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
