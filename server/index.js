@@ -20,6 +20,7 @@ app.use("/api", recipeRoutes);
 app.use("/api", employeesRoutes);
 
 
+
 app.get("/", (req, res) => {
 	res.send("Server is running.");
 });
