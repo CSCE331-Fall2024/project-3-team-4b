@@ -7,6 +7,7 @@ const menuItemsRoutes = require("./routes/menuItemsRoutes");
 const inventoryRoutes = require("./routes/inventoryRoutes");
 const menuRoutes = require("./routes/menuRoutes");
 const recipeRoutes = require("./routes/recipeRoutes");
+const employeesRoutes = require("./routes/employeesRoutes");
 
 app.use(cors());
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use("/api", menuItemsRoutes);
 app.use("/api", inventoryRoutes);
 app.use("/api", menuRoutes);
 app.use("/api", recipeRoutes);
+app.use("/api", employeesRoutes);
 
 
 app.get("/", (req, res) => {
