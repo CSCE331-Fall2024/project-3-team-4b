@@ -40,11 +40,8 @@ function Employees() {
 	const fetchEmployeeData = async () => {
 		try {
 			const response = await axios.get("/api/employees");
-			const data = response.data.map((employee) => ({
-				...employee,
-				salary: employee.salary !== null ? Number(employee.salary) : 0.0,
-			}));
-			setEmployeeData(data);
+
+			setEmployeeData(response.data);
 		} catch (error) {
 			console.error("Error fetching employee data:", error);
 			alert("Error fetching employee data.");
@@ -54,11 +51,8 @@ function Employees() {
 	const handleSearch = async () => {
 		try {
 			const response = await axios.get(`/api/employees?search=${searchText}`);
-			const data = response.data.map((employee) => ({
-				...employee,
-				salary: employee.salary !== null ? Number(employee.salary) : 0.0,
-			}));
-			setEmployeeData(data);
+
+			setEmployeeData(response.data);
 		} catch (error) {
 			console.error("Error searching employees:", error);
 			alert("Error searching employees.");
@@ -120,14 +114,14 @@ function Employees() {
 				await axios.post("/api/employees", {
 					name,
 					role,
-					salary: Number(salary),
+					salary: salary,
 				});
 				alert("Employee added successfully.");
 			} else if (dialogType === "Edit") {
 				await axios.put(`/api/employees/${employee_id}`, {
 					name,
 					role,
-					salary: Number(salary),
+					salary: salary,
 				});
 				alert("Employee updated successfully.");
 			}
@@ -145,21 +139,13 @@ function Employees() {
 	// Prepare data for DataGrid
 	const columns = [
 		{ field: "employee_id", headerName: "ID", width: 60 },
-		{ field: "name", headerName: "Name", flex: 1, minWidth: 150 },
-		{ field: "role", headerName: "Role", width: 120 },
+		{ field: "name", headerName: "Name", flex: 1, minWidth: 100 },
 		{
 			field: "salary",
 			headerName: "Salary",
 			width: 120,
-			valueFormatter: (params) => {
-				const value = params.value;
-				if (value === null || value === undefined || isNaN(value)) {
-					return "$0.00";
-				} else {
-					return `$${value.toFixed(2)}`;
-				}
-			},
 		},
+		{ field: "role", headerName: "Role", width: 120 },
 		{
 			field: "actions",
 			headerName: "Actions",
