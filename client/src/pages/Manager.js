@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 
-import Navbar from "./ManagerComponents/Navbar";
-import Menu from "./ManagerComponents/Menu";
-import Inventory from "./ManagerComponents/Inventory";
+import Navbar from "../ManagerComponents/Navbar";
+import Menu from "../ManagerComponents/Menu";
+import Inventory from "../ManagerComponents/Inventory";
+import Orders from "../ManagerComponents/Orders";
 
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
@@ -22,6 +23,7 @@ function Manager() {
 			<div style={{ flexGrow: 1 }}>
 				{selectedSection === "Menu" && <Menu />}
 				{selectedSection === "Inventory" && <Inventory />}
+				{selectedSection === "Orders" && <Orders />}
 			</div>
 		</div>
 	);
