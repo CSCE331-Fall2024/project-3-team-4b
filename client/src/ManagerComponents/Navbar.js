@@ -50,7 +50,9 @@ function Navbar({ employeeName, selectedSection, onSectionChange }) {
 							alignItems: "center",
 						}}
 					>
-						<Typography variant="h6">Welcome, {employeeName}</Typography>
+						<Typography variant="h6" sx={{ my: 2 }}>
+							Welcome, {employeeName}
+						</Typography>
 						<Divider sx={{ width: "100%", my: 2 }} />
 
 						<List>
