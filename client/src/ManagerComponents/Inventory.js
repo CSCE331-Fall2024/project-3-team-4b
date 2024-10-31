@@ -51,11 +51,8 @@ function Inventory() {
 	const handleSearch = async () => {
 		try {
 			const response = await axios.get(`/api/inventory?search=${searchText}`);
-			const data = response.data.map((item) => ({
-				...item,
-				cost: item.cost !== null ? Number(item.cost) : 0.0,
-			}));
-			setInventoryData(data);
+
+			setInventoryData(response.data);
 		} catch (error) {
 			console.error("Error searching inventory items:", error);
 			alert("Error searching inventory items.");
@@ -83,9 +80,9 @@ function Inventory() {
 		setDialogType("Edit");
 		setCurrentItem({
 			...item,
-			cost: item.cost !== null ? item.cost.toString() : "",
-			max_qty: item.max_qty !== null ? item.max_qty.toString() : "",
-			qty: item.qty !== null ? item.qty.toString() : "",
+			// cost: item.cost !== null ? item.cost.toString() : "",
+			// max_qty: item.max_qty !== null ? item.max_qty.toString() : "",
+			// qty: item.qty !== null ? item.qty.toString() : "",
 		});
 		setOpenDialog(true);
 	};
@@ -121,7 +118,7 @@ function Inventory() {
 			if (dialogType === "Add") {
 				await axios.post("/api/inventory", {
 					name,
-					cost: Number(cost),
+					cost: cost,
 					max_qty: parseInt(max_qty),
 					qty: parseInt(qty),
 				});
@@ -129,7 +126,7 @@ function Inventory() {
 			} else if (dialogType === "Edit") {
 				await axios.put(`/api/inventory/${inventory_id}`, {
 					name,
-					cost: Number(cost),
+					cost: cost,
 					max_qty: parseInt(max_qty),
 					qty: parseInt(qty),
 				});
@@ -151,22 +148,14 @@ function Inventory() {
 	// Prepare data for DataGrid
 	const columns = [
 		{ field: "inventory_id", headerName: "ID", width: 60 },
-		{ field: "name", headerName: "Name", flex: 1, minWidth: 100 },
+		{ field: "name", headerName: "Name", flex: 1, minWidth: 50 },
 		{
 			field: "cost",
 			headerName: "Cost",
 			width: 90,
-			valueFormatter: (params) => {
-				const value = params.value;
-				if (value === null || value === undefined || isNaN(value)) {
-					return "$0.00";
-				} else {
-					return `$${value.toFixed(2)}`;
-				}
-			},
 		},
-		{ field: "max_qty", headerName: "Max Qty", width: 80 },
 		{ field: "qty", headerName: "Qty", width: 80 },
+		{ field: "max_qty", headerName: "Max Qty", width: 80 },
 		{
 			field: "actions",
 			headerName: "Actions",
