@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 
 const {
-getMenuItems,
-createMenuItem,
-updateMenuItem,
-deleteMenuItem,
+	getMenuItems,
+	createMenuItem,
+	updateMenuItem,
+	deleteMenuItem,
 } = require("../controllers/menuController");
 
 router.get("/menu", getMenuItems);
