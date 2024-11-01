@@ -9,10 +9,6 @@ import {
 	DialogContent,
 	DialogActions,
 	IconButton,
-	Select,
-	MenuItem,
-	InputLabel,
-	FormControl,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -23,8 +19,6 @@ import DeleteIcon from "@mui/icons-material/Delete";
 function Orders() {
 	const [orderData, setOrderData] = useState([]);
 	const [searchText, setSearchText] = useState("");
-	const [employees, setEmployees] = useState([]);
-
 	const [openDialog, setOpenDialog] = useState(false);
 	const [dialogType, setDialogType] = useState("");
 	const [currentOrder, setCurrentOrder] = useState({
@@ -32,6 +26,7 @@ function Orders() {
 		time: "",
 		total: "",
 		employee_id: "",
+		employee_name: "",
 	});
 
 	useEffect(() => {
@@ -41,7 +36,14 @@ function Orders() {
 	const fetchOrderData = async () => {
 		try {
 			const response = await axios.get("/api/orders");
-			setOrderData(response.data);
+			console.log("Order Data:", response.data);
+
+			const data = response.data.map((order) => ({
+				...order,
+				time: order.time ? order.time.replace("T", " ").replace("Z", " ") : "",
+			}));
+
+			setOrderData(data);
 		} catch (error) {
 			console.error("Error fetching order data:", error);
 			alert("Error fetching order data.");
@@ -52,7 +54,12 @@ function Orders() {
 		try {
 			const response = await axios.get(`/api/orders?search=${searchText}`);
 
-			setOrderData(response.data);
+			const data = response.data.map((order) => ({
+				...order,
+				time: order.time ? order.time.replace("T", " ").replace("Z", " ") : "",
+			}));
+
+			setOrderData(data);
 		} catch (error) {
 			console.error("Error searching orders:", error);
 			alert("Error searching orders.");
@@ -77,10 +84,12 @@ function Orders() {
 
 	const handleEditOrder = (order) => {
 		setDialogType("Edit");
+		const date = new Date(order.time);
+		const isoString = date.toISOString().slice(0, 16);
 		setCurrentOrder({
 			...order,
 			total: order.total !== null ? order.total.toString() : "",
-			time: order.time ? order.time.slice(0, 19) : "",
+			time: isoString,
 		});
 		setOpenDialog(true);
 	};
@@ -137,7 +146,6 @@ function Orders() {
 		}
 	};
 
-	// Prepare data for DataGrid
 	const columns = [
 		{ field: "order_id", headerName: "ID", width: 60 },
 		{
@@ -149,6 +157,13 @@ function Orders() {
 			field: "total",
 			headerName: "Total",
 			width: 90,
+			renderCell: (params) => {
+				const value = parseFloat(params.row.total);
+				if (isNaN(value)) {
+					return "$0.00";
+				}
+				return `$${value.toFixed(2)}`;
+			},
 		},
 		{
 			field: "employee_name",
@@ -187,7 +202,6 @@ function Orders() {
 				Order Management
 			</Typography>
 
-			{/* Search and Add Buttons */}
 			<Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
 				<TextField
 					label="Search Orders"
@@ -213,17 +227,18 @@ function Orders() {
 				</Button>
 			</Box>
 
-			{/* Order DataGrid */}
 			<Box sx={{ height: "80%", width: "100%" }}>
 				<DataGrid
 					rows={orderData}
 					columns={columns}
+					pageSize={50}
+					rowsPerPageOptions={[50, 100, 500]}
+					pagination
 					getRowId={(row) => row.order_id}
 					disableSelectionOnClick
 				/>
 			</Box>
 
-			{/* Add/Edit Dialog */}
 			<Dialog open={openDialog} onClose={handleDialogClose}>
 				<DialogTitle>{dialogType} Order</DialogTitle>
 				<DialogContent>
@@ -248,30 +263,18 @@ function Orders() {
 							setCurrentOrder({ ...currentOrder, total: e.target.value })
 						}
 						sx={{ mt: 2 }}
-						inputProps={{ step: "0.01" }}
 					/>
-					<FormControl variant="outlined" fullWidth sx={{ mt: 2, mb: 1 }}>
-						<InputLabel>Employee</InputLabel>
-						<Select
-							value={currentOrder.employee_id}
-							onChange={(e) =>
-								setCurrentOrder({
-									...currentOrder,
-									employee_id: e.target.value,
-								})
-							}
-							label="Employee"
-						>
-							{employees.map((employee) => (
-								<MenuItem
-									key={employee.employee_id}
-									value={employee.employee_id}
-								>
-									{employee.name}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
+					<TextField
+						label="Employee ID"
+						variant="outlined"
+						fullWidth
+						type="number"
+						value={currentOrder.employee_id}
+						onChange={(e) =>
+							setCurrentOrder({ ...currentOrder, employee_id: e.target.value })
+						}
+						sx={{ mt: 2 }}
+					/>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleDialogClose}>Cancel</Button>
