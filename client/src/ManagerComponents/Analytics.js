@@ -1,8 +1,13 @@
+// ManagerComponents/Analytics.js
+
 import React, { useState } from "react";
 import { Button, Modal, TextField, Typography, Box } from "@mui/material";
 import {
 	BarChart,
 	Bar,
+	PieChart,
+	Pie,
+	Cell,
 	XAxis,
 	YAxis,
 	CartesianGrid,
@@ -29,6 +34,8 @@ const Analytics = () => {
 	const [limit, setLimit] = useState(10);
 	const [startDate, setStartDate] = useState("");
 	const [endDate, setEndDate] = useState("");
+	const [startDateTime, setStartDateTime] = useState("");
+	const [endDateTime, setEndDateTime] = useState("");
 	const [reportData, setReportData] = useState(null);
 	const [error, setError] = useState("");
 
@@ -37,6 +44,8 @@ const Analytics = () => {
 		setLimit(10);
 		setStartDate("");
 		setEndDate("");
+		setStartDateTime("");
+		setEndDateTime("");
 		setModalOpen(true);
 		setError("");
 	};
@@ -58,6 +67,14 @@ const Analytics = () => {
 		setEndDate(e.target.value);
 	};
 
+	const handleStartDateTimeChange = (e) => {
+		setStartDateTime(e.target.value);
+	};
+
+	const handleEndDateTimeChange = (e) => {
+		setEndDateTime(e.target.value);
+	};
+
 	const fetchReportData = async () => {
 		try {
 			let response;
@@ -76,6 +93,18 @@ const Analytics = () => {
 					params: {
 						startDate,
 						endDate,
+						limit: limit || 10,
+					},
+				});
+			} else if (selectedReport === "itemSales") {
+				if (!startDateTime || !endDateTime) {
+					setError("Please provide both start and end date-times.");
+					return;
+				}
+				response = await axios.get("/api/reports/item-sales", {
+					params: {
+						startDateTime,
+						endDateTime,
 						limit: limit || 10,
 					},
 				});
@@ -169,8 +198,65 @@ const Analytics = () => {
 					{error && <Typography color="error">{error}</Typography>}
 				</Box>
 			);
+		} else if (selectedReport === "itemSales") {
+			return (
+				<Box sx={modalStyle}>
+					<Typography variant="h6" component="h2" gutterBottom>
+						Item Sales Report
+					</Typography>
+					<TextField
+						label="Start Date Time"
+						name="startDateTime"
+						value={startDateTime}
+						onChange={handleStartDateTimeChange}
+						fullWidth
+						margin="normal"
+						type="datetime-local"
+						InputLabelProps={{
+							shrink: true,
+						}}
+					/>
+					<TextField
+						label="End Date Time"
+						name="endDateTime"
+						value={endDateTime}
+						onChange={handleEndDateTimeChange}
+						fullWidth
+						margin="normal"
+						type="datetime-local"
+						InputLabelProps={{
+							shrink: true,
+						}}
+					/>
+					<TextField
+						label="Limit"
+						name="limit"
+						value={limit}
+						onChange={handleLimitChange}
+						fullWidth
+						margin="normal"
+						type="number"
+					/>
+					<Box sx={{ mt: 2 }}>
+						<Button
+							variant="contained"
+							onClick={fetchReportData}
+							sx={{ mr: 1 }}
+						>
+							Generate Report
+						</Button>
+						<Button onClick={handleCloseModal}>Cancel</Button>
+					</Box>
+					{error && <Typography color="error">{error}</Typography>}
+				</Box>
+			);
 		}
-		return <Box />;
+		return <Box />; // Return an empty Box instead of null
+	};
+
+	const getColor = (index) => {
+		const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#0088fe"];
+		return colors[index % colors.length];
 	};
 
 	const renderReportVisualization = () => {
@@ -224,7 +310,32 @@ const Analytics = () => {
 					</ResponsiveContainer>
 				</Box>
 			);
+		} else if (selectedReport === "itemSales") {
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Item Sales
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="item_name" />
+							<YAxis
+								label={{
+									value: "Total Quantity Sold",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip />
+							<Legend />
+							<Bar dataKey="total_quantity_sold" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		}
+
 		return null;
 	};
 
@@ -242,6 +353,12 @@ const Analytics = () => {
 					onClick={() => handleOpenModal("highSalesEmployees")}
 				>
 					Highest Performing N-Employees Report
+				</Button>
+				<Button
+					variant="contained"
+					onClick={() => handleOpenModal("itemSales")}
+				>
+					Item Sales Report
 				</Button>
 			</Box>
 			<Modal open={modalOpen} onClose={handleCloseModal}>
