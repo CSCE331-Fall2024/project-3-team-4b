@@ -51,11 +51,6 @@ const getHighSalesEmployees = async (req, res) => {
 	}
 };
 
-/**
- * Get Item Sales Report
- * Returns the top N sold items within a given date-time range.
- * Accepts 'startDateTime', 'endDateTime', and 'limit' as query parameters.
- */
 const getItemSalesReport = async (req, res) => {
 	const { startDateTime, endDateTime, limit } = req.query;
 	const limitNum = parseInt(limit) || 10;
@@ -93,10 +88,6 @@ const getItemSalesReport = async (req, res) => {
 	}
 };
 
-/**
- * Get Hourly Sales Report
- * Returns the total sales per hour for the current date.
- */
 const getHourlySales = async (req, res) => {
 	const today = new Date();
 	const dateString = today.toISOString().split("T")[0]; // Format: YYYY-MM-DD
@@ -118,11 +109,6 @@ const getHourlySales = async (req, res) => {
 	}
 };
 
-/**
- * Get Employee Orders Report
- * Returns the number of orders taken by a specific employee per hour on the current date.
- * Accepts 'employeeName' as a query parameter.
- */
 const getEmployeeOrders = async (req, res) => {
 	const { employeeName } = req.query;
 
@@ -146,7 +132,6 @@ const getEmployeeOrders = async (req, res) => {
 
 		const employeeId = employeeResult.rows[0].employee_id;
 
-		// Query to get orders per hour for the employee
 		const query = `
       SELECT DATE_TRUNC('hour', time) AS hour, COUNT(order_id) as order_count
       FROM orders
@@ -163,10 +148,6 @@ const getEmployeeOrders = async (req, res) => {
 	}
 };
 
-/**
- * Get End-of-Day (EOD) Report
- * Returns the total sales and orders per employee between the opening and closing times for the current date.
- */
 const getEodReport = async (req, res) => {
 	const openingTime = "09:01:00";
 	const closingTime = "20:59:00";
@@ -176,7 +157,6 @@ const getEodReport = async (req, res) => {
 	const endDateTime = `${todayDate} ${closingTime}`;
 
 	try {
-		// Total sales between opening and closing times
 		const totalSalesQuery = `
       SELECT SUM(total) as total_sales
       FROM orders
@@ -188,7 +168,6 @@ const getEodReport = async (req, res) => {
 		]);
 		const totalSales = totalSalesResult.rows[0].total_sales || 0;
 
-		// Orders per employee
 		const employeeOrdersQuery = `
       SELECT e.name, COUNT(o.order_id) as total_orders
       FROM orders o

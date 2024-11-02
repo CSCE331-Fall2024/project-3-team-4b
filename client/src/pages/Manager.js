@@ -5,7 +5,7 @@ import Menu from "../ManagerComponents/Menu";
 import Inventory from "../ManagerComponents/Inventory";
 import Orders from "../ManagerComponents/Orders";
 import Employees from "../ManagerComponents/Employees";
-
+import Analytics from "../ManagerComponents/Analytics";
 
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
@@ -25,10 +25,9 @@ function Manager() {
 			<div style={{ flexGrow: 1 }}>
 				{selectedSection === "Menu" && <Menu />}
 				{selectedSection === "Inventory" && <Inventory />}
-
 				{selectedSection === "Orders" && <Orders />}
-
 				{selectedSection === "Employees" && <Employees />}
+				{selectedSection === "Analytics" && <Analytics />}
 			</div>
 		</div>
 	);
