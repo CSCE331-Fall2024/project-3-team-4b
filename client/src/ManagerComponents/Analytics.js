@@ -24,12 +24,19 @@ const modalStyle = {
 };
 
 const Analytics = () => {
+	const [selectedReport, setSelectedReport] = useState(null);
 	const [modalOpen, setModalOpen] = useState(false);
 	const [limit, setLimit] = useState(10);
+	const [startDate, setStartDate] = useState("");
+	const [endDate, setEndDate] = useState("");
 	const [reportData, setReportData] = useState(null);
 	const [error, setError] = useState("");
 
-	const handleOpenModal = () => {
+	const handleOpenModal = (report) => {
+		setSelectedReport(report);
+		setLimit(10);
+		setStartDate("");
+		setEndDate("");
 		setModalOpen(true);
 		setError("");
 	};
@@ -43,13 +50,36 @@ const Analytics = () => {
 		setLimit(e.target.value);
 	};
 
+	const handleStartDateChange = (e) => {
+		setStartDate(e.target.value);
+	};
+
+	const handleEndDateChange = (e) => {
+		setEndDate(e.target.value);
+	};
+
 	const fetchReportData = async () => {
 		try {
-			const response = await axios.get("/api/reports/low-stock", {
-				params: {
-					limit: limit || 10,
-				},
-			});
+			let response;
+			if (selectedReport === "lowStock") {
+				response = await axios.get("/api/reports/low-stock", {
+					params: {
+						limit: limit || 10,
+					},
+				});
+			} else if (selectedReport === "highSalesEmployees") {
+				if (!startDate || !endDate) {
+					setError("Please provide both start and end dates.");
+					return;
+				}
+				response = await axios.get("/api/reports/high-sales-employees", {
+					params: {
+						startDate,
+						endDate,
+						limit: limit || 10,
+					},
+				});
+			}
 			setReportData(response.data);
 			setModalOpen(false);
 		} catch (err) {
@@ -58,56 +88,144 @@ const Analytics = () => {
 		}
 	};
 
-	const renderModalContent = () => (
-		<Box sx={modalStyle}>
-			<Typography variant="h6" component="h2" gutterBottom>
-				Low Stock Report
-			</Typography>
-			<TextField
-				label="Limit"
-				name="limit"
-				value={limit}
-				onChange={handleLimitChange}
-				fullWidth
-				margin="normal"
-				type="number"
-			/>
-			<Box sx={{ mt: 2 }}>
-				<Button variant="contained" onClick={fetchReportData} sx={{ mr: 1 }}>
-					Generate Report
-				</Button>
-				<Button onClick={handleCloseModal}>Cancel</Button>
-			</Box>
-			{error && <Typography color="error">{error}</Typography>}
-		</Box>
-	);
+	const renderModalContent = () => {
+		if (selectedReport === "lowStock") {
+			return (
+				<Box sx={modalStyle}>
+					<Typography variant="h6" component="h2" gutterBottom>
+						Low Stock Report
+					</Typography>
+					<TextField
+						label="Limit"
+						name="limit"
+						value={limit}
+						onChange={handleLimitChange}
+						fullWidth
+						margin="normal"
+						type="number"
+					/>
+					<Box sx={{ mt: 2 }}>
+						<Button
+							variant="contained"
+							onClick={fetchReportData}
+							sx={{ mr: 1 }}
+						>
+							Generate Report
+						</Button>
+						<Button onClick={handleCloseModal}>Cancel</Button>
+					</Box>
+					{error && <Typography color="error">{error}</Typography>}
+				</Box>
+			);
+		} else if (selectedReport === "highSalesEmployees") {
+			return (
+				<Box sx={modalStyle}>
+					<Typography variant="h6" component="h2" gutterBottom>
+						Highest Performing N-Employees Report
+					</Typography>
+					<TextField
+						label="Start Date"
+						name="startDate"
+						value={startDate}
+						onChange={handleStartDateChange}
+						fullWidth
+						margin="normal"
+						type="date"
+						InputLabelProps={{
+							shrink: true,
+						}}
+					/>
+					<TextField
+						label="End Date"
+						name="endDate"
+						value={endDate}
+						onChange={handleEndDateChange}
+						fullWidth
+						margin="normal"
+						type="date"
+						InputLabelProps={{
+							shrink: true,
+						}}
+					/>
+					<TextField
+						label="Limit (Number of Employees)"
+						name="limit"
+						value={limit}
+						onChange={handleLimitChange}
+						fullWidth
+						margin="normal"
+						type="number"
+					/>
+					<Box sx={{ mt: 2 }}>
+						<Button
+							variant="contained"
+							onClick={fetchReportData}
+							sx={{ mr: 1 }}
+						>
+							Generate Report
+						</Button>
+						<Button onClick={handleCloseModal}>Cancel</Button>
+					</Box>
+					{error && <Typography color="error">{error}</Typography>}
+				</Box>
+			);
+		}
+		return <Box />;
+	};
 
 	const renderReportVisualization = () => {
 		if (!reportData) return null;
 
-		return (
-			<Box sx={{ mt: 4 }}>
-				<Typography variant="h6" gutterBottom>
-					Low Stock Items
-				</Typography>
-				<ResponsiveContainer width="100%" height={400}>
-					<BarChart data={reportData}>
-						<CartesianGrid strokeDasharray="3 3" />
-						<XAxis dataKey="name" />
-						<YAxis
-							label={{
-								value: "Stock %",
-								angle: -90,
-								position: "insideLeft",
-							}}
-						/>
-						<Tooltip />
-						<Legend />
-						<Bar dataKey="stock_percentage" fill="#8884d8" />
-					</BarChart>
-				</ResponsiveContainer>
-			</Box>
-		);
+		if (selectedReport === "lowStock") {
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Low Stock Items
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="name" />
+							<YAxis
+								label={{
+									value: "Stock Percentage",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip />
+							<Legend />
+							<Bar dataKey="stock_percentage" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
+		} else if (selectedReport === "highSalesEmployees") {
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Highest Performing Employees
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="name" />
+							<YAxis
+								label={{
+									value: "Total Sales",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip formatter={(value) => `$${value}`} />
+							<Legend />
+							<Bar dataKey="total_sales" fill="#82ca9d" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
+		}
+		return null;
 	};
 
 	return (
@@ -116,8 +234,14 @@ const Analytics = () => {
 				Analytics Dashboard
 			</Typography>
 			<Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-				<Button variant="contained" onClick={handleOpenModal}>
+				<Button variant="contained" onClick={() => handleOpenModal("lowStock")}>
 					Low Stock Report
+				</Button>
+				<Button
+					variant="contained"
+					onClick={() => handleOpenModal("highSalesEmployees")}
+				>
+					Highest Performing N-Employees Report
 				</Button>
 			</Box>
 			<Modal open={modalOpen} onClose={handleCloseModal}>
