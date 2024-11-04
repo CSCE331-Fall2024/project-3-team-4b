@@ -34,6 +34,7 @@ const Analytics = () => {
 	const [startDateTime, setStartDateTime] = useState("");
 	const [endDateTime, setEndDateTime] = useState("");
 	const [employeeName, setEmployeeName] = useState("");
+	const [employeeDate, setEmployeeDate] = useState("");
 	const [reportData, setReportData] = useState(null);
 	const [error, setError] = useState("");
 
@@ -45,6 +46,7 @@ const Analytics = () => {
 		setStartDateTime("");
 		setEndDateTime("");
 		setEmployeeName("");
+		setEmployeeDate("");
 		setModalOpen(true);
 		setError("");
 	};
@@ -76,6 +78,10 @@ const Analytics = () => {
 
 	const handleEmployeeNameChange = (e) => {
 		setEmployeeName(e.target.value);
+	};
+
+	const handleEmployeeDateChange = (e) => {
+		setEmployeeDate(e.target.value);
 	};
 
 	const fetchReportData = async (report) => {
@@ -324,6 +330,18 @@ const Analytics = () => {
 						fullWidth
 						margin="normal"
 					/>
+					<TextField
+						label="Date"
+						name="employeeDate"
+						value={employeeDate}
+						onChange={handleEmployeeDateChange}
+						fullWidth
+						margin="normal"
+						type="date"
+						InputLabelProps={{
+							shrink: true,
+						}}
+					/>
 					<Box sx={{ mt: 2 }}>
 						<Button
 							variant="contained"
@@ -467,7 +485,7 @@ const Analytics = () => {
 			return (
 				<Box sx={{ mt: 4 }}>
 					<Typography variant="h6" gutterBottom>
-						Orders Processed by {employeeName} Today
+						Orders Processed by {employeeName} on {employeeDate}
 					</Typography>
 					<ResponsiveContainer width="100%" height={400}>
 						<BarChart data={reportData}>

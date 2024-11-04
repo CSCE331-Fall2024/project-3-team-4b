@@ -116,16 +116,16 @@ const getHourlySales = async (req, res) => {
 	}
 };
 
-
 const getEmployeeOrders = async (req, res) => {
-	const { employeeName } = req.query;
+	const { employeeName, date } = req.query;
 
 	if (!employeeName) {
 		return res.status(400).json({ error: "Please provide employeeName." });
 	}
 
-	const today = new Date();
-	const dateString = today.toISOString().split("T")[0];
+	if (!date) {
+		return res.status(400).json({ error: "Please provide date." });
+	}
 
 	try {
 		const employeeResult = await pool.query(
@@ -146,7 +146,7 @@ const getEmployeeOrders = async (req, res) => {
       GROUP BY hour
       ORDER BY hour ASC
     `;
-		const result = await pool.query(query, [employeeId, dateString]);
+		const result = await pool.query(query, [employeeId, date]);
 		res.json(result.rows);
 		console.log(result.rows);
 	} catch (error) {
