@@ -89,8 +89,15 @@ const getItemSalesReport = async (req, res) => {
 };
 
 const getHourlySales = async (req, res) => {
-	const today = new Date();
-	const dateString = today.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+	const { date } = req.query;
+	let dateString;
+
+	if (date) {
+		dateString = date;
+	} else {
+		const today = new Date();
+		dateString = today.toISOString().split("T")[0];
+	}
 
 	const query = `
     SELECT DATE_TRUNC('hour', time) AS hour, SUM(total) AS total_sales
@@ -108,6 +115,7 @@ const getHourlySales = async (req, res) => {
 		res.status(500).json({ error: "Error fetching hourly sales data." });
 	}
 };
+
 
 const getEmployeeOrders = async (req, res) => {
 	const { employeeName } = req.query;

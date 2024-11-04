@@ -1,13 +1,8 @@
-// ManagerComponents/Analytics.js
-
 import React, { useState } from "react";
 import { Button, Modal, TextField, Typography, Box } from "@mui/material";
 import {
 	BarChart,
 	Bar,
-	PieChart,
-	Pie,
-	Cell,
 	XAxis,
 	YAxis,
 	CartesianGrid,
@@ -75,16 +70,16 @@ const Analytics = () => {
 		setEndDateTime(e.target.value);
 	};
 
-	const fetchReportData = async () => {
+	const fetchReportData = async (report) => {
 		try {
 			let response;
-			if (selectedReport === "lowStock") {
+			if (report === "lowStock") {
 				response = await axios.get("/api/reports/low-stock", {
 					params: {
 						limit: limit || 10,
 					},
 				});
-			} else if (selectedReport === "highSalesEmployees") {
+			} else if (report === "highSalesEmployees") {
 				if (!startDate || !endDate) {
 					setError("Please provide both start and end dates.");
 					return;
@@ -96,7 +91,7 @@ const Analytics = () => {
 						limit: limit || 10,
 					},
 				});
-			} else if (selectedReport === "itemSales") {
+			} else if (report === "itemSales") {
 				if (!startDateTime || !endDateTime) {
 					setError("Please provide both start and end date-times.");
 					return;
@@ -108,8 +103,19 @@ const Analytics = () => {
 						limit: limit || 10,
 					},
 				});
+			} else if (report === "hourlySales") {
+				if (!startDate) {
+					setError("Please provide a date.");
+					return;
+				}
+				response = await axios.get("/api/reports/hourly-sales", {
+					params: {
+						date: startDate,
+					},
+				});
 			}
 			setReportData(response.data);
+			setSelectedReport(report);
 			setModalOpen(false);
 		} catch (err) {
 			console.error(err);
@@ -136,7 +142,7 @@ const Analytics = () => {
 					<Box sx={{ mt: 2 }}>
 						<Button
 							variant="contained"
-							onClick={fetchReportData}
+							onClick={() => fetchReportData("lowStock")}
 							sx={{ mr: 1 }}
 						>
 							Generate Report
@@ -188,7 +194,7 @@ const Analytics = () => {
 					<Box sx={{ mt: 2 }}>
 						<Button
 							variant="contained"
-							onClick={fetchReportData}
+							onClick={() => fetchReportData("highSalesEmployees")}
 							sx={{ mr: 1 }}
 						>
 							Generate Report
@@ -240,7 +246,38 @@ const Analytics = () => {
 					<Box sx={{ mt: 2 }}>
 						<Button
 							variant="contained"
-							onClick={fetchReportData}
+							onClick={() => fetchReportData("itemSales")}
+							sx={{ mr: 1 }}
+						>
+							Generate Report
+						</Button>
+						<Button onClick={handleCloseModal}>Cancel</Button>
+					</Box>
+					{error && <Typography color="error">{error}</Typography>}
+				</Box>
+			);
+		} else if (selectedReport === "hourlySales") {
+			return (
+				<Box sx={modalStyle}>
+					<Typography variant="h6" component="h2" gutterBottom>
+						Hourly Sales Report
+					</Typography>
+					<TextField
+						label="Date"
+						name="startDate"
+						value={startDate}
+						onChange={handleStartDateChange}
+						fullWidth
+						margin="normal"
+						type="date"
+						InputLabelProps={{
+							shrink: true,
+						}}
+					/>
+					<Box sx={{ mt: 2 }}>
+						<Button
+							variant="contained"
+							onClick={() => fetchReportData("hourlySales")}
 							sx={{ mr: 1 }}
 						>
 							Generate Report
@@ -251,16 +288,11 @@ const Analytics = () => {
 				</Box>
 			);
 		}
-		return <Box />; // Return an empty Box instead of null
-	};
-
-	const getColor = (index) => {
-		const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#0088fe"];
-		return colors[index % colors.length];
+		return <Box />;
 	};
 
 	const renderReportVisualization = () => {
-		if (!reportData) return null;
+		if (!reportData || !selectedReport) return null;
 
 		if (selectedReport === "lowStock") {
 			return (
@@ -334,6 +366,43 @@ const Analytics = () => {
 					</ResponsiveContainer>
 				</Box>
 			);
+		} else if (selectedReport === "hourlySales") {
+			const formatHour = (tickItem) => {
+				const date = new Date(tickItem);
+				return date.getHours().toString().padStart(2, "0") + ":00";
+			};
+
+			const formatHourTooltip = (value) => {
+				const date = new Date(value);
+				return date.toLocaleTimeString();
+			};
+
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Hourly Sales for {startDate}
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="hour" tickFormatter={formatHour} />
+							<YAxis
+								label={{
+									value: "Total Sales",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip
+								labelFormatter={formatHourTooltip}
+								formatter={(value) => `$${value}`}
+							/>
+							<Legend />
+							<Bar dataKey="total_sales" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		}
 
 		return null;
@@ -360,11 +429,20 @@ const Analytics = () => {
 				>
 					Item Sales Report
 				</Button>
+				<Button
+					variant="contained"
+					onClick={() => handleOpenModal("hourlySales")}
+				>
+					Hourly Sales Report
+				</Button>
 			</Box>
-			<Modal open={modalOpen} onClose={handleCloseModal}>
-				{renderModalContent()}
-			</Modal>
+			{modalOpen && (
+				<Modal open={modalOpen} onClose={handleCloseModal}>
+					{renderModalContent()}
+				</Modal>
+			)}
 			{renderReportVisualization()}
+			{error && <Typography color="error">{error}</Typography>}
 		</Box>
 	);
 };
