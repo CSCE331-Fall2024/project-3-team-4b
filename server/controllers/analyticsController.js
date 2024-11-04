@@ -125,10 +125,9 @@ const getEmployeeOrders = async (req, res) => {
 	}
 
 	const today = new Date();
-	const dateString = today.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+	const dateString = today.toISOString().split("T")[0];
 
 	try {
-		// Get the employee_id based on the employee name
 		const employeeResult = await pool.query(
 			"SELECT employee_id FROM employees WHERE name = $1",
 			[employeeName]
@@ -159,8 +158,7 @@ const getEmployeeOrders = async (req, res) => {
 const getEodReport = async (req, res) => {
 	const openingTime = "09:01:00";
 	const closingTime = "20:59:00";
-	const todayDate = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
-
+	const todayDate = new Date().toISOString().split("T")[0];
 	const startDateTime = `${todayDate} ${openingTime}`;
 	const endDateTime = `${todayDate} ${closingTime}`;
 

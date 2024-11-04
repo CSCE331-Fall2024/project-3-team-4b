@@ -1,3 +1,5 @@
+// ManagerComponents/Analytics.js
+
 import React, { useState } from "react";
 import { Button, Modal, TextField, Typography, Box } from "@mui/material";
 import {
@@ -31,6 +33,7 @@ const Analytics = () => {
 	const [endDate, setEndDate] = useState("");
 	const [startDateTime, setStartDateTime] = useState("");
 	const [endDateTime, setEndDateTime] = useState("");
+	const [employeeName, setEmployeeName] = useState("");
 	const [reportData, setReportData] = useState(null);
 	const [error, setError] = useState("");
 
@@ -41,6 +44,7 @@ const Analytics = () => {
 		setEndDate("");
 		setStartDateTime("");
 		setEndDateTime("");
+		setEmployeeName("");
 		setModalOpen(true);
 		setError("");
 	};
@@ -68,6 +72,10 @@ const Analytics = () => {
 
 	const handleEndDateTimeChange = (e) => {
 		setEndDateTime(e.target.value);
+	};
+
+	const handleEmployeeNameChange = (e) => {
+		setEmployeeName(e.target.value);
 	};
 
 	const fetchReportData = async (report) => {
@@ -111,6 +119,21 @@ const Analytics = () => {
 				response = await axios.get("/api/reports/hourly-sales", {
 					params: {
 						date: startDate,
+					},
+				});
+			} else if (report === "employeeOrders") {
+				if (!employeeName) {
+					setError("Please provide an employee name.");
+					return;
+				}
+				if (!employeeDate) {
+					setError("Please provide a date.");
+					return;
+				}
+				response = await axios.get("/api/reports/employee-orders", {
+					params: {
+						employeeName,
+						date: employeeDate,
 					},
 				});
 			}
@@ -287,6 +310,33 @@ const Analytics = () => {
 					{error && <Typography color="error">{error}</Typography>}
 				</Box>
 			);
+		} else if (selectedReport === "employeeOrders") {
+			return (
+				<Box sx={modalStyle}>
+					<Typography variant="h6" component="h2" gutterBottom>
+						Employee Orders Report
+					</Typography>
+					<TextField
+						label="Employee Name"
+						name="employeeName"
+						value={employeeName}
+						onChange={handleEmployeeNameChange}
+						fullWidth
+						margin="normal"
+					/>
+					<Box sx={{ mt: 2 }}>
+						<Button
+							variant="contained"
+							onClick={() => fetchReportData("employeeOrders")}
+							sx={{ mr: 1 }}
+						>
+							Generate Report
+						</Button>
+						<Button onClick={handleCloseModal}>Cancel</Button>
+					</Box>
+					{error && <Typography color="error">{error}</Typography>}
+				</Box>
+			);
 		}
 		return <Box />;
 	};
@@ -403,6 +453,43 @@ const Analytics = () => {
 					</ResponsiveContainer>
 				</Box>
 			);
+		} else if (selectedReport === "employeeOrders") {
+			const formatHour = (tickItem) => {
+				const date = new Date(tickItem);
+				return date.getHours().toString().padStart(2, "0") + ":00";
+			};
+
+			const formatHourTooltip = (value) => {
+				const date = new Date(value);
+				return date.toLocaleTimeString();
+			};
+
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Orders Processed by {employeeName} Today
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="hour" tickFormatter={formatHour} />
+							<YAxis
+								label={{
+									value: "Order Count",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip
+								labelFormatter={formatHourTooltip}
+								formatter={(value) => `${value} orders`}
+							/>
+							<Legend />
+							<Bar dataKey="order_count" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		}
 
 		return null;
@@ -434,6 +521,12 @@ const Analytics = () => {
 					onClick={() => handleOpenModal("hourlySales")}
 				>
 					Hourly Sales Report
+				</Button>
+				<Button
+					variant="contained"
+					onClick={() => handleOpenModal("employeeOrders")}
+				>
+					Employee Orders Report
 				</Button>
 			</Box>
 			{modalOpen && (
