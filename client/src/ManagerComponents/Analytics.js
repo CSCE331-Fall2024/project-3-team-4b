@@ -154,7 +154,7 @@ const Analytics = () => {
 					setError("Please provide a date.");
 					return;
 				}
-				response = await axios.get("/api/reports/eod-report", {
+				response = await axios.get("/api/reports/eod", {
 					params: {
 						date: eodDate,
 					},
