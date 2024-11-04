@@ -149,6 +149,10 @@ const Analytics = () => {
 						date: employeeDate,
 					},
 				});
+				setReportData(response.data);
+				setSelectedReport(report);
+				setModalOpen(false);
+				return;
 			} else if (report === "eodReport") {
 				if (!eodDate) {
 					setError("Please provide a date.");
@@ -415,14 +419,155 @@ const Analytics = () => {
 
 		if (selectedReport === "lowStock") {
 			// Existing code for Low Stock visualization
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Low Stock Items
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="name" />
+							<YAxis
+								label={{
+									value: "Stock Percentage",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip />
+							<Legend />
+							<Bar dataKey="stock_percentage" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		} else if (selectedReport === "highSalesEmployees") {
 			// Existing code for High Sales Employees visualization
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Highest Performing Employees
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="name" />
+							<YAxis
+								label={{
+									value: "Total Sales",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip formatter={(value) => `$${value}`} />
+							<Legend />
+							<Bar dataKey="total_sales" fill="#82ca9d" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		} else if (selectedReport === "itemSales") {
 			// Existing code for Item Sales visualization
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Item Sales
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="item_name" />
+							<YAxis
+								label={{
+									value: "Total Quantity Sold",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip />
+							<Legend />
+							<Bar dataKey="total_quantity_sold" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		} else if (selectedReport === "hourlySales") {
 			// Existing code for Hourly Sales visualization
+			const formatHour = (tickItem) => {
+				const date = new Date(tickItem);
+				return date.getHours().toString().padStart(2, "0") + ":00";
+			};
+
+			const formatHourTooltip = (value) => {
+				const date = new Date(value);
+				return date.toLocaleTimeString();
+			};
+
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Hourly Sales for {startDate}
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="hour" tickFormatter={formatHour} />
+							<YAxis
+								label={{
+									value: "Total Sales",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip
+								labelFormatter={formatHourTooltip}
+								formatter={(value) => `$${value}`}
+							/>
+							<Legend />
+							<Bar dataKey="total_sales" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		} else if (selectedReport === "employeeOrders") {
-			// Existing code for Employee Orders visualization
+			// Add the missing Employee Orders visualization code
+			const formatHour = (tickItem) => {
+				const date = new Date(tickItem);
+				return date.getHours().toString().padStart(2, "0") + ":00";
+			};
+
+			const formatHourTooltip = (value) => {
+				const date = new Date(value);
+				return date.toLocaleTimeString();
+			};
+
+			return (
+				<Box sx={{ mt: 4 }}>
+					<Typography variant="h6" gutterBottom>
+						Orders Processed by {employeeName} on {employeeDate}
+					</Typography>
+					<ResponsiveContainer width="100%" height={400}>
+						<BarChart data={reportData}>
+							<CartesianGrid strokeDasharray="3 3" />
+							<XAxis dataKey="hour" tickFormatter={formatHour} />
+							<YAxis
+								label={{
+									value: "Order Count",
+									angle: -90,
+									position: "insideLeft",
+								}}
+							/>
+							<Tooltip
+								labelFormatter={formatHourTooltip}
+								formatter={(value) => `${value} orders`}
+							/>
+							<Legend />
+							<Bar dataKey="order_count" fill="#8884d8" />
+						</BarChart>
+					</ResponsiveContainer>
+				</Box>
+			);
 		} else if (selectedReport === "eodReport") {
 			if (!eodData) return null;
 			const { totalSales, employeeOrders } = eodData;

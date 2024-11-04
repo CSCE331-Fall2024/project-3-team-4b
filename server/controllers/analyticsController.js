@@ -139,14 +139,16 @@ const getEmployeeOrders = async (req, res) => {
 
 		const employeeId = employeeResult.rows[0].employee_id;
 
+		const dateParam = new Date(date).toISOString().split("T")[0];
+
 		const query = `
       SELECT DATE_TRUNC('hour', time) AS hour, COUNT(order_id) as order_count
       FROM orders
-      WHERE employee_id = $1 AND CAST(time AS DATE) = $2
+      WHERE employee_id = $1 AND time::date = $2::date
       GROUP BY hour
       ORDER BY hour ASC
     `;
-		const result = await pool.query(query, [employeeId, date]);
+		const result = await pool.query(query, [employeeId, dateParam]);
 		res.json(result.rows);
 		console.log(result.rows);
 	} catch (error) {
@@ -154,6 +156,7 @@ const getEmployeeOrders = async (req, res) => {
 		res.status(500).json({ error: "Error fetching employee orders data." });
 	}
 };
+
 
 
 const getEodReport = async (req, res) => {
