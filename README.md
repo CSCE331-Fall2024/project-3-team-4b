@@ -3,25 +3,33 @@
 ## Sprint 1
 
 ### Scrum Meeting 1 Notes:
- - Abhinav: Discussed the design progress for the Menu Page; confirmed the completion of UI/UX design.
- - Asir: Updated on the backend setup and outlined challenges with Express; confirmed readiness for deployment.
- - Chandler: Completed the setup of both React frontend and Express backend; shared insights on the integration process.
- - Dharmik: Presented the completed UI/UX design for the Customer Page; received positive feedback from the team.
- - Ryan: Confirmed completion of the Manager Page design; discussed the next steps for implementation.
+
+| What's your name?   | What's the date | What were you assigned to do?                           | What did you do after last meeting? (tell me what you completed/worked on) | What will you do after this meeting? (tell me what you will complete/work on) |
+|---------------------|-----------------|---------------------------------------------------------|----------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| Dharmik Patel       | 10/31/2024      | Design UI/UX for the Customer Page                      | Installed Node.js and ran setup code                                      | Review setup code and understand Node.js                                        |
+| Ryan Tri            | 10/31/2024      | Design Manager UI/UX: Technologies, UI Layout, Components | Refined Manager UI Design, implemented CRUD API endpoints for Inventory and Menu Item | Implement Manager UI in React                                                  |
+| Asir Hussain        | 10/31/2024      | Create requests for the OrderItems and Orders tables    | Set up environment, ran server and client, and started creating requests  | Complete assigned requests (issues in GitHub)                                   |
+| Abhinav Sheshadri   | 10/31/2024      | Menu GUI, Full stack developer                          | Worked on Project Design and Management document and Menu GUI design in Figma | Implement my portion of the Menu GUI and get Node.js working on my laptop       |
+| Chandler Ngo        | 10/31/2024      | Deploy Frontend and Backend   
 
 ### Scrum Meeting 2 Notes:
- - Abhinav: Finalized UI/UX design for the Menu Page; began collaborating on feedback received.
- - Asir: Completed setting up the Git repository; prepared for deployment tasks.
- - Chandler: Shared updates on the deployment of the backend; addressed any issues encountered during the process.
- - Dharmik: Worked on refining the Customer Page design based on team feedback; discussed integration points with the frontend.
- - Ryan: Focused on the implementation of the Manager Page and assisted with testing.
+
+| What's your name?   | What's the date | What were you assigned to do?                           | What did you do after last meeting? (tell me what you completed/worked on) | What will you do after this meeting? (tell me what you will complete/work on) |
+|---------------------|-----------------|---------------------------------------------------------|----------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| Ryan Tri            | 10/31/2024      | Fully implement the Manager functionality               | Started implementing the Manager functionality                             | Finish implementing Manager functionality and handle input validation          |
+| Asir Hussain        | 10/31/2024      | Create requests for orders and orderItems tables        | Created the requests for orders and orderItems tables, submitted PR        | Work on UI for the cashier side of the project                                |
+| Dharmik Patel       | 10/31/2024      | API routes for menu and recipes table                   | Reviewed React code from manager GUI                                       | Develop React code for the customer self-service side                         |
+| Chandler Ngo        | 10/31/2024      | Create a presentation                                  | Finished designing a basic login page and part of the presentation         | Complete the remaining parts of the presentation                              |
+| Abhinav Sheshadri   | 10/31/2024      | Menu and Customer tables                               | Got Node working, started on menu table                                    | Finish menu table and remainder of customer table                              |
 
 ### Scrum Meeting 3 Notes:
- - Abhinav: Confirmed completion of the design UI/UX for the Menu Page.
- - Asir: Completed design UI/UX for the Cashier Page; shared insights on design challenges.
- - Chandler: Completed Git Repo Setup.
- - Dharmik: Confirmed completion of the design UI/UX for the Customer Page.
- - Ryan: Confirmed completion of the design UI/UX for the Manager Page.
+
+| What's your name?     | What's the date | What were you assigned to do?                           | What did you do after last meeting? (tell me what you completed/worked on) | What will you do after this meeting? (tell me what you will complete/work on) |
+|-----------------------|-----------------|---------------------------------------------------------|----------------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| Dharmik Patel         | 11/2/2024       | Work on React code for customer self-service            | Worked on project presentation                                            | Continue project presentation                                                  |
+| Asir Hussain          | 11/2/2024       | Meeting slides                                          | Completed the team meeting slides for the assignment next week             | Work on the next iteration of our project                                      |
+| Chandler Ngo     | 11/2/2024      | Finish presentation work                                | I completed the meeting slides for the presentation                            | Keep working on the login page                          |
+| Ryan Tri              | 11/2/2024       | Finish API Endpoints, Start Manager GUI React Implementation | Finished all API Endpoints required, began implementing Manager GUI     | Finish Manager GUI                                                             |
 
 ## Sprint 2
 
