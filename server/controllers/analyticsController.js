@@ -155,12 +155,18 @@ const getEmployeeOrders = async (req, res) => {
 	}
 };
 
+
 const getEodReport = async (req, res) => {
+	const { date } = req.query;
+
+	if (!date) {
+		return res.status(400).json({ error: "Please provide a date." });
+	}
+
 	const openingTime = "09:01:00";
 	const closingTime = "20:59:00";
-	const todayDate = new Date().toISOString().split("T")[0];
-	const startDateTime = `${todayDate} ${openingTime}`;
-	const endDateTime = `${todayDate} ${closingTime}`;
+	const startDateTime = `${date} ${openingTime}`;
+	const endDateTime = `${date} ${closingTime}`;
 
 	try {
 		const totalSalesQuery = `
@@ -198,6 +204,7 @@ const getEodReport = async (req, res) => {
 		res.status(500).json({ error: "Error generating EOD report." });
 	}
 };
+
 
 module.exports = {
 	getLowStockReport,
