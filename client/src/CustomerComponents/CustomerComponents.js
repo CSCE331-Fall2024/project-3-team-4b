@@ -154,7 +154,7 @@ function RestaurantMenu() {
         <Box sx={{ display: "flex" }}>
             <Typography variant="h4">Restaurant Menu</Typography>
             <Box sx={{ flex: 2, padding: 2 }}>
-                <Typography variant="h6">Select a Container</Typography>
+                <Typography variant="h4">Select a Container</Typography>
                 <Box sx={{ display: "flex", gap: 2, marginBottom: 2 }}>
                     {containerData.map((container) => (
                         <Button
@@ -177,8 +177,8 @@ function RestaurantMenu() {
                 {/* Menu Sections */}
                 {["Entree", "Side", "Appetizer", "Drink"].map((type) => (
                     <Box key={type} sx={{ marginBottom: 2 }}>
-                        <Typography variant="h6">{type}s</Typography>
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+                        <Typography variant="h4">{type}s</Typography>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
                             {menuData
                                 .filter((item) => item.type === type)
                                 .map((item) => (
