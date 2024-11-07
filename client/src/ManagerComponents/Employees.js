@@ -44,7 +44,7 @@ function Employees() {
 
 	const [loading, setLoading] = useState(false);
 
-	const roles = ["Cashier", "Manager", "Chef"]; // Add more roles as needed
+	const roles = ["Cashier", "Manager", "Chef"];
 
 	useEffect(() => {
 		fetchEmployeeData();
@@ -163,7 +163,7 @@ function Employees() {
 		}
 
 		const { employee_id, name, role, salary } = currentEmployee;
-		const salaryValue = parseFloat(salary); // Define salaryValue here
+		const salaryValue = parseFloat(salary);
 
 		try {
 			if (dialogType === "Add") {
@@ -200,7 +200,6 @@ function Employees() {
 		}
 	};
 
-	// Prepare data for DataGrid
 	const columns = [
 		{ field: "employee_id", headerName: "ID", width: 60 },
 		{ field: "name", headerName: "Name", flex: 1, minWidth: 100 },
@@ -283,7 +282,6 @@ function Employees() {
 				)}
 			</Box>
 
-			{/* Add/Edit Dialog */}
 			<Dialog open={openDialog} onClose={handleDialogClose}>
 				<DialogTitle>{dialogType} Employee</DialogTitle>
 				<DialogContent>
@@ -338,7 +336,6 @@ function Employees() {
 				</DialogActions>
 			</Dialog>
 
-			{/* Confirmation Dialog */}
 			<Dialog
 				open={confirmDialogOpen}
 				onClose={() => setConfirmDialogOpen(false)}

@@ -166,7 +166,7 @@ function Orders() {
 			return false;
 		}
 
-		// Validate time
+
 		const orderTime = new Date(time);
 		if (isNaN(orderTime.getTime())) {
 			setSnackbarMessage("Invalid date and time.");
@@ -183,7 +183,6 @@ function Orders() {
 			return false;
 		}
 
-		// Validate total
 		const totalValue = parseFloat(total);
 		if (isNaN(totalValue) || totalValue < 0) {
 			setSnackbarMessage("Total must be a non-negative number.");
@@ -192,7 +191,7 @@ function Orders() {
 			return false;
 		}
 
-		// Validate employee_id
+
 		const employeeIdValue = parseInt(employee_id);
 		if (
 			isNaN(employeeIdValue) ||
