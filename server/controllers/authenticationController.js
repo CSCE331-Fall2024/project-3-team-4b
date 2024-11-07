@@ -24,7 +24,7 @@ exports.verifyUserToken = async (req, res) => {
 exports.verifyRole = async (req, res) => {
   const { password, role } = req.body;
 
-  if (!['employee', 'manager'].includes(role)) {
+  if (!['cashier', 'manager'].includes(role)) {
     console.log("Invalid role selected.");
     return res.status(400).json({ success: false, message: 'Invalid role selected.' });
   }
@@ -38,7 +38,7 @@ exports.verifyRole = async (req, res) => {
     }
     
     if (
-      (role === 'employee' && password === process.env.EMPLOYEE_PASSWORD) ||
+      (role === 'cashier' && password === process.env.CASHIER_PASSWORD) ||
       (role === 'manager' && password === process.env.MANAGER_PASSWORD)
     ) {
       return res.json({

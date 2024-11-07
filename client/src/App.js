@@ -12,7 +12,7 @@ function App() {
   return (
     <div className="App">
       <Router>
-        <nav>
+        {/* <nav>
           <ul>
             <li><Link to="/menu" className="button-link">Menu</Link></li>
             <li><Link to="/customer" className="button-link">Customer</Link></li>
@@ -20,7 +20,7 @@ function App() {
             <li><Link to="/manager" className="button-link">Manager</Link></li>
             <li><Link to="/" className="button-link">Home</Link></li>
           </ul>
-        </nav>
+        </nav> */}
 
         <Routes>
           <Route path="/menu" element={<Menu />} />
