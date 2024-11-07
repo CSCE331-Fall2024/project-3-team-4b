@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 
 import { DataGrid } from "@mui/x-data-grid";
@@ -17,11 +16,14 @@ import {
 	DialogTitle,
 	DialogContent,
 	DialogActions,
+	DialogContentText,
 	Select,
 	MenuItem,
 	InputLabel,
 	FormControl,
 	IconButton,
+	Snackbar,
+	Alert,
 } from "@mui/material";
 
 function Menu() {
@@ -39,45 +41,48 @@ function Menu() {
 		calories: "",
 	});
 
-	// refreshes the Menu table when changes are made
+	const [snackbarOpen, setSnackbarOpen] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+	const [itemToDelete, setItemToDelete] = useState(null);
+
 	useEffect(() => {
 		fetchMenuData();
 	}, []);
 
-	// get Menu data from database
 	const fetchMenuData = async () => {
 		try {
 			const response = await axios.get("/api/menu");
-
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
-			alert("Error fetching menu data.");
+			setSnackbarMessage("Error fetching menu data.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
 		}
 	};
 
-	// search for menu items
 	const handleSearch = async () => {
 		try {
 			const response = await axios.get(`/api/menu?search=${searchText}`);
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error searching menu items:", error);
-			alert("Error searching menu items.");
+			setSnackbarMessage("Error searching menu items.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
 		}
 	};
 
-	// clear search results and reloads the Menu table
 	const handleClearSearch = () => {
 		setSearchText("");
 		fetchMenuData();
 	};
 
-	// opens the Add Menu Item dialog
 	const handleAddMenuItem = () => {
 		setDialogType("Add");
-
-		// clear input parameters
 		setCurrentItem({
 			menu_id: "",
 			name: "",
@@ -85,7 +90,6 @@ function Menu() {
 			extra_cost: "",
 			calories: "",
 		});
-
 		setOpenDialog(true);
 	};
 
@@ -95,16 +99,26 @@ function Menu() {
 		setOpenDialog(true);
 	};
 
-	const handleDeleteMenuItem = async (menu_id) => {
-		if (window.confirm("Are you sure you want to delete this menu item?")) {
-			try {
-				await axios.delete(`/api/menu/${menu_id}`);
-				fetchMenuData();
-				alert("Menu item deleted successfully.");
-			} catch (error) {
-				console.error("Error deleting menu item:", error);
-				alert("Error deleting menu item.");
-			}
+	const handleDeleteMenuItem = (menu_id) => {
+		setItemToDelete(menu_id);
+		setConfirmDialogOpen(true);
+	};
+
+	const handleConfirmDelete = async () => {
+		try {
+			await axios.delete(`/api/menu/${itemToDelete}`);
+			fetchMenuData();
+			setSnackbarMessage("Menu item deleted successfully.");
+			setSnackbarSeverity("success");
+			setSnackbarOpen(true);
+		} catch (error) {
+			console.error("Error deleting menu item:", error);
+			setSnackbarMessage("Error deleting menu item.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+		} finally {
+			setConfirmDialogOpen(false);
+			setItemToDelete(null);
 		}
 	};
 
@@ -116,7 +130,9 @@ function Menu() {
 		const { menu_id, name, type, extra_cost, calories } = currentItem;
 
 		if (!name || !type || extra_cost === "" || calories === "") {
-			alert("Please fill all fields.");
+			setSnackbarMessage("Please fill all fields.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
 			return;
 		}
 
@@ -128,7 +144,9 @@ function Menu() {
 					extra_cost: parseFloat(extra_cost),
 					calories: parseInt(calories),
 				});
-				alert("Menu item added successfully.");
+				setSnackbarMessage("Menu item added successfully.");
+				setSnackbarSeverity("success");
+				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
 				await axios.put(`/api/menu/${menu_id}`, {
 					name,
@@ -136,7 +154,9 @@ function Menu() {
 					extra_cost: parseFloat(extra_cost),
 					calories: parseInt(calories),
 				});
-				alert("Menu item updated successfully.");
+				setSnackbarMessage("Menu item updated successfully.");
+				setSnackbarSeverity("success");
+				setSnackbarOpen(true);
 			}
 			fetchMenuData();
 			setOpenDialog(false);
@@ -145,11 +165,14 @@ function Menu() {
 				`Error ${dialogType === "Add" ? "adding" : "updating"} menu item:`,
 				error
 			);
-			alert(`Error ${dialogType === "Add" ? "adding" : "updating"} menu item.`);
+			setSnackbarMessage(
+				`Error ${dialogType === "Add" ? "adding" : "updating"} menu item.`
+			);
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
 		}
 	};
 
-	// set column headers for the Menu table
 	const columns = [
 		{ field: "menu_id", headerName: "ID", width: 60 },
 		{ field: "name", headerName: "Name", flex: 1, minWidth: 100 },
@@ -191,7 +214,7 @@ function Menu() {
 
 	return (
 		<Box sx={{ p: 2 }}>
-			<Typography variant="h5" gutterBottom sx={{}}>
+			<Typography variant="h5" gutterBottom>
 				Menu
 			</Typography>
 
@@ -283,6 +306,43 @@ function Menu() {
 						color="primary"
 					>
 						{dialogType === "Add" ? "Add" : "Update"}
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			<Snackbar
+				open={snackbarOpen}
+				autoHideDuration={6000}
+				onClose={() => setSnackbarOpen(false)}
+				anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+			>
+				<Alert
+					onClose={() => setSnackbarOpen(false)}
+					severity={snackbarSeverity}
+					sx={{ width: "100%" }}
+				>
+					{snackbarMessage}
+				</Alert>
+			</Snackbar>
+
+			<Dialog
+				open={confirmDialogOpen}
+				onClose={() => setConfirmDialogOpen(false)}
+			>
+				<DialogTitle>Confirm Deletion</DialogTitle>
+				<DialogContent>
+					<DialogContentText>
+						Are you sure you want to delete this menu item?
+					</DialogContentText>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+					<Button
+						onClick={handleConfirmDelete}
+						color="error"
+						variant="contained"
+					>
+						Delete
 					</Button>
 				</DialogActions>
 			</Dialog>
