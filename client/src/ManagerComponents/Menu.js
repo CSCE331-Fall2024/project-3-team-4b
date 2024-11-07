@@ -136,7 +136,7 @@ function Menu() {
 			return;
 		}
 
-		// Validate that extra_cost >= 0.00
+	
 		if (parseFloat(extra_cost) < 0) {
 			setSnackbarMessage("Extra cost cannot be negative.");
 			setSnackbarSeverity("warning");
@@ -144,7 +144,6 @@ function Menu() {
 			return;
 		}
 
-		// Validate that calories >= 0
 		if (parseInt(calories) < 0) {
 			setSnackbarMessage("Calories cannot be negative.");
 			setSnackbarSeverity("warning");
@@ -154,7 +153,6 @@ function Menu() {
 
 		try {
 			if (dialogType === "Add") {
-				// Check for duplicate names only when adding a new item
 				const nameExists = menuData.some(
 					(item) => item.name.toLowerCase() === name.toLowerCase()
 				);
