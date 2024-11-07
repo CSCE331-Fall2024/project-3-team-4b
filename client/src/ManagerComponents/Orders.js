@@ -14,6 +14,7 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
+	CircularProgress,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -41,11 +42,16 @@ function Orders() {
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [orderToDelete, setOrderToDelete] = useState(null);
 
+	const [employeeList, setEmployeeList] = useState([]);
+	const [loading, setLoading] = useState(false);
+
 	useEffect(() => {
 		fetchOrderData();
+		fetchEmployeeList();
 	}, []);
 
 	const fetchOrderData = async () => {
+		setLoading(true);
 		try {
 			const response = await axios.get("/api/orders");
 
@@ -58,6 +64,20 @@ function Orders() {
 		} catch (error) {
 			console.error("Error fetching order data:", error);
 			setSnackbarMessage("Error fetching order data.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchEmployeeList = async () => {
+		try {
+			const response = await axios.get("/api/employees");
+			setEmployeeList(response.data);
+		} catch (error) {
+			console.error("Error fetching employee list:", error);
+			setSnackbarMessage("Error fetching employee list.");
 			setSnackbarSeverity("error");
 			setSnackbarOpen(true);
 		}
@@ -136,28 +156,70 @@ function Orders() {
 		setOpenDialog(false);
 	};
 
-	const handleDialogSave = async () => {
-		const { order_id, time, total, employee_id } = currentOrder;
+	const validateOrder = () => {
+		const { time, total, employee_id } = currentOrder;
 
 		if (!time || total === "" || !employee_id) {
 			setSnackbarMessage("Please fill all fields.");
 			setSnackbarSeverity("warning");
 			setSnackbarOpen(true);
+			return false;
+		}
+
+		// Validate time
+		const orderTime = new Date(time);
+		if (isNaN(orderTime.getTime())) {
+			setSnackbarMessage("Invalid date and time.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+		const now = new Date();
+		if (orderTime > now) {
+			setSnackbarMessage("Order time cannot be in the future.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+		// Validate total
+		const totalValue = parseFloat(total);
+		if (isNaN(totalValue) || totalValue < 0) {
+			setSnackbarMessage("Total must be a non-negative number.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+		// Validate employee_id
+		const employeeIdValue = parseInt(employee_id);
+		if (
+			isNaN(employeeIdValue) ||
+			employeeIdValue <= 0 ||
+			!employeeList.some((emp) => emp.employee_id === employeeIdValue)
+		) {
+			setSnackbarMessage("Please select a valid employee.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+		return true;
+	};
+
+	const handleDialogSave = async () => {
+		if (!validateOrder()) {
 			return;
 		}
 
-		if (parseFloat(total) < 0) {
-			setSnackbarMessage("Total cannot be negative.");
-			setSnackbarSeverity("warning");
-			setSnackbarOpen(true);
-			return;
-		}
+		const { order_id, time, total, employee_id } = currentOrder;
 
 		try {
 			if (dialogType === "Add") {
 				await axios.post("/api/orders", {
 					time,
-					total: Number(total),
+					total: parseFloat(total),
 					employee_id: parseInt(employee_id),
 				});
 				setSnackbarMessage("Order added successfully.");
@@ -166,7 +228,7 @@ function Orders() {
 			} else if (dialogType === "Edit") {
 				await axios.put(`/api/orders/${order_id}`, {
 					time,
-					total: Number(total),
+					total: parseFloat(total),
 					employee_id: parseInt(employee_id),
 				});
 				setSnackbarMessage("Order updated successfully.");
@@ -266,13 +328,17 @@ function Orders() {
 			</Box>
 
 			<Box sx={{ height: "95%", width: "100%" }}>
-				<DataGrid
-					rows={orderData}
-					columns={columns}
-					getRowId={(row) => row.order_id}
-					disableSelectionOnClick
-					autoPageSize
-				/>
+				{loading ? (
+					<CircularProgress />
+				) : (
+					<DataGrid
+						rows={orderData}
+						columns={columns}
+						getRowId={(row) => row.order_id}
+						disableSelectionOnClick
+						autoPageSize
+					/>
+				)}
 			</Box>
 
 			<Dialog open={openDialog} onClose={handleDialogClose}>
@@ -288,6 +354,9 @@ function Orders() {
 							setCurrentOrder({ ...currentOrder, time: e.target.value })
 						}
 						sx={{ mt: 1 }}
+						InputLabelProps={{
+							shrink: true,
+						}}
 					/>
 					<TextField
 						label="Total"
@@ -301,21 +370,28 @@ function Orders() {
 						}
 						sx={{ mt: 2 }}
 					/>
-					<TextField
-						label="Employee ID"
-						variant="outlined"
-						fullWidth
-						type="number"
-						inputProps={{ min: 0 }}
-						value={currentOrder.employee_id}
-						onChange={(e) =>
-							setCurrentOrder({
-								...currentOrder,
-								employee_id: e.target.value,
-							})
-						}
-						sx={{ mt: 2, mb: 1 }}
-					/>
+					<FormControl variant="outlined" fullWidth sx={{ mt: 2 }}>
+						<InputLabel>Employee</InputLabel>
+						<Select
+							value={currentOrder.employee_id}
+							onChange={(e) =>
+								setCurrentOrder({
+									...currentOrder,
+									employee_id: e.target.value,
+								})
+							}
+							label="Employee"
+						>
+							{employeeList.map((employee) => (
+								<MenuItem
+									key={employee.employee_id}
+									value={employee.employee_id}
+								>
+									{employee.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleDialogClose}>Cancel</Button>
