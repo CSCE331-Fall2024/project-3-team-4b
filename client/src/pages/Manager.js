@@ -28,7 +28,6 @@ function Manager() {
 				{selectedSection === "Orders" && <Orders />}
 
 				{selectedSection === "Employees" && <Employees />}
-
 			</div>
 		</div>
 	);

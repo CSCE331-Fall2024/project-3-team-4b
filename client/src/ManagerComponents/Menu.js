@@ -213,11 +213,7 @@ function Menu() {
 	];
 
 	return (
-		<Box sx={{ p: 2 }}>
-			<Typography variant="h5" gutterBottom>
-				Menu
-			</Typography>
-
+		<Box sx={{ height: "100%" }}>
 			<Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
 				<TextField
 					label="Search Menu Items"
@@ -238,12 +234,13 @@ function Menu() {
 				</Button>
 			</Box>
 
-			<Box sx={{ height: "80%", width: "100%" }}>
+			<Box sx={{ height: "95%", width: "100%" }}>
 				<DataGrid
 					rows={menuData}
 					columns={columns}
 					getRowId={(row) => row.menu_id}
 					disableSelectionOnClick
+					autoPageSize
 				/>
 			</Box>
 
