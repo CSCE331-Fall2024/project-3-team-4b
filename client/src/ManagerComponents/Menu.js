@@ -4,12 +4,10 @@ import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-
 import axios from "axios";
 
 import {
 	Box,
-	Typography,
 	TextField,
 	Button,
 	Dialog,
@@ -136,7 +134,6 @@ function Menu() {
 			return;
 		}
 
-	
 		if (parseFloat(extra_cost) < 0) {
 			setSnackbarMessage("Extra cost cannot be negative.");
 			setSnackbarSeverity("warning");
@@ -262,8 +259,13 @@ function Menu() {
 					Clear
 				</Button>
 				<Box sx={{ flexGrow: 1 }} />
-				<Button variant="contained" color="primary" onClick={handleAddMenuItem}>
-					Add Menu Item
+				<Button
+					variant="contained"
+					color="primary"
+					onClick={handleAddMenuItem}
+					startIcon={<AddIcon />}
+				>
+					Add New Menu Item
 				</Button>
 			</Box>
 

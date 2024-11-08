@@ -4,8 +4,10 @@ import { Box } from "@mui/material";
 import Navbar from "../ManagerComponents/Navbar";
 import Menu from "../ManagerComponents/Menu";
 import Inventory from "../ManagerComponents/Inventory";
-import Employees from "../ManagerComponents/Employees";
 import Orders from "../ManagerComponents/Orders";
+import Employees from "../ManagerComponents/Employees";
+
+import Analytics from "../ManagerComponents/Analytics";
 
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
@@ -46,6 +48,7 @@ function Manager() {
 				{selectedSection === "Inventory" && <Inventory />}
 				{selectedSection === "Orders" && <Orders />}
 				{selectedSection === "Employees" && <Employees />}
+				{selectedSection === "Analytics" && <Analytics />}
 			</Box>
 		</Box>
 	);

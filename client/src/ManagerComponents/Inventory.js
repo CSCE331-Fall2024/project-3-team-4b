@@ -269,7 +269,7 @@ function Inventory() {
 					onClick={handleAddInventoryItem}
 					startIcon={<AddIcon />}
 				>
-					Add Inventory Item
+					Add New Inventory Item
 				</Button>
 			</Box>
 

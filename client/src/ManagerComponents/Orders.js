@@ -322,7 +322,7 @@ function Orders() {
 					onClick={handleAddOrder}
 					startIcon={<AddIcon />}
 				>
-					Add Order
+					Add New Order
 				</Button>
 			</Box>
 

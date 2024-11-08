@@ -264,7 +264,7 @@ function Employees() {
 					onClick={handleAddEmployee}
 					startIcon={<AddIcon />}
 				>
-					Add Employee
+					Add New Employee
 				</Button>
 			</Box>
 
