@@ -1,6 +1,4 @@
-// Analytics.js
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
 	Box,
 	Typography,
@@ -93,8 +91,12 @@ function Analytics() {
 	];
 
 	const handleOpenDialog = (report) => {
+		if (report !== selectedReport) {
+			setReportParams({});
+			setReportData(null);
+			setEodData(null);
+		}
 		setSelectedReport(report);
-		setReportParams({});
 		setOpenDialog(true);
 		setError("");
 	};
@@ -271,6 +273,11 @@ function Analytics() {
 		}
 	};
 
+	const formatTimeLabel = (tickItem) => {
+		const date = new Date(tickItem);
+		return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+	};
+
 	const renderDialogContent = () => {
 		switch (selectedReport) {
 			case "lowStock":
@@ -417,191 +424,331 @@ function Analytics() {
 	};
 
 	const renderReportVisualization = () => {
-		if (loading) {
-			return (
-				<Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-					<CircularProgress />
-				</Box>
-			);
-		}
-
-		if (!reportData && !eodData) {
-			return (
-				<Typography variant="body1" sx={{ mt: 4 }}>
-					Please select a report and generate it to see the visualization.
-				</Typography>
-			);
-		}
-
 		return (
-			<Paper sx={{ mt: 4, p: 2 }}>
-				{(() => {
-					switch (selectedReport) {
-						case "lowStock":
+			<Paper
+				sx={{
+					mt: 4,
+					p: 2,
+					minHeight: "500px",
+					backgroundColor: "#333",
+					color: "#fff",
+				}}
+			>
+				{loading ? (
+					<Box
+						sx={{
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							height: "100%",
+						}}
+					>
+						<CircularProgress color="inherit" />
+					</Box>
+				) : (
+					(() => {
+						if (!reportData && !eodData) {
 							return (
-								<Box>
-									<Typography variant="h6" gutterBottom>
-										Low Stock Items
-									</Typography>
-									<ResponsiveContainer width="100%" height={400}>
-										<BarChart data={reportData}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="name" />
-											<YAxis
-												label={{
-													value: "Stock Percentage",
-													angle: -90,
-													position: "insideLeft",
-												}}
-											/>
-											<Tooltip />
-											<Legend />
-											<Bar dataKey="stock_percentage" fill="#8884d8" />
-										</BarChart>
-									</ResponsiveContainer>
-								</Box>
+								<Box
+									sx={{
+										display: "flex",
+										justifyContent: "center",
+										alignItems: "center",
+										height: "100%",
+									}}
+								></Box>
 							);
-						case "highSalesEmployees":
-							return (
-								<Box>
-									<Typography variant="h6" gutterBottom>
-										Top Performing Employees
-									</Typography>
-									<ResponsiveContainer width="100%" height={400}>
-										<BarChart data={reportData}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="name" />
-											<YAxis
-												label={{
-													value: "Total Sales",
-													angle: -90,
-													position: "insideLeft",
-												}}
-											/>
-											<Tooltip formatter={(value) => `$${value}`} />
-											<Legend />
-											<Bar dataKey="total_sales" fill="#82ca9d" />
-										</BarChart>
-									</ResponsiveContainer>
-								</Box>
-							);
-						case "itemSales":
-							return (
-								<Box>
-									<Typography variant="h6" gutterBottom>
-										Item Sales
-									</Typography>
-									<ResponsiveContainer width="100%" height={400}>
-										<BarChart data={reportData}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="item_name" />
-											<YAxis
-												label={{
-													value: "Total Quantity Sold",
-													angle: -90,
-													position: "insideLeft",
-												}}
-											/>
-											<Tooltip />
-											<Legend />
-											<Bar dataKey="total_quantity_sold" fill="#8884d8" />
-										</BarChart>
-									</ResponsiveContainer>
-								</Box>
-							);
-						case "hourlySales":
-							return (
-								<Box>
-									<Typography variant="h6" gutterBottom>
-										Hourly Sales for {reportParams.date}
-									</Typography>
-									<ResponsiveContainer width="100%" height={400}>
-										<LineChart data={reportData}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="hour" />
-											<YAxis
-												label={{
-													value: "Total Sales",
-													angle: -90,
-													position: "insideLeft",
-												}}
-											/>
-											<Tooltip formatter={(value) => `$${value}`} />
-											<Legend />
-											<Line
-												type="monotone"
-												dataKey="total_sales"
-												stroke="#8884d8"
-											/>
-										</LineChart>
-									</ResponsiveContainer>
-								</Box>
-							);
-						case "employeeOrders":
-							return (
-								<Box>
-									<Typography variant="h6" gutterBottom>
-										Orders Processed by {reportParams.employeeName} on{" "}
-										{reportParams.date}
-									</Typography>
-									<ResponsiveContainer width="100%" height={400}>
-										<LineChart data={reportData}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="hour" />
-											<YAxis
-												label={{
-													value: "Order Count",
-													angle: -90,
-													position: "insideLeft",
-												}}
-											/>
-											<Tooltip formatter={(value) => `${value} orders`} />
-											<Legend />
-											<Line
-												type="monotone"
-												dataKey="order_count"
-												stroke="#8884d8"
-											/>
-										</LineChart>
-									</ResponsiveContainer>
-								</Box>
-							);
-						case "eodReport":
-							if (!eodData) return null;
-							const { totalSales, employeeOrders } = eodData;
-							return (
-								<Box>
-									<Typography variant="h6" gutterBottom>
-										End of Day Report for {reportParams.date}
-									</Typography>
-									<Typography variant="subtitle1">
-										Total Sales: ${totalSales}
-									</Typography>
-									<Typography variant="subtitle1" sx={{ mt: 2 }}>
-										Employee Orders:
-									</Typography>
-									<ResponsiveContainer width="100%" height={400}>
-										<BarChart data={employeeOrders}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="name" />
-											<YAxis
-												label={{
-													value: "Total Orders",
-													angle: -90,
-													position: "insideLeft",
-												}}
-											/>
-											<Tooltip formatter={(value) => `${value} orders`} />
-											<Legend />
-											<Bar dataKey="total_orders" fill="#8884d8" />
-										</BarChart>
-									</ResponsiveContainer>
-								</Box>
-							);
-						default:
-							return null;
-					}
-				})()}
+						}
+
+						const commonProps = {
+							margin: { top: 20, right: 30, left: 60, bottom: 80 },
+						};
+
+						switch (selectedReport) {
+							case "lowStock":
+								return (
+									<Box>
+										<Typography variant="h6" gutterBottom>
+											Low Stock Items
+										</Typography>
+										<ResponsiveContainer width="100%" height={500}>
+											<BarChart data={reportData} {...commonProps}>
+												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
+												<XAxis
+													dataKey="name"
+													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
+													interval={0}
+													height={100}
+												/>
+												<YAxis
+													tick={{ fill: "#fff" }}
+													domain={[0, 100]}
+													label={{
+														value: "Stock Percentage",
+														angle: -90,
+														position: "insideLeft",
+														fill: "#fff",
+														dy: -10,
+													}}
+												/>
+												<Tooltip
+													contentStyle={{
+														backgroundColor: "#444",
+														color: "#fff",
+													}}
+												/>
+												<Legend />
+												<Bar dataKey="stock_percentage" fill="#82ca9d" />
+											</BarChart>
+										</ResponsiveContainer>
+									</Box>
+								);
+							case "highSalesEmployees":
+								return (
+									<Box>
+										<Typography variant="h6" gutterBottom>
+											Top Performing Employees
+										</Typography>
+										<ResponsiveContainer width="100%" height={500}>
+											<BarChart data={reportData} {...commonProps}>
+												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
+												<XAxis
+													dataKey="name"
+													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
+													interval={0}
+													height={100}
+												/>
+												<YAxis
+													tick={{ fill: "#fff" }}
+													domain={[0, (dataMax) => Math.ceil(dataMax * 1.1)]}
+													label={{
+														value: "Total Sales ($)",
+														angle: -90,
+														position: "insideLeft",
+														fill: "#fff",
+														dy: -10,
+													}}
+												/>
+												<Tooltip
+													contentStyle={{
+														backgroundColor: "#444",
+														color: "#fff",
+													}}
+													formatter={(value) => `$${value}`}
+												/>
+												<Legend />
+												<Bar dataKey="total_sales" fill="#8884d8" />
+											</BarChart>
+										</ResponsiveContainer>
+									</Box>
+								);
+							case "itemSales":
+								return (
+									<Box>
+										<Typography variant="h6" gutterBottom>
+											Item Sales
+										</Typography>
+										<ResponsiveContainer width="100%" height={500}>
+											<BarChart data={reportData} {...commonProps}>
+												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
+												<XAxis
+													dataKey="item_name"
+													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
+													interval={0}
+													height={100}
+												/>
+												<YAxis
+													tick={{ fill: "#fff" }}
+													domain={[0, (dataMax) => Math.ceil(dataMax * 1.1)]}
+													label={{
+														value: "Total Quantity Sold",
+														angle: -90,
+														position: "insideLeft",
+														fill: "#fff",
+														dy: -10,
+													}}
+												/>
+												<Tooltip
+													contentStyle={{
+														backgroundColor: "#444",
+														color: "#fff",
+													}}
+												/>
+												<Legend />
+												<Bar dataKey="total_quantity_sold" fill="#82ca9d" />
+											</BarChart>
+										</ResponsiveContainer>
+									</Box>
+								);
+							case "hourlySales":
+								return (
+									<Box>
+										<Typography variant="h6" gutterBottom>
+											Hourly Sales for {reportParams.date}
+										</Typography>
+										<ResponsiveContainer width="100%" height={500}>
+											<LineChart data={reportData} {...commonProps}>
+												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
+												<XAxis
+													dataKey="hour"
+													tickFormatter={(tick) =>
+														new Date(tick).toLocaleTimeString([], {
+															hour: "2-digit",
+															minute: "2-digit",
+														})
+													}
+													tick={{ fill: "#fff" }}
+													height={50}
+												/>
+												<YAxis
+													tick={{ fill: "#fff" }}
+													domain={[
+														(dataMin) => Math.floor(dataMin * 0.9),
+														(dataMax) => Math.ceil(dataMax * 1.1),
+													]}
+													label={{
+														value: "Total Sales ($)",
+														angle: -90,
+														position: "insideLeft",
+														fill: "#fff",
+														dy: -10,
+													}}
+												/>
+												<Tooltip
+													contentStyle={{
+														backgroundColor: "#444",
+														color: "#fff",
+													}}
+													labelFormatter={(label) =>
+														new Date(label).toLocaleTimeString([], {
+															hour: "2-digit",
+															minute: "2-digit",
+														})
+													}
+													formatter={(value) => `$${value}`}
+												/>
+												<Legend />
+												<Line
+													type="monotone"
+													dataKey="total_sales"
+													stroke="#8884d8"
+												/>
+											</LineChart>
+										</ResponsiveContainer>
+									</Box>
+								);
+							case "employeeOrders":
+								return (
+									<Box>
+										<Typography variant="h6" gutterBottom>
+											Orders Processed by {reportParams.employeeName} on{" "}
+											{reportParams.date}
+										</Typography>
+										<ResponsiveContainer width="100%" height={500}>
+											<LineChart data={reportData} {...commonProps}>
+												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
+												<XAxis
+													dataKey="hour"
+													tickFormatter={(tick) =>
+														new Date(tick).toLocaleTimeString([], {
+															hour: "2-digit",
+															minute: "2-digit",
+														})
+													}
+													tick={{ fill: "#fff" }}
+													height={50}
+												/>
+												<YAxis
+													tick={{ fill: "#fff" }}
+													domain={[
+														(dataMin) => Math.floor(dataMin * 0.9),
+														(dataMax) => Math.ceil(dataMax * 1.1),
+													]}
+													label={{
+														value: "Order Count",
+														angle: -90,
+														position: "insideLeft",
+														fill: "#fff",
+														dy: -10,
+													}}
+												/>
+												<Tooltip
+													contentStyle={{
+														backgroundColor: "#444",
+														color: "#fff",
+													}}
+													labelFormatter={(label) =>
+														new Date(label).toLocaleTimeString([], {
+															hour: "2-digit",
+															minute: "2-digit",
+														})
+													}
+													formatter={(value) => `${value} orders`}
+												/>
+												<Legend />
+												<Line
+													type="monotone"
+													dataKey="order_count"
+													stroke="#8884d8"
+												/>
+											</LineChart>
+										</ResponsiveContainer>
+									</Box>
+								);
+							case "eodReport":
+								if (!eodData) return null;
+								const { totalSales, employeeOrders } = eodData;
+								return (
+									<Box>
+										<Typography variant="h6" gutterBottom>
+											End of Day Report for {reportParams.date}
+										</Typography>
+										<Typography variant="subtitle1">
+											Total Sales: ${totalSales}
+										</Typography>
+										<Typography variant="subtitle1" sx={{ mt: 2 }}>
+											Employee Orders:
+										</Typography>
+										<ResponsiveContainer width="100%" height={500}>
+											<BarChart data={employeeOrders} {...commonProps}>
+												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
+												<XAxis
+													dataKey="name"
+													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
+													interval={0}
+													height={100}
+												/>
+												<YAxis
+													tick={{ fill: "#fff" }}
+													domain={[
+														(dataMin) => Math.floor(dataMin * 0.9),
+														(dataMax) => Math.ceil(dataMax * 1.1),
+													]}
+													label={{
+														value: "Total Orders",
+														angle: -90,
+														position: "insideLeft",
+														fill: "#fff",
+														dy: -10,
+													}}
+												/>
+												<Tooltip
+													contentStyle={{
+														backgroundColor: "#444",
+														color: "#fff",
+													}}
+												/>
+												<Legend />
+												<Bar dataKey="total_orders" fill="#82ca9d" />
+											</BarChart>
+										</ResponsiveContainer>
+									</Box>
+								);
+							default:
+								return null;
+						}
+					})()
+				)}
 			</Paper>
 		);
 	};
