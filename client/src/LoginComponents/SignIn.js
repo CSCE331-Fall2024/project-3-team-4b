@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -58,12 +58,11 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
 }));
 
 export default function SignIn({ user }) {
-  const [password, setPassword] = React.useState('');
-  const [role, setRole] = React.useState('');
-  const [passwordError, setPasswordError] = React.useState(false);
-  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
+  const [passwordError, setPasswordError] = useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
   const navigate = useNavigate();
-
 
   const handleRoleChange = (event) => {
     setRole(event.target.value);
@@ -75,8 +74,6 @@ export default function SignIn({ user }) {
 
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
-    console.log(role);
-    console.log(password);
     axios.post('http://localhost:5001/api/verify-role', { user, password, role })
       .then((res) => {
         if (res.data.success) {
@@ -106,13 +103,9 @@ export default function SignIn({ user }) {
       <CssBaseline enableColorScheme />
       <SignInContainer direction="column" justifyContent="space-between">
         <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Sign in
-          </Typography>
+          <h2>
+            Welcome, {user.name}
+          </h2>
           <Box
             component="form"
             onSubmit={handlePasswordSubmit}
