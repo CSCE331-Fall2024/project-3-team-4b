@@ -1,23 +1,46 @@
-// CashierComponents/OrderSummary.js
 import React from "react";
 import { Box, Typography, List, ListItem, ListItemText, Divider, Button } from "@mui/material";
 
 function OrderSummary({ orderItems, onClearOrder, onPlaceOrder }) {
-    const subtotal = orderItems.reduce((total, item) => total + item.price, 0);
+    const subtotal = orderItems.reduce((total, item) => total + (item.type === "Container" ? item.price : 0), 0);
     const tax = subtotal * 0.08;
     const total = subtotal + tax;
+
+
+
+    // Group sides and entrees under their respective containers
+    const groupedItems = orderItems.reduce((acc, item) => {
+        if (item.type === "Container") {
+            acc.push({ container: item, items: [] });
+        } else if (item.type === "Side" || item.type === "Entree") {
+            const lastContainer = acc[acc.length - 1];
+            if (lastContainer) {
+                lastContainer.items.push(item);
+            }
+        }
+        return acc;
+    }, []);
 
     return (
         <Box sx={{ p: 2, borderLeft: "1px solid gray" }}>
             <Typography variant="h6">Order Summary</Typography>
             <List>
-                {orderItems.map((item, index) => (
-                    <ListItem key={index}>
-                        <ListItemText 
-                            primary={item.name} 
-                            secondary={`$${item.price.toFixed(2)}${item.isPremium ? " (Premium)" : ""}`} 
-                        />
-                    </ListItem>
+                {groupedItems.map((group, index) => (
+                    <React.Fragment key={index}>
+                        <ListItem>
+                            <ListItemText 
+                                primary={group.container.name} 
+                                secondary={`$${group.container.price.toFixed(2)}`} 
+                            />
+                        </ListItem>
+                        {group.items.map((item, subIndex) => (
+                            <ListItem key={`${index}-${subIndex}`} sx={{ pl: 4 }}>
+                                <ListItemText 
+                                    primary={`- ${item.name}`} 
+                                />
+                            </ListItem>
+                        ))}
+                    </React.Fragment>
                 ))}
             </List>
             <Divider sx={{ my: 2 }} />

@@ -2,7 +2,7 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 
-function SelectedItem({ item, onAddToOrder }) {
+function SelectedItem({ item, onAddToOrder, selectedContainer }) {
     if (!item) return null;
 
     return (
@@ -14,8 +14,9 @@ function SelectedItem({ item, onAddToOrder }) {
                 color="primary" 
                 onClick={() => onAddToOrder(item)} 
                 sx={{ mt: 1 }}
+                disabled={!selectedContainer} // Disable if no container is selected
             >
-                Add to Order
+            
             </Button>
         </Box>
     );

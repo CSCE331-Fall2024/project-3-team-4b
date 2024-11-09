@@ -14,8 +14,8 @@ function CategoryItems({ items, selectedCategory, onItemSelect }) {
                             fullWidth
                             onClick={() => onItemSelect(item)}
                         >
-                            {item.name} - ${item.price.toFixed(2)}
-                            {item.isPremium && <span> (Premium +$1.75)</span>}
+                            {item.name} {/* Display only the item name */}
+                            {item.isPremium && <span> (Premium)</span>} {/* Still show if it's premium */}
                         </Button>
                     </Grid>
                 ))}

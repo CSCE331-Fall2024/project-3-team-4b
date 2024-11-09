@@ -8,37 +8,47 @@ import SelectedItem from "../CashierComponents/SelectedItem";
 function Cashier() {
     const [selectedCategory, setSelectedCategory] = useState("Containers");
     const [selectedContainer, setSelectedContainer] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(null);
+    //const [selectedItem, setSelectedItem] = useState(null);
     const [orderItems, setOrderItems] = useState([]);
+    const [entreesRemaining, setEntreesRemaining] = useState(0);
 
     // Define sample data for each category
     const categoryData = {
         Containers: [
-            { id: 1, name: "Bowl", price: 6.50 },
-            { id: 2, name: "Plate", price: 7.50 },
-            { id: 3, name: "Bigger Plate", price: 8.50 },
-        ],
-        Entrees: [
-            { id: 4, name: "Orange Chicken", price: 5.99, isPremium: false },
-            { id: 5, name: "Honey Walnut Shrimp", price: 6.99, isPremium: true },
-            // Add more entrees here
-        ],
-        Sides: [
-            { id: 6, name: "Fried Rice", price: 2.99 },
-            { id: 7, name: "Chow Mein", price: 2.99 },
-            // Add more sides here
+            { id: 1, name: "Bowl", price: 8.30 },
+            { id: 2, name: "Plate", price: 9.80 },
+            { id: 3, name: "Bigger Plate", price: 11.30 },
         ],
         Appetizers: [
-            { id: 8, name: "Spring Roll", price: 1.99 },
-            { id: 9, name: "Chicken Egg Roll", price: 2.49 },
-            // Add more appetizers here
+            { id: 1, name: "Chicken Egg Roll", price: 0 },
+            { id: 2, name: "Veggie Spring Roll", price: 0 },
+            { id: 3, name: "Cream Cheese Rangoon", price: 0 },
+            { id: 4, name: "Apple Pie Roll", price: 0 },
+        ],
+        Sides: [
+            { id: 5, name: "Chow Mein", price: 0 },
+            { id: 6, name: "Fried Rice", price: 0 },
+            { id: 7, name: "White Steamed Rice", price: 0 },
+            { id: 8, name: "Super Greens", price: 0 },
+        ],
+        Entrees: [
+            { id: 9, name: "The Original Orange Chicken", price: 0, isPremium: false },
+            { id: 10, name: "Grilled Teriyaki Chicken", price: 0, isPremium: false },
+            { id: 11, name: "Honey Walnut Shrimp", price: 1.5, isPremium: true },
+            { id: 12, name: "Broccoli Beef", price: 0, isPremium: false },
+            { id: 13, name: "Mushroom Chicken", price: 0, isPremium: false },
+            { id: 14, name: "Sweet Fire Chicken Breast", price: 0, isPremium: false },
         ],
         Drinks: [
-            { id: 10, name: "Soft Drink", price: 1.99 },
-            { id: 11, name: "Bottled Water", price: 1.49 },
-            // Add more drinks here
+            { id: 15, name: "Dr Pepper", price: 0 },
+            { id: 16, name: "Sweet Tea", price: 0 },
+            { id: 17, name: "Pepsi", price: 0 },
+            { id: 18, name: "Mountain Dew", price: 0 },
+            { id: 19, name: "Sierra Mist", price: 0 },
+            { id: 20, name: "Water", price: 0 },
         ]
     };
+    
 
     // Define container limits based on Panda Express requirements
     const containerLimits = {
@@ -52,53 +62,102 @@ function Cashier() {
     };
 
     const handleItemSelect = (item) => {
-        setSelectedItem(item);
-    };
-
-    const handleAddToOrder = (item) => {
-        // Determine if item is an entree or a side based on selected category
-        const isEntree = selectedCategory === "Entrees";
-        const isSide = selectedCategory === "Sides";
+        if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
+            // Add appetizers and drinks directly to the order
+            setOrderItems([...orderItems, { ...item, type: selectedCategory }]);
+            return;
+        }
     
-        // Count the number of entrees and sides currently in the order
-        const currentEntrees = orderItems.filter(i => i.type === "Entree").length;
-        const currentSides = orderItems.filter(i => i.type === "Side").length;
-    
-        // Check if a container is selected and if it has entree and side limits
-        if (selectedContainer && containerLimits[selectedContainer.name]) {
-            const { entrees, sides } = containerLimits[selectedContainer.name];
-            
-            // Check if the number of entrees exceeds the container limit
-            if (isEntree && currentEntrees >= entrees) {
-                alert(`A ${selectedContainer.name} only allows ${entrees} entree(s).`);
-                return;
-            }
-            
-            // Check if the number of sides exceeds the container limit
-            if (isSide && currentSides >= sides) {
-                alert(`A ${selectedContainer.name} only allows ${sides} side(s).`);
-                return;
-            }
-        } else {
+        if (!selectedContainer) {
             alert("Please select a container before adding items.");
             return;
         }
     
-        // Apply a premium charge if the item is premium
-        const premiumCharge = item.isPremium ? 1.75 : 0;
-        const itemWithCharge = { ...item, price: item.price + premiumCharge };
+        const isEntree = selectedCategory === "Entrees";
+        const isSide = selectedCategory === "Sides";
     
-        // Add the item to the orderItems array
-        setOrderItems([...orderItems, { ...itemWithCharge, type: selectedCategory }]);
-        
-        // Clear the selected item after adding to the order
-        setSelectedItem(null);
+        if (isSide) {
+            // Automatically add side to the order and switch to entrees
+            setOrderItems([...orderItems, { ...item, type: "Side" }]);
+            setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
+            return;
+        }
+    
+        if (isEntree) {
+            setOrderItems((prevOrderItems) => [...prevOrderItems, { ...item, type: "Entree" }]);
+            setEntreesRemaining((prev) => {
+                if (prev - 1 <= 0) {
+                    setSelectedCategory("Containers");
+                }
+                return prev - 1;
+            });
+        }
     };
+
+    const handleAddToOrder = (item) => {
+        if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
+            // Add appetizers and drinks directly to the order
+            setOrderItems([...orderItems, { ...item, type: selectedCategory }]);
+            return;
+        }
+    
+        if (!selectedContainer) {
+            alert("Please select a container before adding items.");
+            return;
+        }
+    
+        const isEntree = selectedCategory === "Entrees";
+        const isSide = selectedCategory === "Sides";
+    
+        if (isSide) {
+            // Automatically add side to the order and switch to entrees
+            setOrderItems([...orderItems, { ...item, type: "Side" }]);
+            setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
+            return;
+        }
+    
+        if (isEntree) {
+            // Prepare to add the entree to the order
+            let updatedOrderItems = [...orderItems, { ...item, type: "Entree" }];
+    
+            // If the selected entree is a premium item, update the container price
+            if (item.isPremium) {
+                const premiumCharge = 1.50; // The extra cost for a premium item
+                const updatedContainer = {
+                    ...selectedContainer,
+                    price: selectedContainer.price + premiumCharge, // Adding the premium cost to the container price
+                };
+    
+                // Update the container in the orderItems
+                updatedOrderItems = updatedOrderItems.map((orderItem) =>
+                    orderItem.type === "Container" ? updatedContainer : orderItem
+                );
+    
+                // Update selectedContainer state as well
+                setSelectedContainer(updatedContainer);
+            }
+    
+            setOrderItems(updatedOrderItems);
+            setEntreesRemaining((prev) => {
+                if (prev - 1 <= 0) {
+                    setSelectedCategory("Containers");
+                }
+                return prev - 1;
+            });
+        }
+    };
+    
+    
+    
+    
+    
 
     const handleSelectContainer = (container) => {
         setSelectedContainer(container);
-        setOrderItems([]);
-    };
+        setOrderItems([{ ...container, type: "Container" }]);
+        setSelectedCategory("Sides"); // Switch to sides selection
+        setEntreesRemaining(containerLimits[container.name].entrees); // Set number of entrees to be selected
+    };   
 
     const handleClearOrder = () => {
         setOrderItems([]);
@@ -128,7 +187,10 @@ function Cashier() {
                         onItemSelect={handleItemSelect} 
                     />
                 )}
-                <SelectedItem item={selectedItem} onAddToOrder={handleAddToOrder} />
+                <SelectedItem 
+                    onAddToOrder={handleAddToOrder} 
+                    selectedContainer={selectedContainer}
+                />
             </div>
             <div style={{ flex: 1 }}>
                 <OrderSummary 
@@ -139,6 +201,7 @@ function Cashier() {
             </div>
         </div>
     );
+    
 }
 
 export default Cashier;
