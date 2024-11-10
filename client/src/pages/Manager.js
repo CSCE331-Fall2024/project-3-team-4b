@@ -4,6 +4,7 @@ import Navbar from "../ManagerComponents/Navbar";
 import Menu from "../ManagerComponents/Menu";
 import Inventory from "../ManagerComponents/Inventory";
 import Employees from "../ManagerComponents/Employees";
+import Orders from "../ManagerComponents/Orders";
 
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
