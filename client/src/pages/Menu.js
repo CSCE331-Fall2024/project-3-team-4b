@@ -1,38 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { DataGrid } from "@mui/x-data-grid";
+import axios from "axios";
+import { Box, Typography, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, IconButton } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import axios from "axios";
-import {
-	Box,
-	Typography,
-	TextField,
-	Button,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogActions,
-	Select,
-	MenuItem,
-	InputLabel,
-	FormControl,
-	IconButton,
-} from "@mui/material";
-import '../styles/Menu.css';
+import "../styles/Menu.css";
 
 function Menu() {
 	const [menuData, setMenuData] = useState([]);
 	const [searchText, setSearchText] = useState("");
-	const [openDialog, setOpenDialog] = useState(false);
-	const [dialogType, setDialogType] = useState("");
-	const [currentItem, setCurrentItem] = useState({
-		menu_id: "",
-		name: "",
-		type: "",
-		extra_cost: "",
-		calories: "",
-	});
+	const [selectedItem, setSelectedItem] = useState(null);
 
 	useEffect(() => {
 		fetchMenuData();
@@ -63,114 +40,10 @@ function Menu() {
 		fetchMenuData();
 	};
 
-	const handleAddMenuItem = () => {
-		setDialogType("Add");
-		setCurrentItem({
-			menu_id: "",
-			name: "",
-			type: "",
-			extra_cost: "",
-			calories: "",
-		});
-		setOpenDialog(true);
+	const handleItemClick = (item) => {
+		setSelectedItem(item);
+		alert(`Selected item: ${item.name}`);
 	};
-
-	const handleEditMenuItem = (item) => {
-		setDialogType("Edit");
-		setCurrentItem({ ...item });
-		setOpenDialog(true);
-	};
-
-	const handleDeleteMenuItem = async (menu_id) => {
-		if (window.confirm("Are you sure you want to delete this menu item?")) {
-			try {
-				await axios.delete(`/api/menu/${menu_id}`);
-				fetchMenuData();
-				alert("Menu item deleted successfully.");
-			} catch (error) {
-				console.error("Error deleting menu item:", error);
-				alert("Error deleting menu item.");
-			}
-		}
-	};
-
-	const handleDialogClose = () => {
-		setOpenDialog(false);
-	};
-
-	const handleDialogSave = async () => {
-		const { menu_id, name, type, extra_cost, calories } = currentItem;
-		if (!name || !type || extra_cost === "" || calories === "") {
-			alert("Please fill all fields.");
-			return;
-		}
-		try {
-			if (dialogType === "Add") {
-				await axios.post("/api/menu", {
-					name,
-					type,
-					extra_cost: parseFloat(extra_cost),
-					calories: parseInt(calories),
-				});
-				alert("Menu item added successfully.");
-			} else if (dialogType === "Edit") {
-				await axios.put(`/api/menu/${menu_id}`, {
-					name,
-					type,
-					extra_cost: parseFloat(extra_cost),
-					calories: parseInt(calories),
-				});
-				alert("Menu item updated successfully.");
-			}
-			fetchMenuData();
-			setOpenDialog(false);
-		} catch (error) {
-			console.error(
-				`Error ${dialogType === "Add" ? "adding" : "updating"} menu item:`,
-				error
-			);
-			alert(`Error ${dialogType === "Add" ? "adding" : "updating"} menu item.`);
-		}
-	};
-
-	const columns = [
-		{ field: "menu_id", headerName: "ID", width: 60 },
-		{ field: "name", headerName: "Name", flex: 1, minWidth: 100 },
-		{ field: "type", headerName: "Type", width: 100 },
-		{
-			field: "extra_cost",
-			headerName: "Extra Cost",
-			width: 90,
-		},
-		{
-			field: "calories",
-			headerName: "Calories",
-			width: 80,
-		},
-		{
-			field: "actions",
-			headerName: "Actions",
-			width: 100,
-			sortable: false,
-			filterable: false,
-			renderCell: (params) => (
-				<>
-					<IconButton
-						color="primary"
-						onClick={() => handleEditMenuItem(params.row)}
-					>
-						<EditIcon />
-					</IconButton>
-					<IconButton
-						color="error"
-						onClick={() => handleDeleteMenuItem(params.row.menu_id)}
-					>
-						<DeleteIcon />
-					</IconButton>
-				</>
-			),
-		},
-	];
 
 	return (
 		<Box sx={{ p: 2 }}>
@@ -178,7 +51,7 @@ function Menu() {
 				Panda Express Menu
 			</Typography>
 
-			<Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+			<Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
 				<TextField
 					label="Search Menu Items"
 					variant="outlined"
@@ -193,76 +66,36 @@ function Menu() {
 					Clear
 				</Button>
 				<Box sx={{ flexGrow: 1 }} />
-				<Button variant="contained" color="primary" onClick={handleAddMenuItem}>
-					Add Menu Item
+				<Button variant="contained" color="primary" onClick={() => alert("Add new item")}>
+					<AddIcon />
 				</Button>
 			</Box>
 
-			<Box sx={{ height: "80%", width: "100%" }}>
-				<DataGrid
-					rows={menuData}
-					columns={columns}
-					getRowId={(row) => row.menu_id}
-					disableSelectionOnClick
-				/>
+			<Box className="menu-grid">
+				{menuData.map((item) => (
+					<div key={item.menu_id} className="menu-item" onClick={() => handleItemClick(item)}>
+						<img src={item.imageUrl || "default-image.jpg"} alt={item.name} />
+						<div className="menu-item-overlay">{item.name}</div>
+					</div>
+				))}
 			</Box>
 
-			<Dialog open={openDialog} onClose={handleDialogClose}>
-				<DialogTitle>{dialogType} Menu Item</DialogTitle>
+			<Dialog open={!!selectedItem} onClose={() => setSelectedItem(null)}>
+				<DialogTitle>Item Details</DialogTitle>
 				<DialogContent>
-					<TextField
-						label="Name"
-						variant="outlined"
-						fullWidth
-						value={currentItem.name}
-						onChange={(e) =>
-							setCurrentItem({ ...currentItem, name: e.target.value })
-						}
-						sx={{ mt: 1 }}
-					/>
-					<FormControl variant="outlined" fullWidth sx={{ mt: 2 }}>
-						<InputLabel>Type</InputLabel>
-						<Select
-							value={currentItem.type}
-							onChange={(e) =>
-								setCurrentItem({ ...currentItem, type: e.target.value })
-							}
-							label="Type"
-						>
-							<MenuItem value="Appetizer">Appetizer</MenuItem>
-							<MenuItem value="Entree">Entree</MenuItem>
-							<MenuItem value="Side">Side</MenuItem>
-							<MenuItem value="Drink">Drink</MenuItem>
-						</Select>
-					</FormControl>
-					<TextField
-						label="Extra Cost"
-						variant="outlined"
-						fullWidth
-						type="number"
-						value={currentItem.extra_cost}
-						onChange={(e) =>
-							setCurrentItem({ ...currentItem, extra_cost: e.target.value })
-						}
-						sx={{ mt: 2 }}
-					/>
-					<TextField
-						label="Calories"
-						variant="outlined"
-						fullWidth
-						type="number"
-						value={currentItem.calories}
-						onChange={(e) =>
-							setCurrentItem({ ...currentItem, calories: e.target.value })
-						}
-						sx={{ mt: 2, mb: 1 }}
-					/>
+					<Typography>Name: {selectedItem?.name}</Typography>
+					<Typography>Type: {selectedItem?.type}</Typography>
+					<Typography>Extra Cost: ${selectedItem?.extra_cost}</Typography>
+					<Typography>Calories: {selectedItem?.calories}</Typography>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={handleDialogClose}>Cancel</Button>
-					<Button onClick={handleDialogSave} variant="contained" color="primary">
-						{dialogType === "Add" ? "Add" : "Update"}
-					</Button>
+					<Button onClick={() => setSelectedItem(null)}>Close</Button>
+					<IconButton color="primary">
+						<EditIcon />
+					</IconButton>
+					<IconButton color="error">
+						<DeleteIcon />
+					</IconButton>
 				</DialogActions>
 			</Dialog>
 		</Box>
