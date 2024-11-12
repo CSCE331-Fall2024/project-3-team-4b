@@ -10,6 +10,7 @@ const recipeRoutes = require("./routes/recipeRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const employeesRoutes = require("./routes/employeesRoutes");
 const authenticationRoutes = require("./routes/authenticationRoutes");
+const orderItemsRoutes = require("./routes/orderItemsRoutes");
 
 const allowedOrigins = [
   'http://localhost:3000',
@@ -38,6 +39,7 @@ app.use("/api", recipeRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", employeesRoutes);
 app.use("/api", authenticationRoutes);
+app.use("/api", orderItemsRoutes);
 
 app.get("/", (req, res) => {
 	res.send("Server is running.");

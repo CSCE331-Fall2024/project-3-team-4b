@@ -30,6 +30,7 @@
 | Asir Hussain          | 11/2/2024       | Meeting slides                                          | Completed the team meeting slides for the assignment next week             | Work on the next iteration of our project                                      |
 | Chandler Ngo     | 11/2/2024      | Finish presentation work                                | I completed the meeting slides for the presentation                            | Keep working on the login page                          |
 | Ryan Tri              | 11/2/2024       | Finish API Endpoints, Start Manager GUI React Implementation | Finished all API Endpoints required, began implementing Manager GUI     | Finish Manager GUI                                                             |
+| Abhinav Sheshadri              | 11/2/2024       | Complete Menu GUI and work on meeting slides | Completed user study feedback portion of slides. Finish working on Container API requests and Menu API requests      | Finish Menu GUI                                                             |
 
 ## Sprint 2
 
