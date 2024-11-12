@@ -9,6 +9,7 @@ const menuRoutes = require("./routes/menuRoutes");
 const recipeRoutes = require("./routes/recipeRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const employeesRoutes = require("./routes/employeesRoutes");
+const orderItemsRoutes = require("./routes/orderItemsRoutes");
 
 
 app.use(cors());
@@ -21,6 +22,7 @@ app.use("/api", menuRoutes);
 app.use("/api", recipeRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", employeesRoutes);
+app.use("/api", orderItemsRoutes);
 
 app.get("/", (req, res) => {
 	res.send("Server is running.");
