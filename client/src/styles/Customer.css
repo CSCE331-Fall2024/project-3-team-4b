@@ -1,0 +1,24 @@
+.menu-section {
+    margin-bottom: 20px;
+  }
+  
+  .menu-row {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 0;
+  }
+  
+  .menu-item-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100px;
+    text-align: center;
+  }
+  

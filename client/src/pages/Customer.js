@@ -1,11 +1,13 @@
+// Customer.js
 import React from 'react';
 import '../styles/Customer.css';
+import Menu from '../CustomerComponents/CustomerComponents.js';
 
 const Customer = () => {
     return (
-        <div>
-            <h1>Customer Test Page</h1>
-            {/* Add your customer content here */}
+        <div className="customer-container">
+            <h1>Meals</h1>
+            <Menu />
         </div>
     );
 };
