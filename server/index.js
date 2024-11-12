@@ -9,10 +9,26 @@ const menuRoutes = require("./routes/menuRoutes");
 const recipeRoutes = require("./routes/recipeRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const employeesRoutes = require("./routes/employeesRoutes");
+const authenticationRoutes = require("./routes/authenticationRoutes");
 const orderItemsRoutes = require("./routes/orderItemsRoutes");
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://project-3-team-4b-client.vercel.app/',
+];
 
-app.use(cors());
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api", containerRoutes);
@@ -22,6 +38,7 @@ app.use("/api", menuRoutes);
 app.use("/api", recipeRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", employeesRoutes);
+app.use("/api", authenticationRoutes);
 app.use("/api", orderItemsRoutes);
 
 app.get("/", (req, res) => {
