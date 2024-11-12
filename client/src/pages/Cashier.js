@@ -62,9 +62,17 @@ function Cashier() {
     };
 
     const handleItemSelect = (item) => {
+        console.log("Selected item:", item);
+        console.log("Current selected container:", selectedContainer);
+        console.log("Current order items before update:", orderItems);
+    
         if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
             // Add appetizers and drinks directly to the order
-            setOrderItems([...orderItems, { ...item, type: selectedCategory }]);
+            setOrderItems((prevOrderItems) => {
+                const updatedItems = [...prevOrderItems, { ...item, type: selectedCategory }];
+                console.log("Updated order items (Appetizers/Drinks):", updatedItems);
+                return updatedItems;
+            });
             return;
         }
     
@@ -78,13 +86,51 @@ function Cashier() {
     
         if (isSide) {
             // Automatically add side to the order and switch to entrees
-            setOrderItems([...orderItems, { ...item, type: "Side" }]);
+            setOrderItems((prevOrderItems) => {
+                const updatedItems = [...prevOrderItems, { ...item, type: "Side" }];
+                console.log("Updated order items (Side):", updatedItems);
+                return updatedItems;
+            });
             setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
             return;
         }
     
         if (isEntree) {
-            setOrderItems((prevOrderItems) => [...prevOrderItems, { ...item, type: "Entree" }]);
+            // If the selected entree is a premium item, add the premium charge
+            let premiumCharge = 0;
+            if (item.isPremium) {
+                premiumCharge = 1.50; // Premium cost
+                console.log("Adding premium charge for:", item.name);
+            }
+    
+            // Update the container's price to reflect the premium charge
+            setSelectedContainer((prevContainer) => {
+                if (!prevContainer) return null;
+    
+                const updatedContainer = {
+                    ...prevContainer,
+                    price: prevContainer.price + premiumCharge,
+                };
+                console.log("Updated container:", updatedContainer);
+                return updatedContainer;
+            });
+    
+            // Add the entree to the order items
+            setOrderItems((prevOrderItems) => {
+                // Update the container in orderItems if needed
+                const updatedOrderItems = prevOrderItems.map((orderItem) =>
+                    orderItem.type === "Container"
+                        ? { ...orderItem, price: orderItem.price + premiumCharge }
+                        : orderItem
+                );
+    
+                // Add the new entree
+                const finalOrderItems = [...updatedOrderItems, { ...item, type: "Entree" }];
+                console.log("Updated order items (Entree):", finalOrderItems);
+                return finalOrderItems;
+            });
+    
+            // Update entreesRemaining and change category if done
             setEntreesRemaining((prev) => {
                 if (prev - 1 <= 0) {
                     setSelectedCategory("Containers");
@@ -93,8 +139,11 @@ function Cashier() {
             });
         }
     };
+    
+    
+    
 
-    const handleAddToOrder = (item) => {
+    /*const handleAddToOrder = (item) => {
         if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
             // Add appetizers and drinks directly to the order
             setOrderItems([...orderItems, { ...item, type: selectedCategory }]);
@@ -145,7 +194,7 @@ function Cashier() {
                 return prev - 1;
             });
         }
-    };
+    };*/
     
     
     
@@ -187,10 +236,7 @@ function Cashier() {
                         onItemSelect={handleItemSelect} 
                     />
                 )}
-                <SelectedItem 
-                    onAddToOrder={handleAddToOrder} 
-                    selectedContainer={selectedContainer}
-                />
+                
             </div>
             <div style={{ flex: 1 }}>
                 <OrderSummary 
