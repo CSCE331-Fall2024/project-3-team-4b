@@ -1,18 +1,14 @@
-// CashierComponents/Cashier.js
 import React, { useState } from "react";
 import MenuCategories from "../CashierComponents/MenuCategories";
 import CategoryItems from "../CashierComponents/CategoryItems";
 import OrderSummary from "../CashierComponents/OrderSummary";
-import SelectedItem from "../CashierComponents/SelectedItem";
 
 function Cashier() {
     const [selectedCategory, setSelectedCategory] = useState("Containers");
-    const [selectedContainer, setSelectedContainer] = useState(null);
-    //const [selectedItem, setSelectedItem] = useState(null);
+    const [currentContainerId, setCurrentContainerId] = useState(null); // Track the active container ID
     const [orderItems, setOrderItems] = useState([]);
     const [entreesRemaining, setEntreesRemaining] = useState(0);
 
-    // Define sample data for each category
     const categoryData = {
         Containers: [
             { id: 1, name: "Bowl", price: 8.30 },
@@ -48,9 +44,7 @@ function Cashier() {
             { id: 20, name: "Water", price: 0 },
         ]
     };
-    
 
-    // Define container limits based on Panda Express requirements
     const containerLimits = {
         Bowl: { entrees: 1, sides: 1 },
         Plate: { entrees: 2, sides: 1 },
@@ -61,162 +55,81 @@ function Cashier() {
         setSelectedCategory(category);
     };
 
-    const handleItemSelect = (item) => {
-        console.log("Selected item:", item);
-        console.log("Current selected container:", selectedContainer);
-        console.log("Current order items before update:", orderItems);
-    
-        if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
-            // Add appetizers and drinks directly to the order
-            setOrderItems((prevOrderItems) => {
-                const updatedItems = [...prevOrderItems, { ...item, type: selectedCategory }];
-                console.log("Updated order items (Appetizers/Drinks):", updatedItems);
-                return updatedItems;
-            });
-            return;
-        }
-    
-        if (!selectedContainer) {
-            alert("Please select a container before adding items.");
-            return;
-        }
-    
-        const isEntree = selectedCategory === "Entrees";
-        const isSide = selectedCategory === "Sides";
-    
-        if (isSide) {
-            // Automatically add side to the order and switch to entrees
-            setOrderItems((prevOrderItems) => {
-                const updatedItems = [...prevOrderItems, { ...item, type: "Side" }];
-                console.log("Updated order items (Side):", updatedItems);
-                return updatedItems;
-            });
-            setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
-            return;
-        }
-    
-        if (isEntree) {
-            // If the selected entree is a premium item, add the premium charge
-            let premiumCharge = 0;
-            if (item.isPremium) {
-                premiumCharge = 1.50; // Premium cost
-                console.log("Adding premium charge for:", item.name);
-            }
-    
-            // Update the container's price to reflect the premium charge
-            setSelectedContainer((prevContainer) => {
-                if (!prevContainer) return null;
-    
-                const updatedContainer = {
-                    ...prevContainer,
-                    price: prevContainer.price + premiumCharge,
-                };
-                console.log("Updated container:", updatedContainer);
-                return updatedContainer;
-            });
-    
-            // Add the entree to the order items
-            setOrderItems((prevOrderItems) => {
-                // Update the container in orderItems if needed
-                const updatedOrderItems = prevOrderItems.map((orderItem) =>
-                    orderItem.type === "Container"
-                        ? { ...orderItem, price: orderItem.price + premiumCharge }
-                        : orderItem
-                );
-    
-                // Add the new entree
-                const finalOrderItems = [...updatedOrderItems, { ...item, type: "Entree" }];
-                console.log("Updated order items (Entree):", finalOrderItems);
-                return finalOrderItems;
-            });
-    
-            // Update entreesRemaining and change category if done
-            setEntreesRemaining((prev) => {
-                if (prev - 1 <= 0) {
-                    setSelectedCategory("Containers");
-                }
-                return prev - 1;
-            });
-        }
-    };
-    
-    
-    
-
-    /*const handleAddToOrder = (item) => {
-        if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
-            // Add appetizers and drinks directly to the order
-            setOrderItems([...orderItems, { ...item, type: selectedCategory }]);
-            return;
-        }
-    
-        if (!selectedContainer) {
-            alert("Please select a container before adding items.");
-            return;
-        }
-    
-        const isEntree = selectedCategory === "Entrees";
-        const isSide = selectedCategory === "Sides";
-    
-        if (isSide) {
-            // Automatically add side to the order and switch to entrees
-            setOrderItems([...orderItems, { ...item, type: "Side" }]);
-            setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
-            return;
-        }
-    
-        if (isEntree) {
-            // Prepare to add the entree to the order
-            let updatedOrderItems = [...orderItems, { ...item, type: "Entree" }];
-    
-            // If the selected entree is a premium item, update the container price
-            if (item.isPremium) {
-                const premiumCharge = 1.50; // The extra cost for a premium item
-                const updatedContainer = {
-                    ...selectedContainer,
-                    price: selectedContainer.price + premiumCharge, // Adding the premium cost to the container price
-                };
-    
-                // Update the container in the orderItems
-                updatedOrderItems = updatedOrderItems.map((orderItem) =>
-                    orderItem.type === "Container" ? updatedContainer : orderItem
-                );
-    
-                // Update selectedContainer state as well
-                setSelectedContainer(updatedContainer);
-            }
-    
-            setOrderItems(updatedOrderItems);
-            setEntreesRemaining((prev) => {
-                if (prev - 1 <= 0) {
-                    setSelectedCategory("Containers");
-                }
-                return prev - 1;
-            });
-        }
-    };*/
-    
-    
-    
-    
-    
-
     const handleSelectContainer = (container) => {
-        setSelectedContainer(container);
-        setOrderItems([{ ...container, type: "Container" }]);
+        const newContainerId = orderItems.length + 1; // Generate a unique ID for the container
+        const newContainer = {
+            id: newContainerId,
+            name: container.name,
+            price: container.price,
+            type: "Container",
+            items: [],
+        };
+
+        setOrderItems([...orderItems, newContainer]);
+        setCurrentContainerId(newContainerId);
         setSelectedCategory("Sides"); // Switch to sides selection
         setEntreesRemaining(containerLimits[container.name].entrees); // Set number of entrees to be selected
-    };   
+    };
+
+    const handleItemSelect = (item) => {
+        if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
+            setOrderItems((prevOrderItems) => [
+                ...prevOrderItems,
+                { ...item, type: selectedCategory }
+            ]);
+            return;
+        }
+
+        if (!currentContainerId) {
+            alert("Please select a container before adding items.");
+            return;
+        }
+
+        const isEntree = selectedCategory === "Entrees";
+        const isSide = selectedCategory === "Sides";
+
+        setOrderItems((prevOrderItems) => {
+            return prevOrderItems.map((orderItem) => {
+                if (orderItem.type === "Container" && orderItem.id === currentContainerId) {
+                    const updatedContainer = { ...orderItem };
+
+                    if (isSide) {
+                        updatedContainer.items.push({ ...item, type: "Side" });
+                        setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
+                    }
+
+                    if (isEntree) {
+                        // Add entree and handle premium cost if applicable
+                        if (item.isPremium) {
+                            updatedContainer.price += item.price; // Add premium charge
+                        }
+                        updatedContainer.items.push({ ...item, type: "Entree" });
+
+                        // Update entreesRemaining and switch category if done
+                        setEntreesRemaining((prev) => {
+                            if (prev - 1 <= 0) {
+                                setSelectedCategory("Containers");
+                            }
+                            return prev - 1;
+                        });
+                    }
+
+                    return updatedContainer;
+                }
+                return orderItem;
+            });
+        });
+    };
 
     const handleClearOrder = () => {
         setOrderItems([]);
-        setSelectedContainer(null);
+        setCurrentContainerId(null);
     };
 
     const handlePlaceOrder = () => {
         console.log("Order placed:", orderItems);
         setOrderItems([]);
-        setSelectedContainer(null);
+        setCurrentContainerId(null);
     };
 
     return (
@@ -224,30 +137,28 @@ function Cashier() {
             <div style={{ flex: 2 }}>
                 <MenuCategories selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
                 {selectedCategory === "Containers" ? (
-                    <CategoryItems 
-                        items={categoryData[selectedCategory]} 
-                        selectedCategory={selectedCategory} 
-                        onItemSelect={handleSelectContainer} 
+                    <CategoryItems
+                        items={categoryData[selectedCategory]}
+                        selectedCategory={selectedCategory}
+                        onItemSelect={handleSelectContainer}
                     />
                 ) : (
-                    <CategoryItems 
-                        items={categoryData[selectedCategory]} 
-                        selectedCategory={selectedCategory} 
-                        onItemSelect={handleItemSelect} 
+                    <CategoryItems
+                        items={categoryData[selectedCategory]}
+                        selectedCategory={selectedCategory}
+                        onItemSelect={handleItemSelect}
                     />
                 )}
-                
             </div>
             <div style={{ flex: 1 }}>
-                <OrderSummary 
-                    orderItems={orderItems} 
-                    onClearOrder={handleClearOrder} 
-                    onPlaceOrder={handlePlaceOrder} 
+                <OrderSummary
+                    orderItems={orderItems}
+                    onClearOrder={handleClearOrder}
+                    onPlaceOrder={handlePlaceOrder}
                 />
             </div>
         </div>
     );
-    
 }
 
 export default Cashier;
