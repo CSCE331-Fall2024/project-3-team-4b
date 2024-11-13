@@ -1,20 +1,20 @@
-nav {
+nav{
     margin: 10px 0;
     text-align: center;
 }
 
-nav ul {
+nav ul{
     list-style-type: none;
     padding: 0;
     display: flex;
     justify-content: center;
 }
 
-nav ul li {
+nav ul li{
     margin-right: 10px;
 }
 
-.button-link {
+.button-link{
     display: inline-block;
     padding: 10px 20px;
     background-color: #4CAF50;
@@ -24,6 +24,31 @@ nav ul li {
     transition: background-color 0.3s;
 }
 
-.button-link:hover {
+.button-link:hover{
     background-color: #45a049;
+}
+
+.split-view{
+    /* background-color: red; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    max-width: 100vw;
+    padding: 0 20px;
+}
+  
+.split-view-half{
+    flex: 1;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.separator{
+    width: 1px;
+    background-color: #ccc;
+    height: 80%;
 }
