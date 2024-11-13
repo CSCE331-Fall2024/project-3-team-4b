@@ -24,7 +24,7 @@ import {
 	IconButton,
 } from "@mui/material";
 
-function Menu() {
+function ManagerMenu() {
 	const [menuData, setMenuData] = useState([]);
 	const [searchText, setSearchText] = useState("");
 
@@ -290,4 +290,4 @@ function Menu() {
 	);
 }
 
-export default Menu;
+export default ManagerMenu;
