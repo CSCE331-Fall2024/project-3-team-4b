@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box, Typography } from "@mui/material";
 
-function Menu() {
+function RestaurantMenu() {
     const [menuData, setMenuData] = useState([]);
     const [containerData, setContainerData] = useState([]);
 
@@ -38,65 +38,56 @@ function Menu() {
     };
 
     return (
-        <Box sx={{ display: "flex" }}>
-            {/* Left Section - Menu Selection */}
-            <Box sx={{ flex: 2, padding: 2 }}>
-                <Typography variant="h4">Containers</Typography>
-                <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, marginBottom: 2 }}>
-                    {containerData.map((container) => (
-                        <Box
-                            key={container.container_id}
-                            sx={{
-                                padding: 0,
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <img
-                                src={getImageUrl(container.name)}
-                                alt={container.name}
-                                style={{ width: "214px", height: "164px", borderRadius: 8 }}
-                            />
-                            <Typography sx={{ marginTop: 1 }}>{container.name}</Typography>
-                        </Box>
-                    ))}
-                </Box>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 2 }}>
+            {/* Container Section */}
+            <Typography variant="h4" sx={{ marginBottom: 3 }}>Containers</Typography>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3, marginBottom: 5 }}>
+                {containerData.map((container) => (
+                    <Box key={container.container_id} sx={{ textAlign: "center" }}>
+                        <img
+                            src={getImageUrl(container.name)}
+                            alt={container.name}
+                            style={{ width: "214px", height: "164px", borderRadius: 8 }}
+                        />
+                        <Typography sx={{ marginTop: 1 }}>{container.name}</Typography>
+                        {container.price !== 0 && <Typography>Price: ${container.price}</Typography>}
+                    </Box>
+                ))}
+            </Box>
 
-                <Box>
-                    {["Entree", "Side", "Appetizer", "Drink"].map((type) => (
-                        <Box key={type} sx={{ marginBottom: 2 }}>
-                            <Typography variant="h5">{type}s</Typography>
-                            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2 }}>
-                                {menuData
-                                    .filter((item) => item.type === type)
-                                    .map((item) => (
-                                        <Box
-                                            key={item.menu_id}
-                                            sx={{
-                                                padding: 0,
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                alignItems: "center",
-                                                justifyContent: "center",
-                                            }}
-                                        >
-                                            <img
-                                                src={getImageUrl(item.name)}
-                                                alt={item.name}
-                                                style={{ width: "214px", height: "164px", borderRadius: 8 }}
-                                            />
-                                            <Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
-                                        </Box>
-                                    ))}
-                            </Box>
-                        </Box>
-                    ))}
-                </Box>
+            {/* Entrees Section */}
+            <Typography variant="h4" sx={{ marginBottom: 3 }}>Entrees</Typography>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3, marginBottom: 5 }}>
+                {menuData.filter((item) => item.type === "Entree").map((item) => (
+                    <Box key={item.menu_id} sx={{ textAlign: "center" }}>
+                        <img
+                            src={getImageUrl(item.name)}
+                            alt={item.name}
+                            style={{ width: "214px", height: "164px", borderRadius: 8 }}
+                        />
+                        <Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
+                        {Number(item.extra_cost) !== 0.00 && <Typography>Extra Cost: ${item.extra_cost}</Typography>}
+                    </Box>
+                ))}
+            </Box>
+
+            {/* Sides Section */}
+            <Typography variant="h4" sx={{ marginBottom: 3 }}>Sides</Typography>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3, marginBottom: 5 }}>
+                {menuData.filter((item) => item.type === "Side").map((item) => (
+                    <Box key={item.menu_id} sx={{ textAlign: "center" }}>
+                        <img
+                            src={getImageUrl(item.name)}
+                            alt={item.name}
+                            style={{ width: "214px", height: "164px", borderRadius: 8 }}
+                        />
+                        <Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
+                        {Number(item.extra_cost) !== 0.00 && <Typography>Extra Cost: ${item.extra_cost}</Typography>}
+                    </Box>
+                ))}
             </Box>
         </Box>
     );
 }
 
-export default Menu;
+export default RestaurantMenu;
