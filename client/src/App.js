@@ -8,19 +8,18 @@ import Cashier from './pages/Cashier';
 import Manager from './pages/Manager';
 
 function App() {
-	return (
-		<div className="App">
-			<Router>
-				<Routes>
-					<Route path="/menu" element={<Menu />} />
-					<Route path="/customer" element={<Customer />} />
-					<Route path="/cashier" element={<Cashier />} />
-					<Route path="/manager" element={<Manager />} />
-					<Route path="/" element={<Login />} />
-				</Routes>
-			</Router>
-		</div>
-	);
-}
+  return (
+    <div className="App">
+      <Router>
+        <Routes>
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/customer" element={<Customer />} />
+          <Route path="/cashier" element={<Cashier />} />
+          <Route path="/manager" element={<Manager />} />
+          <Route path="/" element={<Login />} />
+        </Routes>
+      </Router>
+    </div>
+  );
 
 export default App;
