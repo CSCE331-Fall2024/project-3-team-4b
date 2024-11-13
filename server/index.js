@@ -9,6 +9,7 @@ const menuRoutes = require("./routes/menuRoutes");
 const recipeRoutes = require("./routes/recipeRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const employeesRoutes = require("./routes/employeesRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 const authenticationRoutes = require("./routes/authenticationRoutes");
 const orderItemsRoutes = require("./routes/orderItemsRoutes");
 
@@ -16,6 +17,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://project-3-team-4b-client.vercel.app/',
 ];
+
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -38,8 +40,10 @@ app.use("/api", menuRoutes);
 app.use("/api", recipeRoutes);
 app.use("/api", orderRoutes);
 app.use("/api", employeesRoutes);
+app.use("/api", analyticsRoutes);
 app.use("/api", authenticationRoutes);
 app.use("/api", orderItemsRoutes);
+
 
 app.get("/", (req, res) => {
 	res.send("Server is running.");

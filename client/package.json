@@ -16,8 +16,10 @@
     "dotenv": "^16.4.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-is": "^18.3.1",
     "react-router-dom": "^6.27.0",
     "react-scripts": "5.0.1",
+    "recharts": "^2.13.3",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -44,5 +46,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "https://project-3-team-4b-server.vercel.app"
+  "proxy": "http://localhost:5001"
 }
