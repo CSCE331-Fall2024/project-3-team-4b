@@ -74,7 +74,7 @@ function Menu() {
 			<Box className="menu-grid">
 				{menuData.map((item) => (
 					<div key={item.menu_id} className="menu-item" onClick={() => handleItemClick(item)}>
-						<img src={item.imageUrl || "default-image.jpg"} alt={item.name} />
+						<img src={`/images/${item.name.toLowerCase().replace(/\s+/g, "_")}.png` || "default-image.jpg"} alt={item.name} />
 						<div className="menu-item-overlay">{item.name}</div>
 					</div>
 				))}
