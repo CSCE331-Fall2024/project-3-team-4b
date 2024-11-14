@@ -14,7 +14,7 @@ function Login() {
     const tokenId = res.credential;
     setToken(tokenId);
 
-    axios.post('http://localhost:5001/api/verify-token', { idToken: tokenId }, { withCredentials: true })
+    axios.post('https://project-3-team-4b-server.vercel.app/api/verify-token', { idToken: tokenId }, { withCredentials: true })
       .then((res) => {
         console.log("Verification result:", res.data);
         setUser(res.data.user);
