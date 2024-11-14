@@ -74,7 +74,7 @@ export default function SignIn({ user }) {
 
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
-    axios.post('http://localhost:5001/api/verify-role', { user, password, role })
+    axios.post('/api/verify-role', { user, password, role })
       .then((res) => {
         if (res.data.success) {
           console.log(`${role} authenticated successfully.`);

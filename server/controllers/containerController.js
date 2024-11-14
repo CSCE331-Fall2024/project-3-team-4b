@@ -1,6 +1,6 @@
 const pool = require("../config/dbConfig");
 
-// Fetch all containers or search by name or type
+// Fetch all container or search by name or type
 const getContainers = async (req, res) => {
 	try {
 		const { search } = req.query;
@@ -25,7 +25,7 @@ const createContainer = async (req, res) => {
 	const { name, type, capacity } = req.body;
 	try {
 		const { rows } = await pool.query(
-			"INSERT INTO containers (name, type, capacity) VALUES ($1, $2, $3) RETURNING *",
+			"INSERT INTO container (name, type, capacity) VALUES ($1, $2, $3) RETURNING *",
 			[name, type, capacity]
 		);
 		res.status(201).json(rows[0]);
@@ -41,7 +41,7 @@ const updateContainer = async (req, res) => {
 	const { name, type, capacity } = req.body;
 	try {
 		const { rows } = await pool.query(
-			"UPDATE containers SET name = $1, type = $2, capacity = $3 WHERE container_id = $4 RETURNING *",
+			"UPDATE container SET name = $1, type = $2, capacity = $3 WHERE container_id = $4 RETURNING *",
 			[name, type, capacity, id]
 		);
 		if (rows.length === 0) {
@@ -59,7 +59,7 @@ const deleteContainer = async (req, res) => {
 	const { id } = req.params;
 	try {
 		const { rowCount } = await pool.query(
-			"DELETE FROM containers WHERE container_id = $1",
+			"DELETE FROM container WHERE container_id = $1",
 			[id]
 		);
 		if (rowCount === 0) {
