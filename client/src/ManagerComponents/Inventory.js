@@ -46,7 +46,7 @@ function Inventory() {
 
 	const fetchInventoryData = async () => {
 		try {
-			const response = await axios.get("/api/inventory");
+			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/inventory");
 			setInventoryData(response.data);
 		} catch (error) {
 			console.error("Error fetching inventory data:", error);
@@ -58,7 +58,7 @@ function Inventory() {
 
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`/api/inventory?search=${searchText}`);
+			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/inventory?search=${searchText}`);
 			setInventoryData(response.data);
 		} catch (error) {
 			console.error("Error searching inventory items:", error);
@@ -98,7 +98,7 @@ function Inventory() {
 
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`/api/inventory/${itemToDelete}`);
+			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/inventory/${itemToDelete}`);
 			fetchInventoryData();
 			setSnackbarMessage("Inventory item deleted successfully.");
 			setSnackbarSeverity("success");
@@ -169,7 +169,7 @@ function Inventory() {
 					return;
 				}
 
-				await axios.post("/api/inventory", {
+				await axios.post("https://project-3-team-4b-server.vercel.app/api/inventory", {
 					name: trimmedName,
 					cost: parsedCost,
 					max_qty: parsedMaxQty,
@@ -179,7 +179,7 @@ function Inventory() {
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`/api/inventory/${inventory_id}`, {
+				await axios.put(`https://project-3-team-4b-server.vercel.app/api/inventory/${inventory_id}`, {
 					name: trimmedName,
 					cost: parsedCost,
 					max_qty: parsedMaxQty,

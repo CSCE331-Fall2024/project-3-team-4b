@@ -52,7 +52,7 @@ function Menu() {
 
 	const fetchMenuData = async () => {
 		try {
-			const response = await axios.get("/api/menu");
+			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
@@ -64,7 +64,7 @@ function Menu() {
 
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`/api/menu?search=${searchText}`);
+			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/menu?search=${searchText}`);
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error searching menu items:", error);
@@ -104,7 +104,7 @@ function Menu() {
 
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`/api/menu/${itemToDelete}`);
+			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/menu/${itemToDelete}`);
 			fetchMenuData();
 			setSnackbarMessage("Menu item deleted successfully.");
 			setSnackbarSeverity("success");
@@ -161,7 +161,7 @@ function Menu() {
 					return;
 				}
 
-				await axios.post("/api/menu", {
+				await axios.post("https://project-3-team-4b-server.vercel.app/api/menu", {
 					name,
 					type,
 					extra_cost: parseFloat(extra_cost),
@@ -171,7 +171,7 @@ function Menu() {
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`/api/menu/${menu_id}`, {
+				await axios.put(`https://project-3-team-4b-server.vercel.app/api/menu/${menu_id}`, {
 					name,
 					type,
 					extra_cost: parseFloat(extra_cost),

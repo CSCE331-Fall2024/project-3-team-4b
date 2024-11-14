@@ -26,7 +26,7 @@ function RestaurantMenu() {
 
     const fetchMenuData = async () => {
         try {
-            const response = await axios.get("/api/menu");
+            const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
             setMenuData(response.data);
         } catch (error) {
             console.error("Error fetching menu data:", error);
@@ -35,7 +35,7 @@ function RestaurantMenu() {
 
     const fetchContainerData = async () => {
         try {
-            const response = await axios.get("/api/containers");
+            const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
             const filteredContainers = response.data.filter(container =>
                 ["Bowl", "Plate", "Bigger Plate"].includes(container.name)
             );
@@ -150,7 +150,7 @@ function RestaurantMenu() {
         };
 
         try {
-            const orderResponse = await axios.post("/api/orders", orderPayload);
+            const orderResponse = await axios.post("https://project-3-team-4b-server.vercel.app/api/orders", orderPayload);
             const orderId = orderResponse.data.order_id;
 
             const orderItemsPayload = mainOrderSummary.flatMap((selection) =>
@@ -163,7 +163,7 @@ function RestaurantMenu() {
 
             await Promise.all(
                 orderItemsPayload.map((orderItem) =>
-                    axios.post("/api/order-items", orderItem)
+                    axios.post("https://project-3-team-4b-server.vercel.app/api/order-items", orderItem)
                 )
             );
 

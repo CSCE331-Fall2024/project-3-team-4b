@@ -198,7 +198,7 @@ function Analytics() {
 			let response;
 			switch (selectedReport) {
 				case "lowStock":
-					response = await axios.get("/api/reports/low-stock", {
+					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/low-stock", {
 						params: {
 							limit: parseInt(reportParams.limit, 10) || 10,
 						},
@@ -206,7 +206,7 @@ function Analytics() {
 					setReportData(response.data);
 					break;
 				case "highSalesEmployees":
-					response = await axios.get("/api/reports/high-sales-employees", {
+					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/high-sales-employees", {
 						params: {
 							startDate: reportParams.startDate,
 							endDate: reportParams.endDate,
@@ -216,7 +216,7 @@ function Analytics() {
 					setReportData(response.data);
 					break;
 				case "itemSales":
-					response = await axios.get("/api/reports/item-sales", {
+					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/item-sales", {
 						params: {
 							startDateTime: reportParams.startDateTime,
 							endDateTime: reportParams.endDateTime,
@@ -226,7 +226,7 @@ function Analytics() {
 					setReportData(response.data);
 					break;
 				case "hourlySales":
-					response = await axios.get("/api/reports/hourly-sales", {
+					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/hourly-sales", {
 						params: {
 							date: reportParams.date,
 						},
@@ -234,7 +234,7 @@ function Analytics() {
 					setReportData(response.data);
 					break;
 				case "employeeOrders":
-					response = await axios.get("/api/reports/employee-orders", {
+					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/employee-orders", {
 						params: {
 							employeeName: reportParams.employeeName,
 							date: reportParams.date,
@@ -243,7 +243,7 @@ function Analytics() {
 					setReportData(response.data);
 					break;
 				case "eodReport":
-					response = await axios.get("/api/reports/eod", {
+					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/eod", {
 						params: {
 							date: reportParams.date,
 						},

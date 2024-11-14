@@ -19,7 +19,7 @@ function OrderSummary({ orderItems, onClearOrder }) {
         try {
             // Step 1: Make the API call to create a new order in the "orders" table
             console.log("Placing order:", orderPayload); // Debug: log order payload before sending
-            const orderResponse = await axios.post("/api/orders", orderPayload);
+            const orderResponse = await axios.post("https://project-3-team-4b-server.vercel.app/api/orders", orderPayload);
             console.log("Order response:", orderResponse.data); // Debug: log response from order creation
     
             const orderId = orderResponse.data.order_id; // Get the unique order_id
@@ -49,7 +49,7 @@ function OrderSummary({ orderItems, onClearOrder }) {
             await Promise.all(
                 orderItemsPayload.map(async (orderItem) => {
                     console.log("Placing order item:", orderItem); // Debug: log each order item payload before sending
-                    const response = await axios.post("/api/order-items", orderItem);
+                    const response = await axios.post("https://project-3-team-4b-server.vercel.app/api/order-items", orderItem);
                     console.log("Order item response:", response.data); // Debug: log response from order item creation
                 })
             );

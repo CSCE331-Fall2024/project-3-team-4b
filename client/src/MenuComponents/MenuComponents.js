@@ -13,7 +13,7 @@ function RestaurantMenu() {
 
     const fetchMenuData = async () => {
         try {
-            const response = await axios.get("/api/menu");
+            const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
             setMenuData(response.data);
         } catch (error) {
             console.error("Error fetching menu data:", error);
@@ -22,7 +22,7 @@ function RestaurantMenu() {
 
     const fetchContainerData = async () => {
         try {
-            const response = await axios.get("/api/containers");
+            const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
             const filteredContainers = response.data.filter(container =>
                 ["Bowl", "Plate", "Bigger Plate"].includes(container.name)
             );

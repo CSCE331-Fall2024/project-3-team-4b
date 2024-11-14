@@ -53,7 +53,7 @@ function Orders() {
 	const fetchOrderData = async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get("/api/orders");
+			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/orders");
 
 			const data = response.data.map((order) => ({
 				...order,
@@ -73,7 +73,7 @@ function Orders() {
 
 	const fetchEmployeeList = async () => {
 		try {
-			const response = await axios.get("/api/employees");
+			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/employees");
 			setEmployeeList(response.data);
 		} catch (error) {
 			console.error("Error fetching employee list:", error);
@@ -85,7 +85,7 @@ function Orders() {
 
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`/api/orders?search=${searchText}`);
+			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/orders?search=${searchText}`);
 
 			const data = response.data.map((order) => ({
 				...order,
@@ -136,7 +136,7 @@ function Orders() {
 
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`/api/orders/${orderToDelete}`);
+			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/orders/${orderToDelete}`);
 			fetchOrderData();
 			setSnackbarMessage("Order deleted successfully.");
 			setSnackbarSeverity("success");
@@ -216,7 +216,7 @@ function Orders() {
 
 		try {
 			if (dialogType === "Add") {
-				await axios.post("/api/orders", {
+				await axios.post("https://project-3-team-4b-server.vercel.app/api/orders", {
 					time,
 					total: parseFloat(total),
 					employee_id: parseInt(employee_id),
@@ -225,7 +225,7 @@ function Orders() {
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`/api/orders/${order_id}`, {
+				await axios.put(`https://project-3-team-4b-server.vercel.app/api/orders/${order_id}`, {
 					time,
 					total: parseFloat(total),
 					employee_id: parseInt(employee_id),

@@ -53,7 +53,7 @@ function Employees() {
 	const fetchEmployeeData = async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get("/api/employees");
+			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/employees");
 			setEmployeeData(response.data);
 		} catch (error) {
 			console.error("Error fetching employee data:", error);
@@ -67,7 +67,7 @@ function Employees() {
 
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`/api/employees?search=${searchText}`);
+			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/employees?search=${searchText}`);
 			setEmployeeData(response.data);
 		} catch (error) {
 			console.error("Error searching employees:", error);
@@ -109,7 +109,7 @@ function Employees() {
 
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`/api/employees/${employeeToDelete}`);
+			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/employees/${employeeToDelete}`);
 			fetchEmployeeData();
 			setSnackbarMessage("Employee deleted successfully.");
 			setSnackbarSeverity("success");
@@ -167,7 +167,7 @@ function Employees() {
 
 		try {
 			if (dialogType === "Add") {
-				await axios.post("/api/employees", {
+				await axios.post("https://project-3-team-4b-server.vercel.app/api/employees", {
 					name,
 					role,
 					salary: salaryValue,
@@ -176,7 +176,7 @@ function Employees() {
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`/api/employees/${employee_id}`, {
+				await axios.put(`https://project-3-team-4b-server.vercel.app/api/employees/${employee_id}`, {
 					name,
 					role,
 					salary: salaryValue,
