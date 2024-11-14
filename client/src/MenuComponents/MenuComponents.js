@@ -23,7 +23,7 @@ function RestaurantMenu() {
     const fetchContainerData = async () => {
         try {
             const response = await axios.get("/api/containers");
-            const filteredContainers = response.data.body.filter(container =>
+            const filteredContainers = response.data.filter(container =>
                 ["Bowl", "Plate", "Bigger Plate"].includes(container.name)
             );
             setContainerData(filteredContainers);

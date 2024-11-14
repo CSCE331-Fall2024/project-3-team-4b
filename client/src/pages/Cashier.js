@@ -31,7 +31,7 @@ function Cashier() {
             const containerResponse = await axios.get("/api/containers");
 
             // Process container data to include only desired types and ensure prices are numbers
-            const filteredContainers = containerResponse.data.body
+            const filteredContainers = containerResponse.data
                 .filter(container => ["Bowl", "Plate", "Bigger Plate"].includes(container.name))
                 .map(container => ({
                     ...container,
