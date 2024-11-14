@@ -27,8 +27,8 @@ function Cashier() {
     const fetchMenuAndContainerData = async () => {
         try {
             setLoading(true);
-            const menuResponse = await axios.get("/api/menu");
-            const containerResponse = await axios.get("/api/containers");
+            const menuResponse = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
+            const containerResponse = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
 
             // Process container data to include only desired types and ensure prices are numbers
             const filteredContainers = containerResponse.data
