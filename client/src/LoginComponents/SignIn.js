@@ -74,7 +74,7 @@ export default function SignIn({ user }) {
 
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
-    axios.post('/api/verify-role', { user, password, role })
+    axios.post('https://project-3-team-4b-server.vercel.app/api/verify-role', { user, password, role })
       .then((res) => {
         if (res.data.success) {
           console.log(`${role} authenticated successfully.`);
