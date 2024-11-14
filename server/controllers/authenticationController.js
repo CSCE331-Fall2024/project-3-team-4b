@@ -31,10 +31,12 @@ exports.verifyRole = async (req, res) => {
 
   try {
     const { aud, name, picture, email } = req.body.user;
-
+    console.log(aud);
+    console.log(process.env.CLIENT_ID);
     if (aud !== process.env.CLIENT_ID) {
       console.log("Invalid Google client ID.");
-      return res.status(403).json({ success: false, message: 'Invalid Google client ID.' });
+      // return res.status(403).json({ success: false, message: 'Invalid Google client ID.' });
+      return res.status(403).json({ success: false, message: 'Invalid Google client ID.', clientAud: aud, clientID: process.env.CLIENT_ID });
     }
     
     if (
