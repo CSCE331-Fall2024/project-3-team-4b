@@ -1,32 +1,63 @@
+import React, { useState } from 'react';
 import '../styles/Login.css';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import Menu from './Menu';
-import Customer from './Customer';
-import Cashier from './Cashier';
-import Manager from './Manager';
-import Home from './Home';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
+import axios from 'axios';
+import NavigateButton from '../LoginComponents/NavigateButton'
+import SignIn from '../LoginComponents/SignIn'
 
 function Login() {
-  return (
-    <Router>
-      <nav>
-        <ul>
-          <li><Link to="/menu" className="button-link">Menu</Link></li>
-          <li><Link to="/customer" className="button-link">Customer</Link></li>
-          <li><Link to="/cashier" className="button-link">Cashier</Link></li>
-          <li><Link to="/manager" className="button-link">Manager</Link></li>
-          <li><Link to="/" className="button-link">Home</Link></li>
-        </ul>
-      </nav>
+  const [token, setToken] = useState(null);
+  const [user, setUser] = useState({});
+  const clientID = '467685170366-60gbsrll7nor66ru5uaj5k3750kk0g6h.apps.googleusercontent.com';
 
-      <Routes>
-        <Route path="/menu" element={<Menu />} />
-        <Route path="/customer" element={<Customer />} />
-        <Route path="/cashier" element={<Cashier />} />
-        <Route path="/manager" element={<Manager />} />
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </Router>
+  const onSuccess = (res) => {
+    const tokenId = res.credential;
+    setToken(tokenId);
+
+    axios.post('http://localhost:5001/api/verify-token', { idToken: tokenId }, { withCredentials: true })
+      .then((res) => {
+        console.log("Verification result:", res.data);
+        setUser(res.data.user);
+      })
+      .catch((error) => {
+        console.error('Login failed:', error);
+      });
+  };
+
+  const onFailure = (res) => {
+    console.log("Login Failed! res: ", res);
+  };
+
+  return (
+    <div className="split-view">
+      <div className="split-view-half">
+        <div>
+          <GoogleOAuthProvider clientId={clientID}>
+            <div>
+              {token ? (
+                <SignIn user={user}/>
+              ) : (
+                <div>
+                  <h1>Employee Side</h1>
+                  <GoogleLogin
+                    onSuccess={onSuccess}
+                    onError={onFailure}
+                    cookiePolicy={'single_host_origin'}
+                  />
+                </div>
+              )}
+            </div>
+          </GoogleOAuthProvider>
+        </div>
+      </div>
+      <div className="separator"></div>
+      <div className="split-view-half">
+        <div className="customer-side">
+          <h1>Customer Side</h1>
+          <NavigateButton/>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
 	Box,
-	Typography,
 	TextField,
 	Button,
 	Dialog,
@@ -9,6 +8,13 @@ import {
 	DialogContent,
 	DialogActions,
 	IconButton,
+	Snackbar,
+	Alert,
+	FormControl,
+	InputLabel,
+	Select,
+	MenuItem,
+	CircularProgress,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -29,14 +35,25 @@ function Orders() {
 		employee_name: "",
 	});
 
+	const [snackbarOpen, setSnackbarOpen] = useState(false);
+	const [snackbarMessage, setSnackbarMessage] = useState("");
+	const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+
+	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+	const [orderToDelete, setOrderToDelete] = useState(null);
+
+	const [employeeList, setEmployeeList] = useState([]);
+	const [loading, setLoading] = useState(false);
+
 	useEffect(() => {
 		fetchOrderData();
+		fetchEmployeeList();
 	}, []);
 
 	const fetchOrderData = async () => {
+		setLoading(true);
 		try {
 			const response = await axios.get("/api/orders");
-			console.log("Order Data:", response.data);
 
 			const data = response.data.map((order) => ({
 				...order,
@@ -46,7 +63,23 @@ function Orders() {
 			setOrderData(data);
 		} catch (error) {
 			console.error("Error fetching order data:", error);
-			alert("Error fetching order data.");
+			setSnackbarMessage("Error fetching order data.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const fetchEmployeeList = async () => {
+		try {
+			const response = await axios.get("/api/employees");
+			setEmployeeList(response.data);
+		} catch (error) {
+			console.error("Error fetching employee list:", error);
+			setSnackbarMessage("Error fetching employee list.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
 		}
 	};
 
@@ -62,7 +95,9 @@ function Orders() {
 			setOrderData(data);
 		} catch (error) {
 			console.error("Error searching orders:", error);
-			alert("Error searching orders.");
+			setSnackbarMessage("Error searching orders.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
 		}
 	};
 
@@ -94,16 +129,26 @@ function Orders() {
 		setOpenDialog(true);
 	};
 
-	const handleDeleteOrder = async (order_id) => {
-		if (window.confirm("Are you sure you want to delete this order?")) {
-			try {
-				await axios.delete(`/api/orders/${order_id}`);
-				fetchOrderData();
-				alert("Order deleted successfully.");
-			} catch (error) {
-				console.error("Error deleting order:", error);
-				alert("Error deleting order.");
-			}
+	const handleDeleteOrder = (order_id) => {
+		setOrderToDelete(order_id);
+		setConfirmDialogOpen(true);
+	};
+
+	const handleConfirmDelete = async () => {
+		try {
+			await axios.delete(`/api/orders/${orderToDelete}`);
+			fetchOrderData();
+			setSnackbarMessage("Order deleted successfully.");
+			setSnackbarSeverity("success");
+			setSnackbarOpen(true);
+		} catch (error) {
+			console.error("Error deleting order:", error);
+			setSnackbarMessage("Error deleting order.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+		} finally {
+			setConfirmDialogOpen(false);
+			setOrderToDelete(null);
 		}
 	};
 
@@ -111,29 +156,83 @@ function Orders() {
 		setOpenDialog(false);
 	};
 
-	const handleDialogSave = async () => {
-		const { order_id, time, total, employee_id } = currentOrder;
+	const validateOrder = () => {
+		const { time, total, employee_id } = currentOrder;
 
 		if (!time || total === "" || !employee_id) {
-			alert("Please fill all fields.");
+			setSnackbarMessage("Please fill all fields.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+
+		const orderTime = new Date(time);
+		if (isNaN(orderTime.getTime())) {
+			setSnackbarMessage("Invalid date and time.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+		const now = new Date();
+		if (orderTime > now) {
+			setSnackbarMessage("Order time cannot be in the future.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+		const totalValue = parseFloat(total);
+		if (isNaN(totalValue) || totalValue < 0) {
+			setSnackbarMessage("Total must be a non-negative number.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+
+		const employeeIdValue = parseInt(employee_id);
+		if (
+			isNaN(employeeIdValue) ||
+			employeeIdValue <= 0 ||
+			!employeeList.some((emp) => emp.employee_id === employeeIdValue)
+		) {
+			setSnackbarMessage("Please select a valid employee.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return false;
+		}
+
+		return true;
+	};
+
+	const handleDialogSave = async () => {
+		if (!validateOrder()) {
 			return;
 		}
+
+		const { order_id, time, total, employee_id } = currentOrder;
 
 		try {
 			if (dialogType === "Add") {
 				await axios.post("/api/orders", {
 					time,
-					total: Number(total),
+					total: parseFloat(total),
 					employee_id: parseInt(employee_id),
 				});
-				alert("Order added successfully.");
+				setSnackbarMessage("Order added successfully.");
+				setSnackbarSeverity("success");
+				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
 				await axios.put(`/api/orders/${order_id}`, {
 					time,
-					total: Number(total),
+					total: parseFloat(total),
 					employee_id: parseInt(employee_id),
 				});
-				alert("Order updated successfully.");
+				setSnackbarMessage("Order updated successfully.");
+				setSnackbarSeverity("success");
+				setSnackbarOpen(true);
 			}
 			fetchOrderData();
 			setOpenDialog(false);
@@ -142,7 +241,11 @@ function Orders() {
 				`Error ${dialogType === "Add" ? "adding" : "updating"} order:`,
 				error
 			);
-			alert(`Error ${dialogType === "Add" ? "adding" : "updating"} order.`);
+			setSnackbarMessage(
+				`Error ${dialogType === "Add" ? "adding" : "updating"} order.`
+			);
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
 		}
 	};
 
@@ -197,11 +300,7 @@ function Orders() {
 	];
 
 	return (
-		<Box sx={{ p: 2 }}>
-			<Typography variant="h5" gutterBottom>
-				Order Management
-			</Typography>
-
+		<Box sx={{ height: "100%" }}>
 			<Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
 				<TextField
 					label="Search Orders"
@@ -223,20 +322,22 @@ function Orders() {
 					onClick={handleAddOrder}
 					startIcon={<AddIcon />}
 				>
-					Add Order
+					Add New Order
 				</Button>
 			</Box>
 
-			<Box sx={{ height: "80%", width: "100%" }}>
-				<DataGrid
-					rows={orderData}
-					columns={columns}
-					pageSize={50}
-					rowsPerPageOptions={[50, 100, 500]}
-					pagination
-					getRowId={(row) => row.order_id}
-					disableSelectionOnClick
-				/>
+			<Box sx={{ height: "95%", width: "100%" }}>
+				{loading ? (
+					<CircularProgress />
+				) : (
+					<DataGrid
+						rows={orderData}
+						columns={columns}
+						getRowId={(row) => row.order_id}
+						disableSelectionOnClick
+						autoPageSize
+					/>
+				)}
 			</Box>
 
 			<Dialog open={openDialog} onClose={handleDialogClose}>
@@ -252,29 +353,44 @@ function Orders() {
 							setCurrentOrder({ ...currentOrder, time: e.target.value })
 						}
 						sx={{ mt: 1 }}
+						InputLabelProps={{
+							shrink: true,
+						}}
 					/>
 					<TextField
 						label="Total"
 						variant="outlined"
 						fullWidth
 						type="number"
+						inputProps={{ min: 0, step: "0.01" }}
 						value={currentOrder.total}
 						onChange={(e) =>
 							setCurrentOrder({ ...currentOrder, total: e.target.value })
 						}
 						sx={{ mt: 2 }}
 					/>
-					<TextField
-						label="Employee ID"
-						variant="outlined"
-						fullWidth
-						type="number"
-						value={currentOrder.employee_id}
-						onChange={(e) =>
-							setCurrentOrder({ ...currentOrder, employee_id: e.target.value })
-						}
-						sx={{ mt: 2 }}
-					/>
+					<FormControl variant="outlined" fullWidth sx={{ mt: 2 }}>
+						<InputLabel>Employee</InputLabel>
+						<Select
+							value={currentOrder.employee_id}
+							onChange={(e) =>
+								setCurrentOrder({
+									...currentOrder,
+									employee_id: e.target.value,
+								})
+							}
+							label="Employee"
+						>
+							{employeeList.map((employee) => (
+								<MenuItem
+									key={employee.employee_id}
+									value={employee.employee_id}
+								>
+									{employee.name}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleDialogClose}>Cancel</Button>
@@ -284,6 +400,41 @@ function Orders() {
 						color="primary"
 					>
 						{dialogType === "Add" ? "Add" : "Update"}
+					</Button>
+				</DialogActions>
+			</Dialog>
+
+			<Snackbar
+				open={snackbarOpen}
+				autoHideDuration={6000}
+				onClose={() => setSnackbarOpen(false)}
+				anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+			>
+				<Alert
+					onClose={() => setSnackbarOpen(false)}
+					severity={snackbarSeverity}
+					sx={{ width: "100%" }}
+				>
+					{snackbarMessage}
+				</Alert>
+			</Snackbar>
+
+			<Dialog
+				open={confirmDialogOpen}
+				onClose={() => setConfirmDialogOpen(false)}
+			>
+				<DialogTitle>Confirm Deletion</DialogTitle>
+				<DialogContent>
+					Are you sure you want to delete this order?
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+					<Button
+						onClick={handleConfirmDelete}
+						color="error"
+						variant="contained"
+					>
+						Delete
 					</Button>
 				</DialogActions>
 			</Dialog>
