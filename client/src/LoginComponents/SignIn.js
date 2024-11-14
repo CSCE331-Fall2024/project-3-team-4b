@@ -74,6 +74,7 @@ export default function SignIn({ user }) {
 
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
+    // axios.post('http://localhost:5001/api/verify-role', { user, password, role })
     axios.post('https://project-3-team-4b-server.vercel.app/api/verify-role', { user, password, role })
       .then((res) => {
         if (res.data.success) {
@@ -105,6 +106,7 @@ export default function SignIn({ user }) {
         <Card variant="outlined">
           <h2>
             Welcome, {user.name}
+            {/* Welcome, Chan */}
           </h2>
           <Box
             component="form"
