@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 
 const {
-	getAllContainerData,
+	getContainers,
 	createContainer,
 	updateContainer,
 	deleteContainer,
 } = require("../controllers/containerController");
 
-router.get("/containers", getAllContainerData);
+router.get("/containers", getContainers);
 router.post("/containers", createContainer);
 router.put("/containers/:id", updateContainer);
 router.delete("/containers/:id", deleteContainer);
