@@ -4,7 +4,7 @@ const pool = require("../config/dbConfig");
 const getContainers = async (req, res) => {
 	try {
 		const { search } = req.query;
-		let query = "SELECT * FROM containers";
+		let query = "SELECT * FROM container";
 		let params = [];
 
 		if (search) {
