@@ -1,4 +1,3 @@
-// CashierComponents/CategoryItems.js
 import React from "react";
 import { Grid, Button, Typography } from "@mui/material";
 

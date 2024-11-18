@@ -30,24 +30,23 @@ function Cashier() {
             
             const menuResponse = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
             const containerResponse = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
-
-            // Process container data to include only desired types and ensure prices are numbers
+    
             const filteredContainers = containerResponse.data
-                .filter(container => ["Bowl", "Plate", "Bigger Plate"].includes(container.name))
+                .filter(container => ["Bowl", "Plate", "Bigger Plate", "Drinks", "Appetizers"].includes(container.name))
                 .map(container => ({
                     ...container,
                     price: Number(container.price) || 0, // Ensure price is a number
-                    number_of_entrees: container.name === "Bowl" ? 1 : container.name === "Plate" ? 2 : 3,
-                    number_of_sides: 1 // All containers require 1 side
+                    number_of_entrees: container.name === "Bowl" ? 1 : container.name === "Plate" ? 2 : container.name === "Bigger Plate" ? 3 : 0,
+                    number_of_sides: container.name === "Bowl" || container.name === "Plate" || container.name === "Bigger Plate" ? 1 : 0
                 }));
-
+    
             // Ensure menu item prices are numbers
             const menuItems = menuResponse.data.map(item => ({
                 ...item,
                 price: Number(item.price) || 0, // Ensure price is a number
                 extra_cost: Number(item.extra_cost) || 0 // Ensure extra cost is a number
             }));
-
+    
             // Set fetched data in categoryData
             setCategoryData({
                 Containers: filteredContainers,
@@ -56,13 +55,16 @@ function Cashier() {
                 Entrees: menuItems.filter(item => item.type === "Entree"),
                 Drinks: menuItems.filter(item => item.type === "Drink"),
             });
-
+    
             setLoading(false);
         } catch (error) {
             console.error("Error fetching menu and container data:", error);
             setLoading(false);
         }
     };
+    
+    
+    
 
     const handleCategoryChange = (category) => {
         setSelectedCategory(category);
@@ -77,69 +79,101 @@ function Cashier() {
             type: "Container",
             items: [],
         };
-
+    
+        // If the container is Appetizer or Drink, switch to respective category
+        if (container.name === "Appetizers") {
+            setCurrentContainerId(newContainerId);
+            setSelectedCategory("Appetizers"); // Switch to appetizers selection
+        } else if (container.name === "Drinks") {
+            setCurrentContainerId(newContainerId);
+            setSelectedCategory("Drinks"); // Switch to drinks selection
+        } else if (container.number_of_entrees > 0 || container.number_of_sides > 0) {
+            // Handle Bowl, Plate, Bigger Plate
+            setCurrentContainerId(newContainerId);
+            setEntreesRemaining(container.number_of_entrees);
+            setSelectedCategory("Sides"); // Switch to sides selection if applicable
+        }
+    
+        // Add the container to the order items
         setOrderItems([...orderItems, newContainer]);
-        setCurrentContainerId(newContainerId);
-        setEntreesRemaining(container.number_of_entrees);
-        setSelectedCategory("Sides"); // Switch to sides selection
     };
+    
+    
 
     const handleItemSelect = (item) => {
-        // Appetizers and drinks are added directly to the order
+        // Appetizers and drinks are added to their respective container only
         if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
-            setOrderItems((prevOrderItems) => [
-                ...prevOrderItems,
-                { ...item, type: selectedCategory }
-            ]);
+            setOrderItems((prevOrderItems) => {
+                return prevOrderItems.map((orderItem) => {
+                    if (
+                        orderItem.type === "Container" &&
+                        orderItem.id === currentContainerId &&
+                        (orderItem.name === "Appetizers" || orderItem.name === "Drinks")
+                    ) {
+                        const updatedContainer = { ...orderItem };
+                        updatedContainer.items.push({ ...item, type: selectedCategory });
+                        return updatedContainer;
+                    }
+                    return orderItem;
+                });
+            });
+            setSelectedCategory("Containers"); // Switch back to containers after selecting an item
             return;
         }
-
+    
         // For sides and entrees, ensure a container is selected
         if (!currentContainerId) {
             alert("Please select a container before adding items.");
             return;
         }
-
+    
         const isEntree = selectedCategory === "Entrees";
         const isSide = selectedCategory === "Sides";
-
+    
         setOrderItems((prevOrderItems) => {
             return prevOrderItems.map((orderItem) => {
-                if (orderItem.type === "Container" && orderItem.id === currentContainerId) {
+                // Ensure we are adding sides or entrees to Bowl, Plate, or Bigger Plate containers only
+                if (
+                    orderItem.type === "Container" &&
+                    orderItem.id === currentContainerId &&
+                    ["Bowl", "Plate", "Bigger Plate"].includes(orderItem.name)
+                ) {
                     const updatedContainer = { ...orderItem };
-
+    
                     if (isSide) {
                         // Prevent adding more than one side to a container
-                        const hasSide = updatedContainer.items.some(item => item.type === "Side");
+                        const hasSide = updatedContainer.items.some((item) => item.type === "Side");
                         if (hasSide) {
                             alert("You have reached the limit for sides in this container.");
-                            return updatedContainer; // No changes made
+                            return updatedContainer;
                         }
                         updatedContainer.items.push({ ...item, type: "Side" });
                         setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
                     }
-
+    
                     if (isEntree) {
                         if (entreesRemaining <= 0) {
                             alert("You have reached the limit for entrees in this container.");
-                            return updatedContainer; // No changes made
+                            return updatedContainer;
                         }
-
+    
                         // Add entree and handle premium cost if applicable
                         if (item.isPremium && item.extra_cost) {
                             updatedContainer.price += item.extra_cost; // Add premium charge using `extra_cost`
-                        }                        
+                        }
                         updatedContainer.items.push({ ...item, type: "Entree" });
-
+    
                         setEntreesRemaining((prev) => prev - 1); // Decrement the remaining entrees
                     }
-
+    
                     return updatedContainer;
                 }
                 return orderItem;
             });
         });
     };
+    
+    
 
     const handleClearOrder = () => {
         setOrderItems([]);

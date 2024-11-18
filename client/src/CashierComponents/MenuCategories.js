@@ -1,4 +1,3 @@
-// CashierComponents/MenuCategories.js
 import React from "react";
 import { Tabs, Tab, Box } from "@mui/material";
 
