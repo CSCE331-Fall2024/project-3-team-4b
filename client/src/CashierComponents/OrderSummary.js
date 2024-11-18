@@ -13,39 +13,43 @@ function OrderSummary({ orderItems, onClearOrder }) {
         const orderPayload = {
             time: new Date().toISOString(),  // Record the time of the order
             total: total.toFixed(2),
-            employee_id: 99,  // Replace with appropriate value
+            employee_id: 4,  // fixed for now (Sage)
         };
     
         try {
-            // Step 1: Make the API call to create a new order in the "orders" table
+            // Make the API call to create a new order in the "orders" table
             console.log("Placing order:", orderPayload); // Debug: log order payload before sending
             const orderResponse = await axios.post("https://project-3-team-4b-server.vercel.app/api/orders", orderPayload);
             console.log("Order response:", orderResponse.data); // Debug: log response from order creation
     
             const orderId = orderResponse.data.order_id; // Get the unique order_id
     
-            // Step 2: Prepare the order items payload
+            // Prepare the order items payload
             const orderItemsPayload = orderItems.flatMap((orderItem) => {
-                if (orderItem.type === "Container") {
+                if (orderItem.type === "Container" || orderItem.type === "Appetizer" || orderItem.type === "Drink") {
                     // Map each container's items as separate order items
-                    return orderItem.items.map((item) => ({
-                        order_id: orderId,
-                        quantity: 1,  // Assuming quantity is always 1 for each item
-                        container_id: orderItem.id,  // Assuming `id` is the container's unique identifier
-                    }));
+                    if (orderItem.items && orderItem.items.length > 0) {
+                        return orderItem.items.map((item) => ({
+                            order_id: orderId,
+                            quantity: 1,  // Assuming quantity is always 1 for each item
+                            container_id: orderItem.id,  // Use the dynamically fetched container ID
+                        }));
+                    } else {
+                        // If the container has no nested items (e.g., drinks or appetizers), add it as an individual order item
+                        return {
+                            order_id: orderId,
+                            quantity: 1,
+                            container_id: orderItem.id,  // Use the dynamically fetched container ID
+                        };
+                    }
                 } else {
-                    // Handle drinks and appetizers separately as they do not belong to containers
-                    return {
-                        order_id: orderId,
-                        quantity: 1,
-                        container_id: null,  // Drinks and appetizers are not tied to containers
-                    };
+                    return []; // Skip any items that are not classified correctly
                 }
             });
     
             console.log("Order items payload:", orderItemsPayload); // Debug: log order items before sending
     
-            // Step 3: Make API calls to add items to the "order_items" table
+            // Make API calls to add items to the "order_items" table
             await Promise.all(
                 orderItemsPayload.map(async (orderItem) => {
                     console.log("Placing order item:", orderItem); // Debug: log each order item payload before sending
@@ -62,6 +66,8 @@ function OrderSummary({ orderItems, onClearOrder }) {
             alert("Failed to place order. Please try again.");
         }
     };
+    
+    
     
 
     return (
@@ -89,7 +95,7 @@ function OrderSummary({ orderItems, onClearOrder }) {
                             </React.Fragment>
                         );
                     } else {
-                        // Render Appetizers and Drinks separately
+                        // Render other items that were added without a container
                         return (
                             <ListItem key={index}>
                                 <ListItemText 
@@ -101,6 +107,7 @@ function OrderSummary({ orderItems, onClearOrder }) {
                     }
                 })}
             </List>
+
             <Divider sx={{ my: 2 }} />
             <Typography variant="body1">Subtotal: ${subtotal.toFixed(2)}</Typography>
             <Typography variant="body1">Tax: ${tax.toFixed(2)}</Typography>
