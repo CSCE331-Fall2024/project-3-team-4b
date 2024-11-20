@@ -4,7 +4,11 @@ import { Box, Button, Typography } from "@mui/material";
 
 function RestaurantMenu() {
     const [menuData, setMenuData] = useState([]);
+    const [appetizerPrice, setAppetizerPrice] = useState(0);
+    const [drinkPrice, setDrinkPrice] = useState(0);
     const [containerData, setContainerData] = useState([]);
+    const [isLargeText, setIsLargeText] = useState(false);
+
     const [mainOrderSummary, setMainOrderSummary] = useState([]); // Main order summary
     const [subOrderSummary, setSubOrderSummary] = useState({
         container: null,
@@ -22,7 +26,14 @@ function RestaurantMenu() {
     useEffect(() => {
         fetchMenuData();
         fetchContainerData();
+        fetchPrices();
     }, []);
+
+
+    const toggleTextSize = () => {
+        setIsLargeText((prev) => !prev);
+    };
+
 
     const fetchMenuData = async () => {
         try {
@@ -60,6 +71,21 @@ function RestaurantMenu() {
         setSelectedItems(new Set());
     };
 
+    const fetchPrices = async () => {
+        try {
+            const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
+            const appetizerContainer = response.data.find(container => container.name === "Appetizers");
+            const drinkContainer = response.data.find(container => container.name === "Drinks");
+
+            setAppetizerPrice(Number(appetizerContainer?.price) || 0);
+            setDrinkPrice(Number(drinkContainer?.price) || 0);
+        } catch (error) {
+            console.error("Error fetching appetizer and drink prices:", error);
+        }
+    };
+
+
+
     const handleAddItem = (item) => {
         const { container, items } = subOrderSummary;
         if (!container) {
@@ -75,11 +101,15 @@ function RestaurantMenu() {
             (item.type === "Drink" && selectedCounts.drinks < 10);
 
         if (!itemIsSelected && canSelect) {
-            // Update selections, counts, and subtotal for each item
+            let price = 0;
+            if (item.type === "Appetizer") price = Number(appetizerPrice);
+            else if (item.type === "Drink") price = Number(drinkPrice);
+            else price = Number(item.extra_cost); // For entrees and sides
+
             setSubOrderSummary((prev) => ({
                 ...prev,
                 items: [...prev.items, item],
-                subtotal: prev.subtotal + Number(item.extra_cost),
+                subtotal: prev.subtotal + price,
             }));
             setSelectedItems((prev) => new Set(prev).add(item.menu_id));
             setSelectedCounts((prevCounts) => ({
@@ -91,11 +121,17 @@ function RestaurantMenu() {
         }
     };
 
+
     const handleRemoveItem = (item) => {
+        let price = 0;
+        if (item.type === "Appetizer") price = Number(appetizerPrice);
+        else if (item.type === "Drink") price = Number(drinkPrice);
+        else price = Number(item.extra_cost); // For entrees and sides
+
         setSubOrderSummary((prev) => ({
             ...prev,
             items: prev.items.filter((orderItem) => orderItem.menu_id !== item.menu_id),
-            subtotal: prev.subtotal - Number(item.extra_cost),
+            subtotal: prev.subtotal - price,
         }));
         setSelectedItems((prev) => {
             const newSelected = new Set(prev);
@@ -107,6 +143,7 @@ function RestaurantMenu() {
             [item.type.toLowerCase() + "s"]: prevCounts[item.type.toLowerCase() + "s"] - 1,
         }));
     };
+
 
     const handleAddToOrder = () => {
         if (!subOrderSummary.container || subOrderSummary.items.length === 0) {
@@ -145,7 +182,7 @@ function RestaurantMenu() {
 
         const orderPayload = {
             time: new Date().toISOString(),
-            total: mainOrderSummary.reduce((total, order) => total + order.subtotal, 0),
+            total: mainOrderSummary.reduce((total, order) => total + order.subtotal, 0), // Grand total
             employee_id: 99,
         };
 
@@ -175,6 +212,7 @@ function RestaurantMenu() {
         }
     };
 
+
     const handleClearContainer = () => {
         setSubOrderSummary({
             container: null,
@@ -198,8 +236,17 @@ function RestaurantMenu() {
     return (
         <Box sx={{ display: "flex" }}>
             {/* Left Section - Menu Selection */}
+            <Button
+                onClick={toggleTextSize}
+                variant="contained"
+                color="secondary"
+                sx={{ position: "absolute", top: 10, left: 10, zIndex: 10 }}
+            >
+                {isLargeText ? "Normal Text" : "Large Text"}
+            </Button>
+
             <Box sx={{ flex: 2, padding: 2 }}>
-                <Typography variant="h4">Select a Container</Typography>
+                <Typography variant="h4" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold", textTransform: "uppercase" }}>Select a Container</Typography>
                 <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, marginBottom: 2 }}>
                     {containerData.map((container) => (
                         <Button
@@ -219,9 +266,9 @@ function RestaurantMenu() {
                                 alt={container.name}
                                 style={{ width: "214px", height: "164px", borderRadius: 8 }}
                             />
-                            <Typography sx={{ marginTop: 1 }}>{container.name}</Typography>
+                            <Typography sx={{ marginTop: 1, fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold", textTransform: "capitalize" }}>{container.name}</Typography>
                             {/* Conditionally render price */}
-                            {container.price !== 0 && <Typography>Price: ${container.price}</Typography>}
+                            {container.price !== 0 && <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Price: ${container.price}</Typography>}
                         </Button>
                     ))}
                 </Box>
@@ -229,7 +276,7 @@ function RestaurantMenu() {
                 <Box>
                     {["Entree", "Side", "Appetizer", "Drink"].map((type) => (
                         <Box key={type} sx={{ marginBottom: 2 }}>
-                            <Typography variant="h5">{type}s</Typography>
+                            <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold" }}>{type}s</Typography>
                             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2 }}>
                                 {menuData
                                     .filter((item) => item.type === type)
@@ -242,9 +289,16 @@ function RestaurantMenu() {
                                         >
                                             <Button onClick={() => handleAddItem(item)}>
                                                 {item.name}
-                                                {/* Conditionally render price */}
-                                                {Number(item.extra_cost) !== 0.00 && ` - $${item.extra_cost}`}
-                                                <img src={getImageUrl(item.name)} alt={item.name} style={{ width: "214px", height: "164px", borderRadius: 8 }} />
+                                                <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>
+                                                    {/* Display dynamically fetched prices */}
+                                                    {item.type === "Appetizer" && ` - $${appetizerPrice.toFixed(2)}`}
+                                                    {item.type === "Drink" && ` - $${drinkPrice.toFixed(2)}`}
+                                                </Typography>
+                                                <img
+                                                    src={getImageUrl(item.name)}
+                                                    alt={item.name}
+                                                    style={{ width: "214px", height: "164px", borderRadius: 8 }}
+                                                />
                                             </Button>
                                         </Box>
                                     ))}
@@ -257,29 +311,29 @@ function RestaurantMenu() {
             {/* Right Section - Order Summary */}
             <Box sx={{ flex: 1, padding: 2, borderLeft: "1px solid #ccc" }}>
                 {/* Sub-order summary */}
-                <Typography variant="h5">Sub-Order Summary</Typography>
+                <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold" }}>Sub-Order Summary</Typography>
                 <Box>
                     {subOrderSummary.container && (
                         <Box>
-                            <Typography>{subOrderSummary.container.name}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{subOrderSummary.container.name}</Typography>
                             {/* Conditionally render price */}
                             {subOrderSummary.container.price !== 0 && (
-                                <Typography>Price: ${subOrderSummary.container.price}</Typography>
+                                <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Price: ${subOrderSummary.container.price}</Typography>
                             )}
                         </Box>
                     )}
 
                     {subOrderSummary.items.map((item) => (
                         <Box key={item.menu_id} sx={{ marginBottom: 1 }}>
-                            <Typography>{item.name}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{item.name}</Typography>
                             {/* Conditionally render price */}
-                            {item.extra_cost !== 0 && <Typography>Price: ${item.extra_cost}</Typography>}
+                            {item.extra_cost !== 0 && <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Price: ${item.extra_cost}</Typography>}
                             <Button onClick={() => handleRemoveItem(item)}>Remove</Button>
                         </Box>
                     ))}
                 </Box>
 
-                <Typography variant="h6">Subtotal: ${subOrderSummary.subtotal.toFixed(2)}</Typography>
+                <Typography variant="h6" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Subtotal: ${subOrderSummary.subtotal.toFixed(2)}</Typography>
                 <Button
                     onClick={handleAddToOrder}
                     variant="contained"
@@ -291,14 +345,14 @@ function RestaurantMenu() {
 
                 {/* Main Order Summary */}
                 <Box sx={{ marginTop: 2 }}>
-                    <Typography variant="h5">Main Order Summary</Typography>
+                    <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold" }}>Main Order Summary</Typography>
                     {mainOrderSummary.map((order, index) => (
                         <Box key={index}>
-                            <Typography>{order.container.name}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{order.container.name}</Typography>
                             {order.items.map((item) => (
-                                <Typography key={item.menu_id}>{item.name}</Typography>
+                                <Typography key={item.menu_id} sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{item.name}</Typography>
                             ))}
-                            <Typography>Subtotal: ${order.subtotal.toFixed(2)}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Subtotal: ${order.subtotal.toFixed(2)}</Typography>
                         </Box>
                     ))}
                     {mainOrderSummary.length > 0 && (
@@ -309,6 +363,7 @@ function RestaurantMenu() {
                 </Box>
             </Box>
         </Box>
+
     );
 }
 
