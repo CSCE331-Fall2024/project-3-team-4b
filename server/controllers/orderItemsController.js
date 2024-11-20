@@ -1,5 +1,12 @@
 const pool = require("../config/dbConfig");
 
+/**
+ * Retrieves all order items from the database.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the operation is complete.
+ */
 const getOrderItems = async (req, res) => {
 	try {
 		const { rows } = await pool.query("SELECT * FROM order_items");
@@ -10,6 +17,20 @@ const getOrderItems = async (req, res) => {
 	}
 };
 
+/**
+ * Creates a new order item.
+ *
+ * @async
+ * @function createOrderItem
+ * @param {Object} req - The request object.
+ * @param {Object} req.body - The body of the request.
+ * @param {number} req.body.order_id - The ID of the order.
+ * @param {number} req.body.quantity - The quantity of the order item.
+ * @param {number} req.body.container_id - The ID of the container.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves to void.
+ * @throws {Error} - Throws an error if there is an issue creating the order item.
+ */
 const createOrderItem = async (req, res) => {
 	const { order_id, quantity, container_id } = req.body;
 	try {
@@ -24,6 +45,19 @@ const createOrderItem = async (req, res) => {
 	}
 };
 
+/**
+ * Updates an order item in the database.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} req.params - The request parameters.
+ * @param {string} req.params.id - The ID of the order item to update.
+ * @param {Object} req.body - The request body.
+ * @param {string} req.body.order_id - The ID of the order associated with the order item.
+ * @param {number} req.body.quantity - The quantity of the order item.
+ * @param {string} req.body.container_id - The ID of the container associated with the order item.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the order item is updated.
+ */
 const updateOrderItem = async (req, res) => {
 	const { id } = req.params;
 	const { order_id, quantity, container_id } = req.body;
@@ -42,6 +76,17 @@ const updateOrderItem = async (req, res) => {
 	}
 };
 
+/**
+ * Deletes an order item by its ID.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} req.params - The request parameters.
+ * @param {string} req.params.id - The ID of the order item to delete.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the order item is deleted.
+ *
+ * @throws {Error} - If there is an error during the deletion process.
+ */
 const deleteOrderItem = async (req, res) => {
 	const { id } = req.params;
 	try {
