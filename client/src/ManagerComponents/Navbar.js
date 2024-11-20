@@ -1,4 +1,6 @@
-import React from "react";
+// ManagerComponents/Navbar.js
+
+import React, { useState } from "react";
 import {
 	Drawer,
 	List,
@@ -8,6 +10,12 @@ import {
 	Divider,
 	Box,
 	ListItemIcon,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
+	Button,
+	Avatar,
 } from "@mui/material";
 import Logo from "../assets/panda-logo.svg";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
@@ -16,18 +24,17 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import PeopleIcon from "@mui/icons-material/People";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
-import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
 
 /**
  * Navbar component that renders a navigation drawer with sections and user options.
  *
  * @param {Object} props - Component properties.
- * @param {string} props.employeeName - The name of the logged-in employee.
+ * @param {Object} props.user - The authenticated user object.
  * @param {string} props.selectedSection - The currently selected section name.
  * @param {function} props.onSectionChange - Callback function invoked when a section is selected.
  * @returns {JSX.Element} The rendered Navbar component.
  */
-function Navbar({ employeeName, selectedSection, onSectionChange }) {
+function Navbar({ user, selectedSection, onSectionChange }) {
 	/** The width of the navigation drawer in pixels. */
 	const drawerWidth = 240;
 
@@ -42,6 +49,31 @@ function Navbar({ employeeName, selectedSection, onSectionChange }) {
 		{ text: "Employees", icon: <PeopleIcon /> },
 		{ text: "Analytics", icon: <BarChartIcon /> },
 	];
+
+	/** State to manage the open/close state of the logout confirmation dialog. */
+	const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+
+	/**
+	 * Handles the click event for the logout option.
+	 */
+	const handleLogoutClick = () => {
+		setOpenLogoutDialog(true);
+	};
+
+	/**
+	 * Confirms the logout action and triggers the logout process.
+	 */
+	const handleLogoutConfirm = () => {
+		setOpenLogoutDialog(false);
+		onSectionChange("Logout");
+	};
+
+	/**
+	 * Cancels the logout action and closes the confirmation dialog.
+	 */
+	const handleLogoutCancel = () => {
+		setOpenLogoutDialog(false);
+	};
 
 	return (
 		<Drawer
@@ -69,8 +101,16 @@ function Navbar({ employeeName, selectedSection, onSectionChange }) {
 					alt="Panda Express Logo"
 					style={{ maxWidth: "100%", height: "150px" }}
 				/>
-				<Typography variant="h5" sx={{ mt: 2, textAlign: "center" }}>
-					Welcome, {employeeName}
+				<Avatar
+					alt={user ? user.name : "User Avatar"}
+					src={user && user.picture} // Assumes user.picture contains the profile image URL
+					sx={{ width: 60, height: 60, mt: 2 }}
+				/>
+				<Typography variant="h6" sx={{ mt: 1, textAlign: "center" }}>
+					Welcome, {user ? user.name : "User"}
+				</Typography>
+				<Typography variant="body2" sx={{ textAlign: "center" }}>
+					{user && user.email}
 				</Typography>
 			</Box>
 			<Divider />
@@ -81,6 +121,11 @@ function Navbar({ employeeName, selectedSection, onSectionChange }) {
 						key={section.text}
 						selected={selectedSection === section.text}
 						onClick={() => onSectionChange(section.text)}
+						sx={{
+							"&:hover": {
+								backgroundColor: "rgba(0, 0, 0, 0.08)",
+							},
+						}}
 					>
 						<ListItemIcon>{section.icon}</ListItemIcon>
 						<ListItemText primary={section.text} />
@@ -90,29 +135,36 @@ function Navbar({ employeeName, selectedSection, onSectionChange }) {
 			<Box sx={{ flexGrow: 1 }} />
 			<Divider />
 			<List>
-				<ListItem
-					button
-					onClick={() => {
-						onSectionChange("Logout");
-					}}
-				>
+				<ListItem button onClick={handleLogoutClick}>
 					<ListItemIcon>
 						<ExitToAppIcon />
 					</ListItemIcon>
 					<ListItemText primary="Logout" />
 				</ListItem>
-				<ListItem
-					button
-					onClick={() => {
-						onSectionChange("Switch User");
-					}}
-				>
-					<ListItemIcon>
-						<SwitchAccountIcon />
-					</ListItemIcon>
-					<ListItemText primary="Switch User" />
-				</ListItem>
 			</List>
+
+			{/* Logout Confirmation Dialog */}
+			<Dialog
+				open={openLogoutDialog}
+				onClose={handleLogoutCancel}
+				aria-labelledby="logout-dialog-title"
+				aria-describedby="logout-dialog-description"
+			>
+				<DialogTitle id="logout-dialog-title">Confirm Logout</DialogTitle>
+				<DialogContent>
+					<Typography id="logout-dialog-description">
+						Are you sure you want to log out?
+					</Typography>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={handleLogoutCancel} color="primary">
+						Cancel
+					</Button>
+					<Button onClick={handleLogoutConfirm} color="primary" autoFocus>
+						Logout
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</Drawer>
 	);
 }
