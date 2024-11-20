@@ -1,5 +1,12 @@
 const pool = require("../config/dbConfig");
 
+/**
+ * Retrieves all menu items from the database.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the operation is complete.
+ */
 const getMenuItems = async (req, res) => {
 	try {
 		const { rows } = await pool.query("SELECT * FROM menu_items");
@@ -10,6 +17,18 @@ const getMenuItems = async (req, res) => {
 	}
 };
 
+/**
+ * Creates a new menu item in the database.
+ *
+ * @async
+ * @function createMenuItem
+ * @param {Object} req - The request object.
+ * @param {Object} req.body - The body of the request.
+ * @param {number} req.body.order_item_id - The ID of the order item.
+ * @param {number} req.body.menu_id - The ID of the menu.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the menu item is created.
+ */
 const createMenuItem = async (req, res) => {
 	const { order_item_id, menu_id } = req.body;
 	try {
@@ -24,6 +43,18 @@ const createMenuItem = async (req, res) => {
 	}
 };
 
+/**
+ * Updates a menu item in the database.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} req.params - The request parameters.
+ * @param {string} req.params.id - The ID of the menu item to update.
+ * @param {Object} req.body - The request body.
+ * @param {number} req.body.order_item_id - The new order item ID.
+ * @param {number} req.body.menu_id - The new menu ID.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the update is complete.
+ */
 const updateMenuItem = async (req, res) => {
 	const { id } = req.params;
 	const { order_item_id, menu_id } = req.body;
@@ -42,6 +73,15 @@ const updateMenuItem = async (req, res) => {
 	}
 };
 
+/**
+ * Deletes a menu item from the database.
+ *
+ * @param {Object} req - The request object.
+ * @param {Object} req.params - The request parameters.
+ * @param {string} req.params.id - The ID of the menu item to delete.
+ * @param {Object} res - The response object.
+ * @returns {Promise<void>} - A promise that resolves when the menu item is deleted.
+ */
 const deleteMenuItem = async (req, res) => {
 	const { id } = req.params;
 	try {
