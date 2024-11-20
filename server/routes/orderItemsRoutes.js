@@ -1,6 +1,30 @@
 const express = require("express");
 const router = express.Router();
 
+/**
+ * @module orderItemsRoutes
+ * @requires ../controllers/orderItemsController
+ */
+
+/**
+ * @function getOrderItems
+ * @description Retrieves order items from the database.
+ */
+
+/**
+ * @function createOrderItem
+ * @description Creates a new order item in the database.
+ */
+
+/**
+ * @function updateOrderItem
+ * @description Updates an existing order item in the database.
+ */
+
+/**
+ * @function deleteOrderItem
+ * @description Deletes an order item from the database.
+ */
 const {
 	getOrderItems,
 	createOrderItem,
