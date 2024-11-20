@@ -83,10 +83,42 @@ const deleteRecipe = async (req, res) => {
 	}
 };
 
+
+const getRecipesByMenuId = async (req, res) => {
+	try {
+		const { menu_id } = req.params;
+		const { rows } = await pool.query(
+			`SELECT r.recipe_id, r.menu_id, r.inventory_id, r.qty, i.name, i.cost
+       FROM recipes r
+       JOIN inventory i ON r.inventory_id = i.inventory_id
+       WHERE r.menu_id = $1`,
+			[menu_id]
+		);
+		res.status(200).json(rows);
+	} catch (error) {
+		console.error("Error fetching recipes by menu_id:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+};
+
+// Delete recipes by menu_id
+const deleteRecipesByMenuId = async (req, res) => {
+	try {
+		const { menu_id } = req.params;
+		await pool.query("DELETE FROM recipes WHERE menu_id = $1", [menu_id]);
+		res.status(200).json({ message: "Recipes deleted successfully" });
+	} catch (error) {
+		console.error("Error deleting recipes by menu_id:", error);
+		res.status(500).json({ error: "Internal server error" });
+	}
+};
+
 module.exports = {
 	getRecipe,
 	getRecipeById,
 	createRecipe,
 	updateRecipe,
 	deleteRecipe,
+	getRecipesByMenuId,
+	deleteRecipesByMenuId,
 };
