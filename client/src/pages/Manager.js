@@ -6,21 +6,25 @@ import Menu from "../ManagerComponents/Menu";
 import Inventory from "../ManagerComponents/Inventory";
 import Orders from "../ManagerComponents/Orders";
 import Employees from "../ManagerComponents/Employees";
-
 import Analytics from "../ManagerComponents/Analytics";
 
+/**
+ * Manager component that serves as the main layout for the manager interface.
+ * It handles navigation between different sections like Menu, Inventory, Orders, Employees, and Analytics.
+ *
+ * @returns {JSX.Element} The rendered Manager component.
+ */
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
 	const employeeName = "Sage";
 
+	/**
+	 * Handles the change of the selected section in the navigation.
+	 *
+	 * @param {string} section - The section selected by the user.
+	 */
 	const handleSectionChange = (section) => {
 		setSelectedSection(section);
-
-		// if (section === "Logout") {
-
-		// } else if (section === "Switch User") {
-
-		// }
 	};
 
 	return (
