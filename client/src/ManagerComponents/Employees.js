@@ -22,6 +22,11 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Employees component for managing and displaying employee data.
+ *
+ * @returns {JSX.Element} The rendered Employees component.
+ */
 function Employees() {
 	const [employeeData, setEmployeeData] = useState([]);
 	const [searchText, setSearchText] = useState("");
@@ -50,10 +55,15 @@ function Employees() {
 		fetchEmployeeData();
 	}, []);
 
+	/**
+	 * Fetches employee data from the server.
+	 */
 	const fetchEmployeeData = async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/employees");
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/employees"
+			);
 			setEmployeeData(response.data);
 		} catch (error) {
 			console.error("Error fetching employee data:", error);
@@ -65,9 +75,14 @@ function Employees() {
 		}
 	};
 
+	/**
+	 * Handles the search functionality.
+	 */
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/employees?search=${searchText}`);
+			const response = await axios.get(
+				`https://project-3-team-4b-server.vercel.app/api/employees?search=${searchText}`
+			);
 			setEmployeeData(response.data);
 		} catch (error) {
 			console.error("Error searching employees:", error);
@@ -77,11 +92,17 @@ function Employees() {
 		}
 	};
 
+	/**
+	 * Clears the search text and reloads employee data.
+	 */
 	const handleClearSearch = () => {
 		setSearchText("");
 		fetchEmployeeData();
 	};
 
+	/**
+	 * Opens the dialog to add a new employee.
+	 */
 	const handleAddEmployee = () => {
 		setDialogType("Add");
 		setCurrentEmployee({
@@ -93,6 +114,11 @@ function Employees() {
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the dialog to edit an existing employee.
+	 *
+	 * @param {Object} employee - The employee data to edit.
+	 */
 	const handleEditEmployee = (employee) => {
 		setDialogType("Edit");
 		setCurrentEmployee({
@@ -102,14 +128,24 @@ function Employees() {
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the confirmation dialog to delete an employee.
+	 *
+	 * @param {number} employee_id - The ID of the employee to delete.
+	 */
 	const handleDeleteEmployee = (employee_id) => {
 		setEmployeeToDelete(employee_id);
 		setConfirmDialogOpen(true);
 	};
 
+	/**
+	 * Confirms and deletes the selected employee.
+	 */
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/employees/${employeeToDelete}`);
+			await axios.delete(
+				`https://project-3-team-4b-server.vercel.app/api/employees/${employeeToDelete}`
+			);
 			fetchEmployeeData();
 			setSnackbarMessage("Employee deleted successfully.");
 			setSnackbarSeverity("success");
@@ -125,10 +161,18 @@ function Employees() {
 		}
 	};
 
+	/**
+	 * Closes the add/edit dialog.
+	 */
 	const handleDialogClose = () => {
 		setOpenDialog(false);
 	};
 
+	/**
+	 * Validates the employee data before saving.
+	 *
+	 * @returns {boolean} True if valid, false otherwise.
+	 */
 	const validateEmployee = () => {
 		const { name, role, salary } = currentEmployee;
 
@@ -157,6 +201,9 @@ function Employees() {
 		return true;
 	};
 
+	/**
+	 * Saves the employee data (add or edit) after validation.
+	 */
 	const handleDialogSave = async () => {
 		if (!validateEmployee()) {
 			return;
@@ -167,20 +214,26 @@ function Employees() {
 
 		try {
 			if (dialogType === "Add") {
-				await axios.post("https://project-3-team-4b-server.vercel.app/api/employees", {
-					name,
-					role,
-					salary: salaryValue,
-				});
+				await axios.post(
+					"https://project-3-team-4b-server.vercel.app/api/employees",
+					{
+						name,
+						role,
+						salary: salaryValue,
+					}
+				);
 				setSnackbarMessage("Employee added successfully.");
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`https://project-3-team-4b-server.vercel.app/api/employees/${employee_id}`, {
-					name,
-					role,
-					salary: salaryValue,
-				});
+				await axios.put(
+					`https://project-3-team-4b-server.vercel.app/api/employees/${employee_id}`,
+					{
+						name,
+						role,
+						salary: salaryValue,
+					}
+				);
 				setSnackbarMessage("Employee updated successfully.");
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
@@ -209,10 +262,7 @@ function Employees() {
 			width: 120,
 			renderCell: (params) => {
 				const value = parseFloat(params.row.salary);
-				if (isNaN(value)) {
-					return "$0.00";
-				}
-				return `$${value.toFixed(2)}`;
+				return isNaN(value) ? "$0.00" : `$${value.toFixed(2)}`;
 			},
 		},
 		{ field: "role", headerName: "Role", width: 120 },
@@ -282,6 +332,7 @@ function Employees() {
 				)}
 			</Box>
 
+			{/* Add/Edit Employee Dialog */}
 			<Dialog open={openDialog} onClose={handleDialogClose}>
 				<DialogTitle>{dialogType} Employee</DialogTitle>
 				<DialogContent>
@@ -336,6 +387,7 @@ function Employees() {
 				</DialogActions>
 			</Dialog>
 
+			{/* Delete Confirmation Dialog */}
 			<Dialog
 				open={confirmDialogOpen}
 				onClose={() => setConfirmDialogOpen(false)}
@@ -356,6 +408,7 @@ function Employees() {
 				</DialogActions>
 			</Dialog>
 
+			{/* Snackbar Notification */}
 			<Snackbar
 				open={snackbarOpen}
 				autoHideDuration={6000}

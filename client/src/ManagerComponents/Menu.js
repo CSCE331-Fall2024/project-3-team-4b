@@ -24,6 +24,12 @@ import {
 	Alert,
 } from "@mui/material";
 
+/**
+ * Menu component for managing and displaying menu items.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered Menu component.
+ */
 function Menu() {
 	const [menuData, setMenuData] = useState([]);
 	const [searchText, setSearchText] = useState("");
@@ -50,9 +56,14 @@ function Menu() {
 		fetchMenuData();
 	}, []);
 
+	/**
+	 * Fetches the menu data from the server.
+	 */
 	const fetchMenuData = async () => {
 		try {
-			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/menu"
+			);
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
@@ -62,9 +73,14 @@ function Menu() {
 		}
 	};
 
+	/**
+	 * Handles the search operation for menu items.
+	 */
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/menu?search=${searchText}`);
+			const response = await axios.get(
+				`https://project-3-team-4b-server.vercel.app/api/menu?search=${searchText}`
+			);
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error searching menu items:", error);
@@ -74,11 +90,17 @@ function Menu() {
 		}
 	};
 
+	/**
+	 * Clears the search text and reloads the full menu data.
+	 */
 	const handleClearSearch = () => {
 		setSearchText("");
 		fetchMenuData();
 	};
 
+	/**
+	 * Opens the dialog to add a new menu item.
+	 */
 	const handleAddMenuItem = () => {
 		setDialogType("Add");
 		setCurrentItem({
@@ -91,20 +113,33 @@ function Menu() {
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the dialog to edit an existing menu item.
+	 * @param {Object} item - The menu item to edit.
+	 */
 	const handleEditMenuItem = (item) => {
 		setDialogType("Edit");
 		setCurrentItem({ ...item });
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the confirmation dialog to delete a menu item.
+	 * @param {number} menu_id - The ID of the menu item to delete.
+	 */
 	const handleDeleteMenuItem = (menu_id) => {
 		setItemToDelete(menu_id);
 		setConfirmDialogOpen(true);
 	};
 
+	/**
+	 * Confirms and deletes the selected menu item.
+	 */
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/menu/${itemToDelete}`);
+			await axios.delete(
+				`https://project-3-team-4b-server.vercel.app/api/menu/${itemToDelete}`
+			);
 			fetchMenuData();
 			setSnackbarMessage("Menu item deleted successfully.");
 			setSnackbarSeverity("success");
@@ -120,10 +155,16 @@ function Menu() {
 		}
 	};
 
+	/**
+	 * Closes the add/edit dialog.
+	 */
 	const handleDialogClose = () => {
 		setOpenDialog(false);
 	};
 
+	/**
+	 * Saves the menu item (add or edit) after validation.
+	 */
 	const handleDialogSave = async () => {
 		const { menu_id, name, type, extra_cost, calories } = currentItem;
 
@@ -161,22 +202,28 @@ function Menu() {
 					return;
 				}
 
-				await axios.post("https://project-3-team-4b-server.vercel.app/api/menu", {
-					name,
-					type,
-					extra_cost: parseFloat(extra_cost),
-					calories: parseInt(calories),
-				});
+				await axios.post(
+					"https://project-3-team-4b-server.vercel.app/api/menu",
+					{
+						name,
+						type,
+						extra_cost: parseFloat(extra_cost),
+						calories: parseInt(calories),
+					}
+				);
 				setSnackbarMessage("Menu item added successfully.");
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`https://project-3-team-4b-server.vercel.app/api/menu/${menu_id}`, {
-					name,
-					type,
-					extra_cost: parseFloat(extra_cost),
-					calories: parseInt(calories),
-				});
+				await axios.put(
+					`https://project-3-team-4b-server.vercel.app/api/menu/${menu_id}`,
+					{
+						name,
+						type,
+						extra_cost: parseFloat(extra_cost),
+						calories: parseInt(calories),
+					}
+				);
 				setSnackbarMessage("Menu item updated successfully.");
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
@@ -206,10 +253,7 @@ function Menu() {
 			width: 90,
 			renderCell: (params) => {
 				const value = parseFloat(params.row.extra_cost);
-				if (isNaN(value)) {
-					return "$0.00";
-				}
-				return `$${value.toFixed(2)}`;
+				return isNaN(value) ? "$0.00" : `$${value.toFixed(2)}`;
 			},
 		},
 		{
