@@ -22,6 +22,11 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Orders component for managing and displaying orders.
+ *
+ * @returns {JSX.Element} The Orders component.
+ */
 function Orders() {
 	const [orderData, setOrderData] = useState([]);
 	const [searchText, setSearchText] = useState("");
@@ -34,14 +39,11 @@ function Orders() {
 		employee_id: "",
 		employee_name: "",
 	});
-
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState("");
 	const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [orderToDelete, setOrderToDelete] = useState(null);
-
 	const [employeeList, setEmployeeList] = useState([]);
 	const [loading, setLoading] = useState(false);
 
@@ -50,10 +52,15 @@ function Orders() {
 		fetchEmployeeList();
 	}, []);
 
+	/**
+	 * Fetches order data from the server.
+	 */
 	const fetchOrderData = async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/orders");
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/orders"
+			);
 
 			const data = response.data.map((order) => ({
 				...order,
@@ -71,9 +78,14 @@ function Orders() {
 		}
 	};
 
+	/**
+	 * Fetches the list of employees from the server.
+	 */
 	const fetchEmployeeList = async () => {
 		try {
-			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/employees");
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/employees"
+			);
 			setEmployeeList(response.data);
 		} catch (error) {
 			console.error("Error fetching employee list:", error);
@@ -83,9 +95,14 @@ function Orders() {
 		}
 	};
 
+	/**
+	 * Handles the search functionality.
+	 */
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/orders?search=${searchText}`);
+			const response = await axios.get(
+				`https://project-3-team-4b-server.vercel.app/api/orders?search=${searchText}`
+			);
 
 			const data = response.data.map((order) => ({
 				...order,
@@ -101,11 +118,17 @@ function Orders() {
 		}
 	};
 
+	/**
+	 * Clears the search text and reloads all orders.
+	 */
 	const handleClearSearch = () => {
 		setSearchText("");
 		fetchOrderData();
 	};
 
+	/**
+	 * Opens the dialog to add a new order.
+	 */
 	const handleAddOrder = () => {
 		setDialogType("Add");
 		setCurrentOrder({
@@ -117,6 +140,11 @@ function Orders() {
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the dialog to edit an existing order.
+	 *
+	 * @param {Object} order - The order to edit.
+	 */
 	const handleEditOrder = (order) => {
 		setDialogType("Edit");
 		const date = new Date(order.time);
@@ -129,14 +157,24 @@ function Orders() {
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the confirmation dialog to delete an order.
+	 *
+	 * @param {number} order_id - The ID of the order to delete.
+	 */
 	const handleDeleteOrder = (order_id) => {
 		setOrderToDelete(order_id);
 		setConfirmDialogOpen(true);
 	};
 
+	/**
+	 * Confirms the deletion of an order.
+	 */
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/orders/${orderToDelete}`);
+			await axios.delete(
+				`https://project-3-team-4b-server.vercel.app/api/orders/${orderToDelete}`
+			);
 			fetchOrderData();
 			setSnackbarMessage("Order deleted successfully.");
 			setSnackbarSeverity("success");
@@ -152,10 +190,18 @@ function Orders() {
 		}
 	};
 
+	/**
+	 * Closes the add/edit order dialog.
+	 */
 	const handleDialogClose = () => {
 		setOpenDialog(false);
 	};
 
+	/**
+	 * Validates the current order before saving.
+	 *
+	 * @returns {boolean} True if valid, false otherwise.
+	 */
 	const validateOrder = () => {
 		const { time, total, employee_id } = currentOrder;
 
@@ -165,7 +211,6 @@ function Orders() {
 			setSnackbarOpen(true);
 			return false;
 		}
-
 
 		const orderTime = new Date(time);
 		if (isNaN(orderTime.getTime())) {
@@ -191,7 +236,6 @@ function Orders() {
 			return false;
 		}
 
-
 		const employeeIdValue = parseInt(employee_id);
 		if (
 			isNaN(employeeIdValue) ||
@@ -207,6 +251,9 @@ function Orders() {
 		return true;
 	};
 
+	/**
+	 * Saves the order (add or edit) after validation.
+	 */
 	const handleDialogSave = async () => {
 		if (!validateOrder()) {
 			return;
@@ -216,24 +263,28 @@ function Orders() {
 
 		try {
 			if (dialogType === "Add") {
-				await axios.post("https://project-3-team-4b-server.vercel.app/api/orders", {
-					time,
-					total: parseFloat(total),
-					employee_id: parseInt(employee_id),
-				});
+				await axios.post(
+					"https://project-3-team-4b-server.vercel.app/api/orders",
+					{
+						time,
+						total: parseFloat(total),
+						employee_id: parseInt(employee_id),
+					}
+				);
 				setSnackbarMessage("Order added successfully.");
-				setSnackbarSeverity("success");
-				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`https://project-3-team-4b-server.vercel.app/api/orders/${order_id}`, {
-					time,
-					total: parseFloat(total),
-					employee_id: parseInt(employee_id),
-				});
+				await axios.put(
+					`https://project-3-team-4b-server.vercel.app/api/orders/${order_id}`,
+					{
+						time,
+						total: parseFloat(total),
+						employee_id: parseInt(employee_id),
+					}
+				);
 				setSnackbarMessage("Order updated successfully.");
-				setSnackbarSeverity("success");
-				setSnackbarOpen(true);
 			}
+			setSnackbarSeverity("success");
+			setSnackbarOpen(true);
 			fetchOrderData();
 			setOpenDialog(false);
 		} catch (error) {
@@ -251,21 +302,14 @@ function Orders() {
 
 	const columns = [
 		{ field: "order_id", headerName: "ID", width: 60 },
-		{
-			field: "time",
-			headerName: "Time",
-			width: 180,
-		},
+		{ field: "time", headerName: "Time", width: 180 },
 		{
 			field: "total",
 			headerName: "Total",
 			width: 90,
 			renderCell: (params) => {
 				const value = parseFloat(params.row.total);
-				if (isNaN(value)) {
-					return "$0.00";
-				}
-				return `$${value.toFixed(2)}`;
+				return isNaN(value) ? "$0.00" : `$${value.toFixed(2)}`;
 			},
 		},
 		{
@@ -301,6 +345,7 @@ function Orders() {
 
 	return (
 		<Box sx={{ height: "100%" }}>
+			{/* Search and Add New Order Section */}
 			<Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
 				<TextField
 					label="Search Orders"
@@ -326,6 +371,7 @@ function Orders() {
 				</Button>
 			</Box>
 
+			{/* Orders Data Grid */}
 			<Box sx={{ height: "95%", width: "100%" }}>
 				{loading ? (
 					<CircularProgress />
@@ -340,6 +386,7 @@ function Orders() {
 				)}
 			</Box>
 
+			{/* Add/Edit Order Dialog */}
 			<Dialog open={openDialog} onClose={handleDialogClose}>
 				<DialogTitle>{dialogType} Order</DialogTitle>
 				<DialogContent>
@@ -404,6 +451,7 @@ function Orders() {
 				</DialogActions>
 			</Dialog>
 
+			{/* Snackbar Notification */}
 			<Snackbar
 				open={snackbarOpen}
 				autoHideDuration={6000}
@@ -419,6 +467,7 @@ function Orders() {
 				</Alert>
 			</Snackbar>
 
+			{/* Delete Confirmation Dialog */}
 			<Dialog
 				open={confirmDialogOpen}
 				onClose={() => setConfirmDialogOpen(false)}

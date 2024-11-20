@@ -19,6 +19,11 @@ import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Inventory component for managing and displaying inventory items.
+ *
+ * @returns {JSX.Element} The rendered Inventory component.
+ */
 function Inventory() {
 	const [inventoryData, setInventoryData] = useState([]);
 	const [searchText, setSearchText] = useState("");
@@ -44,9 +49,14 @@ function Inventory() {
 		fetchInventoryData();
 	}, []);
 
+	/**
+	 * Fetches inventory data from the server.
+	 */
 	const fetchInventoryData = async () => {
 		try {
-			const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/inventory");
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/inventory"
+			);
 			setInventoryData(response.data);
 		} catch (error) {
 			console.error("Error fetching inventory data:", error);
@@ -56,9 +66,14 @@ function Inventory() {
 		}
 	};
 
+	/**
+	 * Handles the search functionality.
+	 */
 	const handleSearch = async () => {
 		try {
-			const response = await axios.get(`https://project-3-team-4b-server.vercel.app/api/inventory?search=${searchText}`);
+			const response = await axios.get(
+				`https://project-3-team-4b-server.vercel.app/api/inventory?search=${searchText}`
+			);
 			setInventoryData(response.data);
 		} catch (error) {
 			console.error("Error searching inventory items:", error);
@@ -68,11 +83,17 @@ function Inventory() {
 		}
 	};
 
+	/**
+	 * Clears the search text and reloads the inventory data.
+	 */
 	const handleClearSearch = () => {
 		setSearchText("");
 		fetchInventoryData();
 	};
 
+	/**
+	 * Opens the dialog to add a new inventory item.
+	 */
 	const handleAddInventoryItem = () => {
 		setDialogType("Add");
 		setCurrentItem({
@@ -85,20 +106,35 @@ function Inventory() {
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the dialog to edit an existing inventory item.
+	 *
+	 * @param {Object} item - The inventory item to edit.
+	 */
 	const handleEditInventoryItem = (item) => {
 		setDialogType("Edit");
 		setCurrentItem({ ...item });
 		setOpenDialog(true);
 	};
 
+	/**
+	 * Opens the confirmation dialog to delete an inventory item.
+	 *
+	 * @param {number} inventory_id - The ID of the inventory item to delete.
+	 */
 	const handleDeleteInventoryItem = (inventory_id) => {
 		setItemToDelete(inventory_id);
 		setConfirmDialogOpen(true);
 	};
 
+	/**
+	 * Confirms and deletes the selected inventory item.
+	 */
 	const handleConfirmDelete = async () => {
 		try {
-			await axios.delete(`https://project-3-team-4b-server.vercel.app/api/inventory/${itemToDelete}`);
+			await axios.delete(
+				`https://project-3-team-4b-server.vercel.app/api/inventory/${itemToDelete}`
+			);
 			fetchInventoryData();
 			setSnackbarMessage("Inventory item deleted successfully.");
 			setSnackbarSeverity("success");
@@ -114,10 +150,16 @@ function Inventory() {
 		}
 	};
 
+	/**
+	 * Closes the add/edit dialog.
+	 */
 	const handleDialogClose = () => {
 		setOpenDialog(false);
 	};
 
+	/**
+	 * Saves the inventory item (add or edit) after validation.
+	 */
 	const handleDialogSave = async () => {
 		const { inventory_id, name, cost, max_qty, qty } = currentItem;
 		const trimmedName = name.trim();
@@ -169,22 +211,28 @@ function Inventory() {
 					return;
 				}
 
-				await axios.post("https://project-3-team-4b-server.vercel.app/api/inventory", {
-					name: trimmedName,
-					cost: parsedCost,
-					max_qty: parsedMaxQty,
-					qty: parsedQty,
-				});
+				await axios.post(
+					"https://project-3-team-4b-server.vercel.app/api/inventory",
+					{
+						name: trimmedName,
+						cost: parsedCost,
+						max_qty: parsedMaxQty,
+						qty: parsedQty,
+					}
+				);
 				setSnackbarMessage("Inventory item added successfully.");
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(`https://project-3-team-4b-server.vercel.app/api/inventory/${inventory_id}`, {
-					name: trimmedName,
-					cost: parsedCost,
-					max_qty: parsedMaxQty,
-					qty: parsedQty,
-				});
+				await axios.put(
+					`https://project-3-team-4b-server.vercel.app/api/inventory/${inventory_id}`,
+					{
+						name: trimmedName,
+						cost: parsedCost,
+						max_qty: parsedMaxQty,
+						qty: parsedQty,
+					}
+				);
 				setSnackbarMessage("Inventory item updated successfully.");
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
@@ -213,10 +261,7 @@ function Inventory() {
 			width: 100,
 			renderCell: (params) => {
 				const value = parseFloat(params.row.cost);
-				if (isNaN(value)) {
-					return "$0.00";
-				}
-				return `$${value.toFixed(2)}`;
+				return isNaN(value) ? "$0.00" : `$${value.toFixed(2)}`;
 			},
 		},
 		{ field: "qty", headerName: "Qty", width: 80 },
@@ -347,6 +392,7 @@ function Inventory() {
 				</DialogActions>
 			</Dialog>
 
+			{/* Delete Confirmation Dialog */}
 			<Dialog
 				open={confirmDialogOpen}
 				onClose={() => setConfirmDialogOpen(false)}
@@ -369,6 +415,7 @@ function Inventory() {
 				</DialogActions>
 			</Dialog>
 
+			{/* Snackbar Notification */}
 			<Snackbar
 				open={snackbarOpen}
 				autoHideDuration={6000}

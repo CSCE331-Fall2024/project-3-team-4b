@@ -18,9 +18,23 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import SwitchAccountIcon from "@mui/icons-material/SwitchAccount";
 
+/**
+ * Navbar component that renders a navigation drawer with sections and user options.
+ *
+ * @param {Object} props - Component properties.
+ * @param {string} props.employeeName - The name of the logged-in employee.
+ * @param {string} props.selectedSection - The currently selected section name.
+ * @param {function} props.onSectionChange - Callback function invoked when a section is selected.
+ * @returns {JSX.Element} The rendered Navbar component.
+ */
 function Navbar({ employeeName, selectedSection, onSectionChange }) {
+	/** The width of the navigation drawer in pixels. */
 	const drawerWidth = 240;
 
+	/**
+	 * Array of section objects for the navigation menu.
+	 * @type {Array<{text: string, icon: JSX.Element}>}
+	 */
 	const sections = [
 		{ text: "Menu", icon: <MenuBookIcon /> },
 		{ text: "Inventory", icon: <InventoryIcon /> },

@@ -37,6 +37,11 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 import DateRangeIcon from "@mui/icons-material/DateRange";
 
+/**
+ * Analytics component for generating and displaying various reports.
+ *
+ * @returns {JSX.Element} The rendered Analytics component.
+ */
 function Analytics() {
 	const [selectedReport, setSelectedReport] = useState("");
 	const [openDialog, setOpenDialog] = useState(false);
@@ -90,6 +95,11 @@ function Analytics() {
 		},
 	];
 
+	/**
+	 * Opens the dialog for generating a report.
+	 *
+	 * @param {string} report - The selected report type.
+	 */
 	const handleOpenDialog = (report) => {
 		if (report !== selectedReport) {
 			setReportParams({});
@@ -101,16 +111,29 @@ function Analytics() {
 		setError("");
 	};
 
+	/**
+	 * Closes the report generation dialog.
+	 */
 	const handleCloseDialog = () => {
 		setOpenDialog(false);
 		setError("");
 	};
 
+	/**
+	 * Handles changes to report parameters input fields.
+	 *
+	 * @param {Object} e - The event object from the input field.
+	 */
 	const handleParamChange = (e) => {
 		const { name, value } = e.target;
 		setReportParams((prev) => ({ ...prev, [name]: value }));
 	};
 
+	/**
+	 * Validates the report parameters based on the selected report.
+	 *
+	 * @returns {boolean} True if parameters are valid, false otherwise.
+	 */
 	const validateParams = () => {
 		let isValid = true;
 		let errorMsg = "";
@@ -187,6 +210,9 @@ function Analytics() {
 		return isValid;
 	};
 
+	/**
+	 * Generates the selected report by fetching data from the server.
+	 */
 	const handleGenerateReport = async () => {
 		setError("");
 		if (!validateParams()) {
@@ -198,56 +224,74 @@ function Analytics() {
 			let response;
 			switch (selectedReport) {
 				case "lowStock":
-					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/low-stock", {
-						params: {
-							limit: parseInt(reportParams.limit, 10) || 10,
-						},
-					});
+					response = await axios.get(
+						"https://project-3-team-4b-server.vercel.app/api/reports/low-stock",
+						{
+							params: {
+								limit: parseInt(reportParams.limit, 10) || 10,
+							},
+						}
+					);
 					setReportData(response.data);
 					break;
 				case "highSalesEmployees":
-					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/high-sales-employees", {
-						params: {
-							startDate: reportParams.startDate,
-							endDate: reportParams.endDate,
-							limit: parseInt(reportParams.limit, 10) || 10,
-						},
-					});
+					response = await axios.get(
+						"https://project-3-team-4b-server.vercel.app/api/reports/high-sales-employees",
+						{
+							params: {
+								startDate: reportParams.startDate,
+								endDate: reportParams.endDate,
+								limit: parseInt(reportParams.limit, 10) || 10,
+							},
+						}
+					);
 					setReportData(response.data);
 					break;
 				case "itemSales":
-					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/item-sales", {
-						params: {
-							startDateTime: reportParams.startDateTime,
-							endDateTime: reportParams.endDateTime,
-							limit: parseInt(reportParams.limit, 10) || 10,
-						},
-					});
+					response = await axios.get(
+						"https://project-3-team-4b-server.vercel.app/api/reports/item-sales",
+						{
+							params: {
+								startDateTime: reportParams.startDateTime,
+								endDateTime: reportParams.endDateTime,
+								limit: parseInt(reportParams.limit, 10) || 10,
+							},
+						}
+					);
 					setReportData(response.data);
 					break;
 				case "hourlySales":
-					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/hourly-sales", {
-						params: {
-							date: reportParams.date,
-						},
-					});
+					response = await axios.get(
+						"https://project-3-team-4b-server.vercel.app/api/reports/hourly-sales",
+						{
+							params: {
+								date: reportParams.date,
+							},
+						}
+					);
 					setReportData(response.data);
 					break;
 				case "employeeOrders":
-					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/employee-orders", {
-						params: {
-							employeeName: reportParams.employeeName,
-							date: reportParams.date,
-						},
-					});
+					response = await axios.get(
+						"https://project-3-team-4b-server.vercel.app/api/reports/employee-orders",
+						{
+							params: {
+								employeeName: reportParams.employeeName,
+								date: reportParams.date,
+							},
+						}
+					);
 					setReportData(response.data);
 					break;
 				case "eodReport":
-					response = await axios.get("https://project-3-team-4b-server.vercel.app/api/reports/eod", {
-						params: {
-							date: reportParams.date,
-						},
-					});
+					response = await axios.get(
+						"https://project-3-team-4b-server.vercel.app/api/reports/eod",
+						{
+							params: {
+								date: reportParams.date,
+							},
+						}
+					);
 					setEodData(response.data);
 					break;
 				default:
@@ -273,11 +317,22 @@ function Analytics() {
 		}
 	};
 
+	/**
+	 * Formats a time tick label for charts.
+	 *
+	 * @param {string} tickItem - The tick item to format.
+	 * @returns {string} The formatted time string.
+	 */
 	const formatTimeLabel = (tickItem) => {
 		const date = new Date(tickItem);
 		return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 	};
 
+	/**
+	 * Renders the content of the report generation dialog based on the selected report.
+	 *
+	 * @returns {JSX.Element|null} The dialog content elements.
+	 */
 	const renderDialogContent = () => {
 		switch (selectedReport) {
 			case "lowStock":
@@ -423,6 +478,11 @@ function Analytics() {
 		}
 	};
 
+	/**
+	 * Renders the report visualization based on the selected report and fetched data.
+	 *
+	 * @returns {JSX.Element} The report visualization elements.
+	 */
 	const renderReportVisualization = () => {
 		return (
 			<Paper
