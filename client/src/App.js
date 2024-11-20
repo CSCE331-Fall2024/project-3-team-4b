@@ -6,20 +6,23 @@ import Menu from './pages/Menu';
 import Customer from './pages/Customer';
 import Cashier from './pages/Cashier';
 import Manager from './pages/Manager';
+import { AuthProvider } from "./LoginComponents/AuthContext";
 
 function App() {
 	return (
-		<div className="App">
-			<Router>
-				<Routes>
-					<Route path="/menu" element={<Menu />} />
-					<Route path="/customer" element={<Customer />} />
-					<Route path="/cashier" element={<Cashier />} />
-					<Route path="/manager" element={<Manager />} />
-					<Route path="/" element={<Login />} />
-				</Routes>
-			</Router>
-		</div>
+		<AuthProvider>
+			<div className="App">
+				<Router>
+					<Routes>
+						<Route path="/menu" element={<Menu />} />
+						<Route path="/customer" element={<Customer />} />
+						<Route path="/cashier" element={<Cashier />} />
+						<Route path="/manager" element={<Manager />} />
+						<Route path="/" element={<Login />} />
+					</Routes>
+				</Router>
+			</div>
+		</AuthProvider>
 	);
 }
 export default App;

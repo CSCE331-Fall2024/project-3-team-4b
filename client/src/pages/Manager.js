@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Box } from "@mui/material";
-
+import { useNavigate } from "react-router-dom";
 import Navbar from "../ManagerComponents/Navbar";
 import Menu from "../ManagerComponents/Menu";
 import Inventory from "../ManagerComponents/Inventory";
 import Orders from "../ManagerComponents/Orders";
 import Employees from "../ManagerComponents/Employees";
 import Analytics from "../ManagerComponents/Analytics";
+
+import { AuthContext } from "../LoginComponents/AuthContext";
 
 /**
  * Manager component that serves as the main layout for the manager interface.
@@ -16,7 +18,8 @@ import Analytics from "../ManagerComponents/Analytics";
  */
 function Manager() {
 	const [selectedSection, setSelectedSection] = useState("Menu");
-	const employeeName = "Sage";
+	const { user, logout } = useContext(AuthContext); // Use AuthContext to access user and logout function
+	const navigate = useNavigate();
 
 	/**
 	 * Handles the change of the selected section in the navigation.
@@ -24,7 +27,16 @@ function Manager() {
 	 * @param {string} section - The section selected by the user.
 	 */
 	const handleSectionChange = (section) => {
-		setSelectedSection(section);
+		if (section === "Logout" || section === "Switch User") {
+			logout();
+			if (section === "Switch User") {
+				navigate("/", { state: { forceGoogleAccountSelection: true } });
+			} else {
+				navigate("/");
+			}
+		} else {
+			setSelectedSection(section);
+		}
 	};
 
 	return (
@@ -36,7 +48,7 @@ function Manager() {
 			}}
 		>
 			<Navbar
-				employeeName={employeeName}
+				employeeName={user ? user.name : "Guest"}
 				selectedSection={selectedSection}
 				onSectionChange={handleSectionChange}
 			/>
