@@ -246,7 +246,7 @@ function RestaurantMenu() {
             </Button>
 
             <Box sx={{ flex: 2, padding: 2 }}>
-                <Typography variant="h4" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold", textTransform: "uppercase" }}>Select a Container</Typography>
+                <Typography variant="h4" sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "bold", textTransform: "uppercase" }}>Select a Container</Typography>
                 <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, marginBottom: 2 }}>
                     {containerData.map((container) => (
                         <Button
@@ -266,9 +266,9 @@ function RestaurantMenu() {
                                 alt={container.name}
                                 style={{ width: "214px", height: "164px", borderRadius: 8 }}
                             />
-                            <Typography sx={{ marginTop: 1, fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold", textTransform: "capitalize" }}>{container.name}</Typography>
+                            <Typography sx={{ marginTop: 1, fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "bold", textTransform: "capitalize" }}>{container.name}</Typography>
                             {/* Conditionally render price */}
-                            {container.price !== 0 && <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Price: ${container.price}</Typography>}
+                            {container.price !== 0 && <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>Price: ${container.price}</Typography>}
                         </Button>
                     ))}
                 </Box>
@@ -276,7 +276,7 @@ function RestaurantMenu() {
                 <Box>
                     {["Entree", "Side", "Appetizer", "Drink"].map((type) => (
                         <Box key={type} sx={{ marginBottom: 2 }}>
-                            <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold" }}>{type}s</Typography>
+                            <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "bold" }}>{type}s</Typography>
                             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2 }}>
                                 {menuData
                                     .filter((item) => item.type === type)
@@ -288,8 +288,8 @@ function RestaurantMenu() {
                                             }}
                                         >
                                             <Button onClick={() => handleAddItem(item)}>
-                                                {item.name}
-                                                <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>
+                                                <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>{item.name}</Typography>
+                                                <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>
                                                     {/* Display dynamically fetched prices */}
                                                     {item.type === "Appetizer" && ` - $${appetizerPrice.toFixed(2)}`}
                                                     {item.type === "Drink" && ` - $${drinkPrice.toFixed(2)}`}
@@ -311,29 +311,29 @@ function RestaurantMenu() {
             {/* Right Section - Order Summary */}
             <Box sx={{ flex: 1, padding: 2, borderLeft: "1px solid #ccc" }}>
                 {/* Sub-order summary */}
-                <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold" }}>Sub-Order Summary</Typography>
+                <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "bold" }}>Sub-Order Summary</Typography>
                 <Box>
                     {subOrderSummary.container && (
                         <Box>
-                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{subOrderSummary.container.name}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>{subOrderSummary.container.name}</Typography>
                             {/* Conditionally render price */}
                             {subOrderSummary.container.price !== 0 && (
-                                <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Price: ${subOrderSummary.container.price}</Typography>
+                                <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>Price: ${subOrderSummary.container.price}</Typography>
                             )}
                         </Box>
                     )}
 
                     {subOrderSummary.items.map((item) => (
                         <Box key={item.menu_id} sx={{ marginBottom: 1 }}>
-                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{item.name}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>{item.name}</Typography>
                             {/* Conditionally render price */}
-                            {item.extra_cost !== 0 && <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Price: ${item.extra_cost}</Typography>}
+                            {item.extra_cost !== 0 && <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>Price: ${item.extra_cost}</Typography>}
                             <Button onClick={() => handleRemoveItem(item)}>Remove</Button>
                         </Box>
                     ))}
                 </Box>
 
-                <Typography variant="h6" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Subtotal: ${subOrderSummary.subtotal.toFixed(2)}</Typography>
+                <Typography variant="h6" sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>Subtotal: ${subOrderSummary.subtotal.toFixed(2)}</Typography>
                 <Button
                     onClick={handleAddToOrder}
                     variant="contained"
@@ -345,14 +345,14 @@ function RestaurantMenu() {
 
                 {/* Main Order Summary */}
                 <Box sx={{ marginTop: 2 }}>
-                    <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "bold" }}>Main Order Summary</Typography>
+                    <Typography variant="h5" sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "bold" }}>Main Order Summary</Typography>
                     {mainOrderSummary.map((order, index) => (
                         <Box key={index}>
-                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{order.container.name}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>{order.container.name}</Typography>
                             {order.items.map((item) => (
-                                <Typography key={item.menu_id} sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>{item.name}</Typography>
+                                <Typography key={item.menu_id} sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>{item.name}</Typography>
                             ))}
-                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.5rem", fontWeight: "normal" }}>Subtotal: ${order.subtotal.toFixed(2)}</Typography>
+                            <Typography sx={{ fontSize: isLargeText ? "2rem" : "1.0rem", fontWeight: "normal" }}>Subtotal: ${order.subtotal.toFixed(2)}</Typography>
                         </Box>
                     ))}
                     {mainOrderSummary.length > 0 && (
