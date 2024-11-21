@@ -4,8 +4,9 @@ import MenuCategories from "../CashierComponents/MenuCategories";
 import CategoryItems from "../CashierComponents/CategoryItems";
 import OrderSummary from "../CashierComponents/OrderSummary";
 import { Box, Button, Typography } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
-function Cashier() {
+function Cashier( {role, user} ) {
     const [selectedCategory, setSelectedCategory] = useState("Containers");
     const [currentContainerId, setCurrentContainerId] = useState(null); // Track the active container ID
     const [orderItems, setOrderItems] = useState([]);
@@ -18,12 +19,19 @@ function Cashier() {
     });
     const [loading, setLoading] = useState(true);
     const [entreesRemaining, setEntreesRemaining] = useState(0);
+    const navigate = useNavigate();
 
     // Fetch menu data and container data on mount
     useEffect(() => {
         fetchMenuAndContainerData();
     }, []);
 
+    useEffect(() => {
+        if(role !== "cashier"){
+            navigate('/');
+        }
+    }, [role, navigate]);
+    
     const fetchMenuAndContainerData = async () => {
         try {
             setLoading(true);

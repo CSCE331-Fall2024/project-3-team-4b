@@ -56,9 +56,8 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-export default function SignIn({ user }) {
+export default function SignIn({ role, setRole, user, setUser }) {
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
   const navigate = useNavigate();
