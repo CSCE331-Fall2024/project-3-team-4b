@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 
 import Navbar from "../ManagerComponents/Navbar";
@@ -7,6 +7,7 @@ import Inventory from "../ManagerComponents/Inventory";
 import Orders from "../ManagerComponents/Orders";
 import Employees from "../ManagerComponents/Employees";
 import Analytics from "../ManagerComponents/Analytics";
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Manager component that serves as the main layout for the manager interface.
@@ -14,9 +15,9 @@ import Analytics from "../ManagerComponents/Analytics";
  *
  * @returns {JSX.Element} The rendered Manager component.
  */
-function Manager() {
+function Manager( {role, user} ) {
 	const [selectedSection, setSelectedSection] = useState("Menu");
-	const employeeName = "Sage";
+	const employeeName = user.name;
 
 	/**
 	 * Handles the change of the selected section in the navigation.
@@ -26,6 +27,15 @@ function Manager() {
 	const handleSectionChange = (section) => {
 		setSelectedSection(section);
 	};
+
+	const navigate = useNavigate();
+
+    // Fetch menu data and container data on mount
+    useEffect(() => {
+        if(role !== "manager"){
+            navigate('/');
+        }
+    }, [role, navigate]);
 
 	return (
 		<Box

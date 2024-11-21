@@ -5,9 +5,8 @@ import axios from 'axios';
 import NavigateButton from '../LoginComponents/NavigateButton'
 import SignIn from '../LoginComponents/SignIn'
 
-function Login() {
+function Login({role, setRole, user, setUser}) {
   const [token, setToken] = useState(null);
-  const [user, setUser] = useState({});
   const clientID = '467685170366-60gbsrll7nor66ru5uaj5k3750kk0g6h.apps.googleusercontent.com';
 
   const onSuccess = (res) => {
@@ -36,7 +35,7 @@ function Login() {
           <GoogleOAuthProvider clientId={clientID}>
             <div>
               {token ? (
-                <SignIn user={user}/>
+                <SignIn role={role} setRole={setRole} user={user} setUser={setUser}/>
               ) : (
                 <div>
                   <h1>Employee Side</h1>
