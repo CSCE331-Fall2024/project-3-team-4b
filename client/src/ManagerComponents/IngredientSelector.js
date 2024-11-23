@@ -1,5 +1,3 @@
-// IngredientSelector.js
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -16,6 +14,19 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 import { Snackbar, Alert } from "@mui/material";
 
+/**
+ * IngredientSelector component allows users to select ingredients from the inventory
+ * and specify quantities for a recipe.
+ *
+ * @component
+ * @param {Object} props - The component props.
+ * @param {boolean} props.open - Determines if the dialog is open.
+ * @param {function} props.onClose - Callback function to close the dialog.
+ * @param {function} props.onConfirm - Callback function to confirm the selected ingredients.
+ * @param {Array} props.currentRecipe - The current recipe with selected ingredients.
+ *
+ * @returns {JSX.Element} The IngredientSelector component.
+ */
 function IngredientSelector({ open, onClose, onConfirm, currentRecipe }) {
 	const [selectedIngredients, setSelectedIngredients] = useState([]);
 	const [inventoryData, setInventoryData] = useState([]);
@@ -33,7 +44,6 @@ function IngredientSelector({ open, onClose, onConfirm, currentRecipe }) {
 		if (inventoryData.length > 0) {
 			initializeSelectedIngredients();
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [inventoryData, currentRecipe]);
 
 	const fetchInventoryData = async () => {
@@ -128,10 +138,10 @@ function IngredientSelector({ open, onClose, onConfirm, currentRecipe }) {
 						onChange={(e) => {
 							handleIngredientQtyChange(params.row.id, e.target.value);
 						}}
-						placeholder="0"
+						placeholder="1"
 						size="small"
 						type="number"
-						inputProps={{ min: 0, step: "0.01" }}
+						inputProps={{ min: 1, step: "1" }}
 					/>
 				) : (
 					""
