@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+// Menu.js
 
+import React, { useState, useEffect } from "react";
+import IngredientSelector from "./IngredientSelector";
 import { DataGrid } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -22,6 +24,7 @@ import {
 	IconButton,
 	Snackbar,
 	Alert,
+	Typography,
 } from "@mui/material";
 
 /**
@@ -52,6 +55,11 @@ function Menu() {
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [itemToDelete, setItemToDelete] = useState(null);
 
+	// Recipe-related states
+	const [currentRecipe, setCurrentRecipe] = useState([]);
+	const [recipeModalOpen, setRecipeModalOpen] = useState(false);
+	const [recipeChanged, setRecipeChanged] = useState(false);
+
 	useEffect(() => {
 		fetchMenuData();
 	}, []);
@@ -64,6 +72,7 @@ function Menu() {
 			const response = await axios.get(
 				"https://project-3-team-4b-server.vercel.app/api/menu"
 			);
+			console.log("Menu Data:", response.data); // For debugging
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
@@ -110,6 +119,8 @@ function Menu() {
 			extra_cost: "",
 			calories: "",
 		});
+		setCurrentRecipe([]); // Reset current recipe
+		setRecipeChanged(false);
 		setOpenDialog(true);
 	};
 
@@ -117,9 +128,34 @@ function Menu() {
 	 * Opens the dialog to edit an existing menu item.
 	 * @param {Object} item - The menu item to edit.
 	 */
-	const handleEditMenuItem = (item) => {
+	const handleEditMenuItem = async (item) => {
+		console.log("Editing item:", item); // For debugging
+		console.log("...item", ...item); // For debugging
 		setDialogType("Edit");
 		setCurrentItem({ ...item });
+		setRecipeChanged(false);
+		try {
+			const menuId = item.menu_id;
+			const response = await axios.get(
+				`http://localhost:5001/api/Recipe/menu/${menuId}`
+			);
+			if (response.data && response.data.length > 0) {
+				setCurrentRecipe(
+					response.data.map((recipe) => ({
+						inventory_id: recipe.inventory_id,
+						qty: recipe.qty,
+						name: recipe.name,
+					}))
+				);
+			} else {
+				setCurrentRecipe([]);
+			}
+		} catch (error) {
+			console.error("Error fetching recipe data:", error);
+			setSnackbarMessage("Error fetching recipe data.");
+			setSnackbarSeverity("error");
+			setSnackbarOpen(true);
+		}
 		setOpenDialog(true);
 	};
 
@@ -137,6 +173,11 @@ function Menu() {
 	 */
 	const handleConfirmDelete = async () => {
 		try {
+			// Delete recipes associated with the menu item
+			await axios.delete(
+				`https://project-3-team-4b-server.vercel.app/api/Recipe/menu/${itemToDelete}`
+			);
+			// Delete the menu item
 			await axios.delete(
 				`https://project-3-team-4b-server.vercel.app/api/menu/${itemToDelete}`
 			);
@@ -160,6 +201,71 @@ function Menu() {
 	 */
 	const handleDialogClose = () => {
 		setOpenDialog(false);
+		// Reset states to prevent old data from persisting
+		setCurrentItem({
+			menu_id: "",
+			name: "",
+			type: "",
+			extra_cost: "",
+			calories: "",
+		});
+		setCurrentRecipe([]);
+		setRecipeChanged(false);
+	};
+
+	/**
+	 * Opens the recipe modal to add or edit a recipe.
+	 */
+	const handleAddEditRecipe = () => {
+		setRecipeModalOpen(true);
+	};
+
+	/**
+	 * Handles the recipe confirmation from the IngredientSelector component.
+	 * @param {Array} selectedIngredients - The selected ingredients with quantities.
+	 */
+	const handleRecipeConfirm = (selectedIngredients) => {
+		if (selectedIngredients.length === 0) {
+			setSnackbarMessage("Please select at least one ingredient.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return;
+		}
+
+		// Create a new recipe array from selected ingredients
+		const newRecipe = selectedIngredients.map((ingredient) => ({
+			inventory_id: ingredient.inventory_id,
+			qty: parseFloat(ingredient.qty),
+			name: ingredient.name,
+		}));
+
+		// Sort both recipes by inventory_id to ensure consistent order
+		const sortedCurrentRecipe = [...currentRecipe].sort(
+			(a, b) => a.inventory_id - b.inventory_id
+		);
+		const sortedNewRecipe = [...newRecipe].sort(
+			(a, b) => a.inventory_id - b.inventory_id
+		);
+
+		// Compare the sorted recipes
+		const recipesEqual =
+			sortedCurrentRecipe.length === sortedNewRecipe.length &&
+			sortedCurrentRecipe.every((item, index) => {
+				const newItem = sortedNewRecipe[index];
+				return (
+					item.inventory_id === newItem.inventory_id && item.qty === newItem.qty
+				);
+			});
+
+		setCurrentRecipe(newRecipe);
+		setRecipeChanged(!recipesEqual); // Set to true only if recipes differ
+		setRecipeModalOpen(false);
+
+		if (!recipesEqual) {
+			setSnackbarMessage("Recipe updated successfully.");
+			setSnackbarSeverity("success");
+			setSnackbarOpen(true);
+		}
 	};
 
 	/**
@@ -168,6 +274,7 @@ function Menu() {
 	const handleDialogSave = async () => {
 		const { menu_id, name, type, extra_cost, calories } = currentItem;
 
+		// Validation
 		if (!name || !type || extra_cost === "" || calories === "") {
 			setSnackbarMessage("Please fill all fields.");
 			setSnackbarSeverity("warning");
@@ -182,8 +289,15 @@ function Menu() {
 			return;
 		}
 
-		if (parseInt(calories) < 0) {
+		if (parseInt(calories, 10) < 0) {
 			setSnackbarMessage("Calories cannot be negative.");
+			setSnackbarSeverity("warning");
+			setSnackbarOpen(true);
+			return;
+		}
+
+		if (currentRecipe.length === 0) {
+			setSnackbarMessage("Please add a recipe for this menu item.");
 			setSnackbarSeverity("warning");
 			setSnackbarOpen(true);
 			return;
@@ -191,6 +305,7 @@ function Menu() {
 
 		try {
 			if (dialogType === "Add") {
+				// Check for duplicate name
 				const nameExists = menuData.some(
 					(item) => item.name.toLowerCase() === name.toLowerCase()
 				);
@@ -202,31 +317,100 @@ function Menu() {
 					return;
 				}
 
-				await axios.post(
+				// Create the new menu item
+				const response = await axios.post(
 					"https://project-3-team-4b-server.vercel.app/api/menu",
 					{
 						name,
 						type,
 						extra_cost: parseFloat(extra_cost),
-						calories: parseInt(calories),
+						calories: parseInt(calories, 10),
 					}
 				);
+
+				const newMenuItem = response.data;
+				const newMenuId = newMenuItem.menu_id;
+
+				// Add the recipes
+				for (const recipeItem of currentRecipe) {
+					await axios.post(
+						"https://project-3-team-4b-server.vercel.app/api/Recipe",
+						{
+							menu_id: newMenuId,
+							inventory_id: recipeItem.inventory_id,
+							qty: recipeItem.qty,
+						}
+					);
+				}
+
 				setSnackbarMessage("Menu item added successfully.");
 				setSnackbarSeverity("success");
 				setSnackbarOpen(true);
 			} else if (dialogType === "Edit") {
-				await axios.put(
-					`https://project-3-team-4b-server.vercel.app/api/menu/${menu_id}`,
-					{
-						name,
-						type,
-						extra_cost: parseFloat(extra_cost),
-						calories: parseInt(calories),
+				const originalItem = menuData.find((item) => item.menu_id === menu_id);
+				const menuItemChanged =
+					originalItem.name !== name ||
+					originalItem.type !== type ||
+					parseFloat(originalItem.extra_cost) !== parseFloat(extra_cost) ||
+					parseInt(originalItem.calories, 10) !== parseInt(calories, 10);
+
+				// Check for duplicate name when editing
+				if (
+					originalItem.name.toLowerCase() !== name.toLowerCase() &&
+					menuData.some(
+						(item) =>
+							item.name.toLowerCase() === name.toLowerCase() &&
+							item.menu_id !== menu_id
+					)
+				) {
+					setSnackbarMessage("A menu item with this name already exists.");
+					setSnackbarSeverity("warning");
+					setSnackbarOpen(true);
+					return;
+				}
+
+				// Update menu item if changed
+				if (menuItemChanged) {
+					await axios.put(
+						`https://project-3-team-4b-server.vercel.app/api/menu/${menu_id}`,
+						{
+							name,
+							type,
+							extra_cost: parseFloat(extra_cost),
+							calories: parseInt(calories, 10),
+						}
+					);
+				}
+
+				// Update recipes if changed
+				if (recipeChanged) {
+					// Delete existing recipes for this menu item
+					await axios.delete(
+						`https://project-3-team-4b-server.vercel.app/api/Recipe/menu/${menu_id}`
+					);
+
+					// Add the updated recipes
+					for (const recipeItem of currentRecipe) {
+						await axios.post(
+							"https://project-3-team-4b-server.vercel.app/api/Recipe",
+							{
+								menu_id: menu_id,
+								inventory_id: recipeItem.inventory_id,
+								qty: recipeItem.qty,
+							}
+						);
 					}
-				);
-				setSnackbarMessage("Menu item updated successfully.");
-				setSnackbarSeverity("success");
-				setSnackbarOpen(true);
+				}
+
+				if (menuItemChanged || recipeChanged) {
+					setSnackbarMessage("Menu item updated successfully.");
+					setSnackbarSeverity("success");
+					setSnackbarOpen(true);
+				} else {
+					setSnackbarMessage("No changes made.");
+					setSnackbarSeverity("info");
+					setSnackbarOpen(true);
+				}
 			}
 			fetchMenuData();
 			setOpenDialog(false);
@@ -320,10 +504,22 @@ function Menu() {
 					getRowId={(row) => row.menu_id}
 					disableSelectionOnClick
 					autoPageSize
+					sortModel={[
+						{
+							field: "menu_id",
+							sort: "asc",
+						},
+					]}
 				/>
 			</Box>
 
-			<Dialog open={openDialog} onClose={handleDialogClose}>
+			{/* Add/Edit Menu Item Dialog */}
+			<Dialog
+				open={openDialog}
+				onClose={handleDialogClose}
+				maxWidth="sm"
+				fullWidth
+			>
 				<DialogTitle>{dialogType} Menu Item</DialogTitle>
 				<DialogContent>
 					<TextField
@@ -375,6 +571,35 @@ function Menu() {
 						}
 						sx={{ mt: 2, mb: 1 }}
 					/>
+
+					{/* Display current recipe */}
+					{currentRecipe.length > 0 && (
+						<Box sx={{ mt: 2 }}>
+							<Typography variant="h6">Current Recipe:</Typography>
+							<DataGrid
+								rows={currentRecipe.map((item) => ({
+									id: item.inventory_id, // Use inventory_id for unique IDs
+									name: item.name,
+									qty: item.qty,
+								}))}
+								columns={[
+									{ field: "name", headerName: "Ingredient", flex: 1 },
+									{ field: "qty", headerName: "Quantity", width: 120 },
+								]}
+								autoHeight
+								hideFooter
+							/>
+						</Box>
+					)}
+
+					{/* Add/Edit Recipe Button */}
+					<Button
+						variant="outlined"
+						onClick={handleAddEditRecipe}
+						sx={{ mt: 2 }}
+					>
+						{currentRecipe.length > 0 ? "Edit Recipe" : "Add Recipe"}
+					</Button>
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleDialogClose}>Cancel</Button>
@@ -383,11 +608,20 @@ function Menu() {
 						variant="contained"
 						color="primary"
 					>
-						{dialogType === "Add" ? "Add" : "Update"}
+						{dialogType === "Add" ? "Finish" : "Update"}
 					</Button>
 				</DialogActions>
 			</Dialog>
 
+			{/* Ingredient Selector Component */}
+			<IngredientSelector
+				open={recipeModalOpen}
+				onClose={() => setRecipeModalOpen(false)}
+				onConfirm={handleRecipeConfirm}
+				currentRecipe={currentRecipe}
+			/>
+
+			{/* Snackbar for notifications */}
 			<Snackbar
 				open={snackbarOpen}
 				autoHideDuration={6000}
@@ -403,6 +637,7 @@ function Menu() {
 				</Alert>
 			</Snackbar>
 
+			{/* Confirm Delete Dialog */}
 			<Dialog
 				open={confirmDialogOpen}
 				onClose={() => setConfirmDialogOpen(false)}
