@@ -71,13 +71,13 @@ function Analytics() {
 		},
 		{
 			value: "itemSales",
-			label: "Item Sales Report",
+			label: "Product Usage Report",
 			icon: <AttachMoneyIcon fontSize="large" color="primary" />,
-			description: "Analyze sales of items over a period.",
+			description: "Depicts inventory usage for a specified time period.",
 		},
 		{
 			value: "hourlySales",
-			label: "Hourly Sales Report",
+			label: "Hourly Sales Report (X-Report)",
 			icon: <QueryBuilderIcon fontSize="large" color="primary" />,
 			description: "View sales data by hour.",
 		},
@@ -88,7 +88,7 @@ function Analytics() {
 			description: "Track orders processed by an employee.",
 		},
 		{
-			value: "eodReport",
+			value: "eodReport (Z-Report)",
 			label: "End of Day Report",
 			icon: <DateRangeIcon fontSize="large" color="primary" />,
 			description: "Summary of daily sales and orders.",
@@ -692,7 +692,7 @@ function Analytics() {
 										}}
 									>
 										<Typography variant="h6" gutterBottom>
-											Item Sales
+											Product Usage Chart
 										</Typography>
 										<ResponsiveContainer width="100%" height="90%">
 											<BarChart data={reportData} {...commonProps}>
@@ -711,7 +711,7 @@ function Analytics() {
 													tick={{ fill: "#fff" }}
 													domain={[0, (dataMax) => Math.ceil(dataMax * 1.1)]}
 													label={{
-														value: "Total Quantity Sold",
+														value: "Total Quantity Used",
 														angle: -90,
 														position: "insideLeft",
 														fill: "#fff",
