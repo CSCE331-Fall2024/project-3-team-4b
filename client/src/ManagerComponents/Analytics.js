@@ -26,8 +26,8 @@ import {
 	YAxis,
 	CartesianGrid,
 	Tooltip,
-	Legend,
 	ResponsiveContainer,
+	LabelList,
 } from "recharts";
 import axios from "axios";
 import InventoryIcon from "@mui/icons-material/Inventory";
@@ -232,7 +232,12 @@ function Analytics() {
 							},
 						}
 					);
-					setReportData(response.data);
+					// Ensure stock_percentage is a number
+					const lowStockData = response.data.map((item) => ({
+						...item,
+						stock_percentage: Number(item.stock_percentage),
+					}));
+					setReportData(lowStockData);
 					break;
 				case "highSalesEmployees":
 					response = await axios.get(
@@ -245,7 +250,12 @@ function Analytics() {
 							},
 						}
 					);
-					setReportData(response.data);
+					// Ensure total_sales is a number
+					const highSalesData = response.data.map((item) => ({
+						...item,
+						total_sales: Number(item.total_sales),
+					}));
+					setReportData(highSalesData);
 					break;
 				case "itemSales":
 					response = await axios.get(
@@ -258,7 +268,12 @@ function Analytics() {
 							},
 						}
 					);
-					setReportData(response.data);
+					// Ensure total_quantity_sold is a number
+					const itemSalesData = response.data.map((item) => ({
+						...item,
+						total_quantity_sold: Number(item.total_quantity_sold),
+					}));
+					setReportData(itemSalesData);
 					break;
 				case "hourlySales":
 					response = await axios.get(
@@ -269,7 +284,13 @@ function Analytics() {
 							},
 						}
 					);
-					setReportData(response.data);
+					// Ensure total_sales is a number and hour is a timestamp
+					const hourlySalesData = response.data.map((item) => ({
+						...item,
+						total_sales: Number(item.total_sales),
+						hour: new Date(item.hour).getTime(),
+					}));
+					setReportData(hourlySalesData);
 					break;
 				case "employeeOrders":
 					response = await axios.get(
@@ -281,7 +302,13 @@ function Analytics() {
 							},
 						}
 					);
-					setReportData(response.data);
+					// Ensure order_count is a number and hour is a timestamp
+					const employeeOrdersData = response.data.map((item) => ({
+						...item,
+						order_count: Number(item.order_count),
+						hour: new Date(item.hour).getTime(),
+					}));
+					setReportData(employeeOrdersData);
 					break;
 				case "eodReport":
 					response = await axios.get(
@@ -292,7 +319,15 @@ function Analytics() {
 							},
 						}
 					);
-					setEodData(response.data);
+					// Ensure totalSales is a number and total_orders in employeeOrders are numbers
+					const eodDataResponse = {
+						totalSales: Number(response.data.totalSales),
+						employeeOrders: response.data.employeeOrders.map((item) => ({
+							...item,
+							total_orders: Number(item.total_orders),
+						})),
+					};
+					setEodData(eodDataResponse);
 					break;
 				default:
 					setError("Invalid report type.");
@@ -318,14 +353,17 @@ function Analytics() {
 	};
 
 	/**
-	 * Formats a time tick label for charts.
-	 *
-	 * @param {string} tickItem - The tick item to format.
-	 * @returns {string} The formatted time string.
+	 * Formatter function for currency values
+	 * @param {any} value - The value to format
+	 * @returns {string} Formatted currency string
 	 */
-	const formatTimeLabel = (tickItem) => {
-		const date = new Date(tickItem);
-		return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+	const formatCurrency = (value) => {
+		const numValue = parseFloat(value);
+		if (!isNaN(numValue)) {
+			return `$${numValue.toFixed(2)}`;
+		} else {
+			return "N/A";
+		}
 	};
 
 	/**
@@ -487,11 +525,10 @@ function Analytics() {
 		return (
 			<Paper
 				sx={{
-					mt: 4,
-					p: 2,
 					minHeight: "500px",
 					backgroundColor: "#333",
 					color: "#fff",
+					height: "100%",
 				}}
 			>
 				{loading ? (
@@ -521,24 +558,31 @@ function Analytics() {
 						}
 
 						const commonProps = {
-							margin: { top: 20, right: 30, left: 60, bottom: 80 },
+							margin: { top: 20, right: 30, left: 80, bottom: 100 },
 						};
 
 						switch (selectedReport) {
 							case "lowStock":
 								return (
-									<Box>
+									<Box
+										sx={{
+											height: "100%",
+											p: 2,
+											display: "flex",
+											flexDirection: "column",
+										}}
+									>
 										<Typography variant="h6" gutterBottom>
 											Low Stock Items
 										</Typography>
-										<ResponsiveContainer width="100%" height={500}>
+										<ResponsiveContainer width="100%" height="90%">
 											<BarChart data={reportData} {...commonProps}>
-												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
+												<CartesianGrid strokeDasharray="4 4" stroke="#555" />
 												<XAxis
 													dataKey="name"
 													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
 													interval={0}
-													height={100}
+													fontSize={10}
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
@@ -548,7 +592,8 @@ function Analytics() {
 														angle: -90,
 														position: "insideLeft",
 														fill: "#fff",
-														dy: -10,
+														dx: -40,
+														dy: 0,
 													}}
 												/>
 												<Tooltip
@@ -557,26 +602,38 @@ function Analytics() {
 														color: "#fff",
 													}}
 												/>
-												<Legend />
-												<Bar dataKey="stock_percentage" fill="#82ca9d" />
+												<Bar dataKey="stock_percentage" fill="#D1282E">
+													<LabelList
+														dataKey="stock_percentage"
+														position="top"
+														fill="#fff"
+														formatter={(value) => `${value.toFixed(1)}%`}
+													/>
+												</Bar>
 											</BarChart>
 										</ResponsiveContainer>
 									</Box>
 								);
 							case "highSalesEmployees":
 								return (
-									<Box>
+									<Box
+										sx={{
+											height: "100%",
+											p: 2,
+											display: "flex",
+											flexDirection: "column",
+										}}
+									>
 										<Typography variant="h6" gutterBottom>
 											Top Performing Employees
 										</Typography>
-										<ResponsiveContainer width="100%" height={500}>
+										<ResponsiveContainer width="100%" height="90%">
 											<BarChart data={reportData} {...commonProps}>
 												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
 												<XAxis
 													dataKey="name"
 													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
 													interval={0}
-													height={100}
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
@@ -586,7 +643,8 @@ function Analytics() {
 														angle: -90,
 														position: "insideLeft",
 														fill: "#fff",
-														dy: -10,
+														dx: -40,
+														dy: 0,
 													}}
 												/>
 												<Tooltip
@@ -594,28 +652,46 @@ function Analytics() {
 														backgroundColor: "#444",
 														color: "#fff",
 													}}
-													formatter={(value) => `$${value}`}
+													formatter={formatCurrency}
 												/>
-												<Legend />
-												<Bar dataKey="total_sales" fill="#8884d8" />
+												<Bar dataKey="total_sales" fill="#4CAF50">
+													<LabelList
+														dataKey="total_sales"
+														position="top"
+														fill="#fff"
+														formatter={formatCurrency}
+													/>
+												</Bar>
 											</BarChart>
 										</ResponsiveContainer>
 									</Box>
 								);
+
 							case "itemSales":
 								return (
-									<Box>
+									<Box
+										sx={{
+											height: "100%",
+											p: 2,
+											display: "flex",
+											flexDirection: "column",
+										}}
+									>
 										<Typography variant="h6" gutterBottom>
 											Item Sales
 										</Typography>
-										<ResponsiveContainer width="100%" height={500}>
+										<ResponsiveContainer width="100%" height="90%">
 											<BarChart data={reportData} {...commonProps}>
 												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
 												<XAxis
 													dataKey="item_name"
-													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
+													tick={{
+														angle: -45,
+														textAnchor: "end",
+														fill: "#fff",
+														fontSize: 10, // Reduced font size
+													}}
 													interval={0}
-													height={100}
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
@@ -625,40 +701,59 @@ function Analytics() {
 														angle: -90,
 														position: "insideLeft",
 														fill: "#fff",
-														dy: -10,
+														dx: -40,
+														dy: 0,
 													}}
+													allowDataOverflow={false}
 												/>
+
 												<Tooltip
 													contentStyle={{
 														backgroundColor: "#444",
 														color: "#fff",
 													}}
 												/>
-												<Legend />
-												<Bar dataKey="total_quantity_sold" fill="#82ca9d" />
+												<Bar dataKey="total_quantity_sold" fill="#2196F3">
+													<LabelList
+														dataKey="total_quantity_sold"
+														position="top"
+														fill="#fff"
+													/>
+												</Bar>
 											</BarChart>
 										</ResponsiveContainer>
 									</Box>
 								);
 							case "hourlySales":
 								return (
-									<Box>
+									<Box
+										sx={{
+											height: "100%",
+											p: 2,
+											display: "flex",
+											flexDirection: "column",
+										}}
+									>
 										<Typography variant="h6" gutterBottom>
 											Hourly Sales for {reportParams.date}
 										</Typography>
-										<ResponsiveContainer width="100%" height={500}>
+										<ResponsiveContainer width="100%" height="90%">
 											<LineChart data={reportData} {...commonProps}>
 												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
 												<XAxis
 													dataKey="hour"
-													tickFormatter={(tick) =>
-														new Date(tick).toLocaleTimeString([], {
-															hour: "2-digit",
-															minute: "2-digit",
-														})
-													}
+													tickFormatter={(tick) => {
+														const date = new Date(tick);
+														if (!isNaN(date)) {
+															return date.toLocaleTimeString([], {
+																hour: "2-digit",
+																minute: "2-digit",
+															});
+														} else {
+															return tick;
+														}
+													}}
 													tick={{ fill: "#fff" }}
-													height={50}
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
@@ -671,7 +766,8 @@ function Analytics() {
 														angle: -90,
 														position: "insideLeft",
 														fill: "#fff",
-														dy: -10,
+														dx: -40,
+														dy: 0,
 													}}
 												/>
 												<Tooltip
@@ -679,44 +775,68 @@ function Analytics() {
 														backgroundColor: "#444",
 														color: "#fff",
 													}}
-													labelFormatter={(label) =>
-														new Date(label).toLocaleTimeString([], {
-															hour: "2-digit",
-															minute: "2-digit",
-														})
-													}
-													formatter={(value) => `$${value}`}
+													labelFormatter={(label) => {
+														const date = new Date(label);
+														if (!isNaN(date)) {
+															return date.toLocaleTimeString([], {
+																hour: "2-digit",
+																minute: "2-digit",
+															});
+														} else {
+															return label;
+														}
+													}}
+													formatter={formatCurrency}
 												/>
-												<Legend />
 												<Line
 													type="monotone"
 													dataKey="total_sales"
-													stroke="#8884d8"
-												/>
+													stroke="#FF9800"
+													dot={{ r: 5 }}
+													activeDot={{ r: 7 }}
+												>
+													<LabelList
+														dataKey="total_sales"
+														position="top"
+														fill="#fff"
+														formatter={formatCurrency}
+													/>
+												</Line>
 											</LineChart>
 										</ResponsiveContainer>
 									</Box>
 								);
 							case "employeeOrders":
 								return (
-									<Box>
+									<Box
+										sx={{
+											height: "100%",
+											p: 2,
+											display: "flex",
+											flexDirection: "column",
+										}}
+									>
 										<Typography variant="h6" gutterBottom>
 											Orders Processed by {reportParams.employeeName} on{" "}
 											{reportParams.date}
 										</Typography>
-										<ResponsiveContainer width="100%" height={500}>
+										<ResponsiveContainer width="100%" height="90%">
 											<LineChart data={reportData} {...commonProps}>
 												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
 												<XAxis
 													dataKey="hour"
-													tickFormatter={(tick) =>
-														new Date(tick).toLocaleTimeString([], {
-															hour: "2-digit",
-															minute: "2-digit",
-														})
-													}
+													tickFormatter={(tick) => {
+														const date = new Date(tick);
+														if (!isNaN(date)) {
+															return date.toLocaleTimeString([], {
+																hour: "2-digit",
+																minute: "2-digit",
+															});
+														} else {
+															return tick;
+														}
+													}}
 													tick={{ fill: "#fff" }}
-													height={50}
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
@@ -729,7 +849,8 @@ function Analytics() {
 														angle: -90,
 														position: "insideLeft",
 														fill: "#fff",
-														dy: -10,
+														dx: -40,
+														dy: 0,
 													}}
 												/>
 												<Tooltip
@@ -737,20 +858,32 @@ function Analytics() {
 														backgroundColor: "#444",
 														color: "#fff",
 													}}
-													labelFormatter={(label) =>
-														new Date(label).toLocaleTimeString([], {
-															hour: "2-digit",
-															minute: "2-digit",
-														})
-													}
+													labelFormatter={(label) => {
+														const date = new Date(label);
+														if (!isNaN(date)) {
+															return date.toLocaleTimeString([], {
+																hour: "2-digit",
+																minute: "2-digit",
+															});
+														} else {
+															return label;
+														}
+													}}
 													formatter={(value) => `${value} orders`}
 												/>
-												<Legend />
 												<Line
 													type="monotone"
 													dataKey="order_count"
-													stroke="#8884d8"
-												/>
+													stroke="#9C27B0"
+													dot={{ r: 5 }}
+													activeDot={{ r: 7 }}
+												>
+													<LabelList
+														dataKey="order_count"
+														position="top"
+														fill="#fff"
+													/>
+												</Line>
 											</LineChart>
 										</ResponsiveContainer>
 									</Box>
@@ -759,24 +892,30 @@ function Analytics() {
 								if (!eodData) return null;
 								const { totalSales, employeeOrders } = eodData;
 								return (
-									<Box>
+									<Box
+										sx={{
+											height: "100%",
+											p: 2,
+											display: "flex",
+											flexDirection: "column",
+										}}
+									>
 										<Typography variant="h6" gutterBottom>
 											End of Day Report for {reportParams.date}
 										</Typography>
-										<Typography variant="subtitle1">
-											Total Sales: ${totalSales}
+										<Typography variant="subtitle1" sx={{ mb: 2 }}>
+											Total Sales: ${parseFloat(totalSales).toFixed(2)}
 										</Typography>
 										<Typography variant="subtitle1" sx={{ mt: 2 }}>
 											Employee Orders:
 										</Typography>
-										<ResponsiveContainer width="100%" height={500}>
+										<ResponsiveContainer width="100%" height="80%">
 											<BarChart data={employeeOrders} {...commonProps}>
 												<CartesianGrid strokeDasharray="3 3" stroke="#555" />
 												<XAxis
 													dataKey="name"
 													tick={{ angle: -45, textAnchor: "end", fill: "#fff" }}
 													interval={0}
-													height={100}
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
@@ -789,7 +928,8 @@ function Analytics() {
 														angle: -90,
 														position: "insideLeft",
 														fill: "#fff",
-														dy: -10,
+														dx: -40,
+														dy: 0,
 													}}
 												/>
 												<Tooltip
@@ -798,8 +938,13 @@ function Analytics() {
 														color: "#fff",
 													}}
 												/>
-												<Legend />
-												<Bar dataKey="total_orders" fill="#82ca9d" />
+												<Bar dataKey="total_orders" fill="#FF5722">
+													<LabelList
+														dataKey="total_orders"
+														position="top"
+														fill="#fff"
+													/>
+												</Bar>
 											</BarChart>
 										</ResponsiveContainer>
 									</Box>
@@ -814,16 +959,23 @@ function Analytics() {
 	};
 
 	return (
-		<Box sx={{ height: "100%", p: 2 }}>
-			<Box sx={{ flexGrow: 1 }}>
+		<Box
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				height: "100%",
+			}}
+		>
+			<Box sx={{ flexGrow: 1 }}>{renderReportVisualization()}</Box>
+			<Box sx={{ flexShrink: 0, mb: 4, mt: 4 }}>
 				<Grid container spacing={3}>
 					{reportOptions.map((report) => (
 						<Grid item xs={12} sm={6} md={4} key={report.value}>
 							<Card variant="outlined" sx={{ height: "100%" }}>
 								<CardContent>
-									<Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+									<Box sx={{ display: "flex", alignItems: "center", mb: 0 }}>
 										{report.icon}
-										<Typography variant="h6" sx={{ ml: 2 }}>
+										<Typography variant="h6" sx={{ ml: 0 }}>
 											{report.label}
 										</Typography>
 									</Box>
@@ -846,8 +998,6 @@ function Analytics() {
 				</Grid>
 			</Box>
 
-			{renderReportVisualization()}
-
 			<Dialog open={openDialog} onClose={handleCloseDialog}>
 				<DialogTitle>
 					{reportOptions.find((r) => r.value === selectedReport)?.label}
@@ -855,7 +1005,7 @@ function Analytics() {
 				<DialogContent>
 					{renderDialogContent()}
 					{error && (
-						<Typography color="error" variant="body2" sx={{ mt: 1 }}>
+						<Typography color="error" variant="body2" sx={{ mt: 0 }}>
 							{error}
 						</Typography>
 					)}

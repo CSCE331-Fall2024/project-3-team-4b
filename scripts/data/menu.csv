@@ -1,0 +1,21 @@
+menu_id,type,extra_cost,name
+1,Appetizer,0,Chicken Egg Roll
+2,Appetizer,0,Veggie Spring Roll
+3,Appetizer,0,Cream Cheese Rangoon
+4,Appetizer,0,Apple Pie Roll
+5,Side,0,Chow Mein
+6,Side,0,Fried Rice
+7,Side,0,White Steamed Rice
+8,Side,0,Super Greens
+9,Entree,0,The Original Orange Chicken
+10,Entree,0,Grilled Teriyaki Chicken
+11,Entree,1.5,Honey Walnut Shrimp
+12,Entree,0,Broccoli Beef
+13,Entree,0,Mushroom Chicken
+14,Entree,0,Sweet Fire Chicken Breast
+15,Drink,0,Dr Pepper
+16,Drink,0,Sweet Tea
+17,Drink,0,Pepsi
+18,Drink,0,Mountain Dew
+19,Drink,0,Sierra Mist
+20,Drink,0,Water

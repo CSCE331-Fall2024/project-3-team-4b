@@ -1,0 +1,17 @@
+container_id,name,number_of_drinks,number_of_entrees,number_of_sides,number_of_appetizers,price
+1,Bowl,0,1,1,0,8.30
+2,Plate,0,2,1,0,9.80
+3,Bigger Plate,0,3,1,0,11.30
+4,Bowl + Drink,1,1,1,0,10.40
+5,Plate + Drink,1,2,1,0,11.90
+6,Bigger Plate + Drink,1,3,1,0,13.40
+7,A La Carte Entree (Small),0,1,0,0,5.20
+8,A La Carte Entree (Medium),0,1,0,0,8.50
+9,A La Carte Entree (Large),0,1,0,0,11.20
+10,A La Carte Premium Entree (Small),0,1,0,0,6.70
+11,A La Carte Premium Entree (Medium),0,1,0,0,11.50
+12,A La Carte Premium Entree (Large),0,1,0,0,15.70
+13,A La Carte Side (Medium),0,0,1,0,4.40
+14,A La Carte Side (Large),0,0,1,0,5.40
+15,Appetizer,0,0,0,1,3.50
+16,Drink,1,0,0,0,1.50
