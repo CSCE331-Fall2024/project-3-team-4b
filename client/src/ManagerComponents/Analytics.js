@@ -211,6 +211,20 @@ function Analytics() {
 	};
 
 	/**
+	 * Parses a date string in 'YYYY-MM-DD HH:MM:SS' format to a Date object.
+	 *
+	 * @param {string} dateString - The date string to parse.
+	 * @returns {Date} The parsed Date object.
+	 */
+	const parseDateString = (dateString) => {
+		const isoString = dateString.replace(" ", "T");
+		const date = new Date(isoString);
+
+		date.setTime(date.getTime() + 6 * 60 * 60 * 1000);
+		return date;
+	};
+
+	/**
 	 * Generates the selected report by fetching data from the server.
 	 */
 	const handleGenerateReport = async () => {
@@ -288,7 +302,7 @@ function Analytics() {
 					const hourlySalesData = response.data.map((item) => ({
 						...item,
 						total_sales: Number(item.total_sales),
-						hour: new Date(item.hour).getTime(),
+						hour: parseDateString(item.hour).getTime(),
 					}));
 					setReportData(hourlySalesData);
 					break;
@@ -306,7 +320,7 @@ function Analytics() {
 					const employeeOrdersData = response.data.map((item) => ({
 						...item,
 						order_count: Number(item.order_count),
-						hour: new Date(item.hour).getTime(),
+						hour: parseDateString(item.hour).getTime(),
 					}));
 					setReportData(employeeOrdersData);
 					break;
@@ -757,10 +771,7 @@ function Analytics() {
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
-													domain={[
-														(dataMin) => Math.floor(dataMin * 0.9),
-														(dataMax) => Math.ceil(dataMax * 1.1),
-													]}
+													domain={[0, (dataMax) => Math.ceil(dataMax * 1.1)]}
 													label={{
 														value: "Total Sales ($)",
 														angle: -90,
@@ -919,10 +930,7 @@ function Analytics() {
 												/>
 												<YAxis
 													tick={{ fill: "#fff" }}
-													domain={[
-														(dataMin) => Math.floor(dataMin * 0.9),
-														(dataMax) => Math.ceil(dataMax * 1.1),
-													]}
+													domain={[0, (dataMax) => Math.ceil(dataMax * 1.1)]}
 													label={{
 														value: "Total Orders",
 														angle: -90,
