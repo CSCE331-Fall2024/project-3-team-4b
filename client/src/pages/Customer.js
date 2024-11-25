@@ -71,8 +71,12 @@ const Customer = () => {
 					</Button>
 				</Toolbar>
 			</AppBar>
-			<Container maxWidth="xl" disableGutters>
-				<Box>
+			<Container
+				maxWidth="xl"
+				disableGutters
+				sx={{ height: "calc(100vh - 64px)" }}
+			>
+				<Box sx={{ height: "100%" }}>
 					<Kiosk isLargeText={isLargeText} />
 				</Box>
 			</Container>

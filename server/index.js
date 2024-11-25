@@ -14,8 +14,9 @@ const authenticationRoutes = require("./routes/authenticationRoutes");
 const orderItemsRoutes = require("./routes/orderItemsRoutes");
 
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://project-3-team-4b-client.vercel.app',
+	"http://localhost:3000",
+	"https://project-3-team-4b-client.vercel.app",
+	"http://localhost:5001",
 ];
 
 

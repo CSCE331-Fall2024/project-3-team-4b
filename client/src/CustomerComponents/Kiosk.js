@@ -19,6 +19,7 @@ import {
 	Divider,
 } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import EditIcon from "@mui/icons-material/Edit";
 
 function Kiosk({ isLargeText }) {
@@ -31,7 +32,9 @@ function Kiosk({ isLargeText }) {
 	const [selectedCategory, setSelectedCategory] = useState(null);
 	const [selectedCombo, setSelectedCombo] = useState(null);
 	const [selectedSide, setSelectedSide] = useState(null);
-	const [selectedEntrees, setSelectedEntrees] = useState([]);
+	const [selectedEntrees, setSelectedEntrees] = useState([]); // Array of { entree, quantity }
+	const [selectedAppetizers, setSelectedAppetizers] = useState([]); // Array of { item, quantity }
+	const [selectedDrinks, setSelectedDrinks] = useState([]); // Array of { item, quantity }
 	const [mainOrderSummary, setMainOrderSummary] = useState([]);
 	const [editOrderIndex, setEditOrderIndex] = useState(null);
 
@@ -96,26 +99,115 @@ function Kiosk({ isLargeText }) {
 		}
 	};
 
-	const handleSelectEntree = (entree) => {
+	// Entree Quantity Handlers
+	const handleIncreaseEntreeQuantity = (entree) => {
 		const maxEntrees = selectedCombo.number_of_entrees;
-		const isSelected = selectedEntrees.some(
-			(item) => item.menu_id === entree.menu_id
+		const totalSelected = selectedEntrees.reduce(
+			(sum, item) => sum + item.quantity,
+			0
 		);
 
-		if (isSelected) {
-			// Remove entree
-			setSelectedEntrees((prev) =>
-				prev.filter((item) => item.menu_id !== entree.menu_id)
-			);
-		} else if (selectedEntrees.length < maxEntrees) {
-			// Add entree
-			setSelectedEntrees([...selectedEntrees, entree]);
+		if (totalSelected < maxEntrees) {
+			setSelectedEntrees((prev) => {
+				const index = prev.findIndex(
+					(item) => item.entree.menu_id === entree.menu_id
+				);
+				if (index >= 0) {
+					const updated = [...prev];
+					updated[index].quantity += 1;
+					return updated;
+				} else {
+					return [...prev, { entree, quantity: 1 }];
+				}
+			});
 		} else {
 			showSnackbar(
 				`You can only select ${maxEntrees} entree${maxEntrees > 1 ? "s" : ""}.`,
 				"warning"
 			);
 		}
+	};
+
+	const handleDecreaseEntreeQuantity = (entree) => {
+		setSelectedEntrees((prev) => {
+			const index = prev.findIndex(
+				(item) => item.entree.menu_id === entree.menu_id
+			);
+			if (index >= 0) {
+				const updated = [...prev];
+				if (updated[index].quantity > 1) {
+					updated[index].quantity -= 1;
+				} else {
+					updated.splice(index, 1);
+				}
+				return updated;
+			}
+			return prev;
+		});
+	};
+
+	// Appetizer Quantity Handlers
+	const handleIncreaseAppetizerQuantity = (item) => {
+		setSelectedAppetizers((prev) => {
+			const index = prev.findIndex((app) => app.item.menu_id === item.menu_id);
+			if (index >= 0) {
+				const updated = [...prev];
+				updated[index].quantity += 1;
+				return updated;
+			} else {
+				return [...prev, { item, quantity: 1 }];
+			}
+		});
+	};
+
+	const handleDecreaseAppetizerQuantity = (item) => {
+		setSelectedAppetizers((prev) => {
+			const index = prev.findIndex((app) => app.item.menu_id === item.menu_id);
+			if (index >= 0) {
+				const updated = [...prev];
+				if (updated[index].quantity > 1) {
+					updated[index].quantity -= 1;
+				} else {
+					updated.splice(index, 1);
+				}
+				return updated;
+			}
+			return prev;
+		});
+	};
+
+	// Drink Quantity Handlers
+	const handleIncreaseDrinkQuantity = (item) => {
+		setSelectedDrinks((prev) => {
+			const index = prev.findIndex(
+				(drink) => drink.item.menu_id === item.menu_id
+			);
+			if (index >= 0) {
+				const updated = [...prev];
+				updated[index].quantity += 1;
+				return updated;
+			} else {
+				return [...prev, { item, quantity: 1 }];
+			}
+		});
+	};
+
+	const handleDecreaseDrinkQuantity = (item) => {
+		setSelectedDrinks((prev) => {
+			const index = prev.findIndex(
+				(drink) => drink.item.menu_id === item.menu_id
+			);
+			if (index >= 0) {
+				const updated = [...prev];
+				if (updated[index].quantity > 1) {
+					updated[index].quantity -= 1;
+				} else {
+					updated.splice(index, 1);
+				}
+				return updated;
+			}
+			return prev;
+		});
 	};
 
 	const handleAddComboToOrder = () => {
@@ -151,15 +243,30 @@ function Kiosk({ isLargeText }) {
 		showSnackbar("Combo added to cart.", "success");
 	};
 
-	const handleAddAppetizerOrDrink = (item) => {
-		const price = item.type === "Appetizer" ? appetizerPrice : drinkPrice;
-		const orderItem = {
-			type: item.type,
-			item,
-			subtotal: price,
-		};
-		setMainOrderSummary([...mainOrderSummary, orderItem]);
-		showSnackbar(`${item.name} added to cart.`, "success");
+	const handleAddAppetizersToOrder = () => {
+		const appetizersOrder = selectedAppetizers.map((app) => ({
+			type: "Appetizer",
+			item: app.item,
+			quantity: app.quantity,
+			subtotal: appetizerPrice * app.quantity,
+		}));
+		setMainOrderSummary([...mainOrderSummary, ...appetizersOrder]);
+		setSelectedAppetizers([]);
+		setCurrentStep("categorySelection");
+		showSnackbar("Appetizers added to cart.", "success");
+	};
+
+	const handleAddDrinksToOrder = () => {
+		const drinksOrder = selectedDrinks.map((drink) => ({
+			type: "Drink",
+			item: drink.item,
+			quantity: drink.quantity,
+			subtotal: drinkPrice * drink.quantity,
+		}));
+		setMainOrderSummary([...mainOrderSummary, ...drinksOrder]);
+		setSelectedDrinks([]);
+		setCurrentStep("categorySelection");
+		showSnackbar("Drinks added to cart.", "success");
 	};
 
 	const handleRemoveOrder = (index) => {
@@ -213,7 +320,7 @@ function Kiosk({ isLargeText }) {
 
 			const orderItemsPayload = mainOrderSummary.flatMap((order) => {
 				if (order.type === "Combo") {
-					return [
+					const payload = [
 						{
 							order_id: orderId,
 							quantity: 1,
@@ -224,17 +331,20 @@ function Kiosk({ isLargeText }) {
 							quantity: 1,
 							menu_id: order.side.menu_id,
 						},
-						...order.entrees.map((entree) => ({
-							order_id: orderId,
-							quantity: 1,
-							menu_id: entree.menu_id,
-						})),
 					];
+					order.entrees.forEach(({ entree, quantity }) => {
+						payload.push({
+							order_id: orderId,
+							quantity,
+							menu_id: entree.menu_id,
+						});
+					});
+					return payload;
 				} else {
 					return [
 						{
 							order_id: orderId,
-							quantity: 1,
+							quantity: order.quantity,
 							menu_id: order.item.menu_id,
 						},
 					];
@@ -261,8 +371,8 @@ function Kiosk({ isLargeText }) {
 	const calculateComboSubtotal = (combo, side, entrees) => {
 		let subtotal = Number(combo.price) || 0;
 		subtotal += Number(side.extra_cost || 0);
-		entrees.forEach((entree) => {
-			subtotal += Number(entree.extra_cost || 0);
+		entrees.forEach(({ entree, quantity }) => {
+			subtotal += Number(entree.extra_cost || 0) * quantity;
 		});
 		return subtotal;
 	};
@@ -534,9 +644,21 @@ function Kiosk({ isLargeText }) {
 
 	const renderEntreeSelection = () => {
 		const maxEntrees = selectedCombo.number_of_entrees;
+		const totalSelected = selectedEntrees.reduce(
+			(sum, item) => sum + item.quantity,
+			0
+		);
+
 		return (
-			<Box sx={{ padding: 2 }}>
-				<Grid container spacing={2} sx={{ marginTop: 2 }}>
+			<Box
+				sx={{
+					padding: 2,
+					height: "100%",
+					display: "flex",
+					flexDirection: "column",
+				}}
+			>
+				<Grid container spacing={2} sx={{ marginTop: 2, flexGrow: 1 }}>
 					<Grid item xs={12}>
 						<Typography
 							variant="h4"
@@ -550,26 +672,20 @@ function Kiosk({ isLargeText }) {
 							Select Entrees
 						</Typography>
 						<Typography sx={{ marginBottom: 2 }}>
-							Please select {maxEntrees} entree{maxEntrees > 1 ? "s" : ""}
+							Please select {maxEntrees} entree{maxEntrees > 1 ? "s" : ""} (
+							{totalSelected}/{maxEntrees})
 						</Typography>
 					</Grid>
 					{menuData
 						.filter((item) => item.type === "Entree")
 						.map((entree) => {
-							const isSelected = selectedEntrees.some(
-								(item) => item.menu_id === entree.menu_id
+							const selectedItem = selectedEntrees.find(
+								(item) => item.entree.menu_id === entree.menu_id
 							);
+							const quantity = selectedItem ? selectedItem.quantity : 0;
 							return (
 								<Grid item xs={12} sm={4} key={entree.menu_id}>
-									<Card
-										onClick={() => handleSelectEntree(entree)}
-										sx={{
-											cursor: "pointer",
-											border: isSelected
-												? "2px solid #D1282E"
-												: "1px solid #ccc",
-										}}
-									>
+									<Card sx={{ cursor: "pointer" }}>
 										<CardMedia
 											component="img"
 											image={getImageUrl(entree.name)}
@@ -596,6 +712,36 @@ function Kiosk({ isLargeText }) {
 													Extra Cost: ${entree.extra_cost}
 												</Typography>
 											)}
+											{/* Quantity Controls */}
+											<Box
+												sx={{
+													display: "flex",
+													alignItems: "center",
+													justifyContent: "center",
+													marginTop: 1,
+												}}
+											>
+												<IconButton
+													onClick={() => handleDecreaseEntreeQuantity(entree)}
+													disabled={quantity === 0}
+												>
+													<RemoveCircleOutlineIcon />
+												</IconButton>
+												<Typography
+													sx={{
+														margin: "0 1rem",
+														fontSize: isLargeText ? "1.25rem" : "1rem",
+													}}
+												>
+													{quantity}
+												</Typography>
+												<IconButton
+													onClick={() => handleIncreaseEntreeQuantity(entree)}
+													disabled={totalSelected >= maxEntrees}
+												>
+													<AddCircleOutlineIcon />
+												</IconButton>
+											</Box>
 										</CardContent>
 									</Card>
 								</Grid>
@@ -609,7 +755,6 @@ function Kiosk({ isLargeText }) {
 						display: "flex",
 						justifyContent: "space-between",
 						marginTop: 2,
-						maxWidth: "100%",
 					}}
 				>
 					<Button
@@ -618,7 +763,7 @@ function Kiosk({ isLargeText }) {
 					>
 						Back
 					</Button>
-					{selectedEntrees.length === maxEntrees && (
+					{totalSelected === maxEntrees && (
 						<Button variant="contained" onClick={handleAddComboToOrder}>
 							{editOrderIndex !== null ? "Update Cart" : "Add to Cart"}
 						</Button>
@@ -629,8 +774,15 @@ function Kiosk({ isLargeText }) {
 	};
 
 	const renderAppetizerSelection = () => (
-		<Box sx={{ padding: 2 }}>
-			<Grid container spacing={2} sx={{ marginTop: 2 }}>
+		<Box
+			sx={{
+				padding: 2,
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
+			}}
+		>
+			<Grid container spacing={2} sx={{ marginTop: 2, flexGrow: 1 }}>
 				<Grid item xs={12}>
 					<Typography
 						variant="h4"
@@ -646,40 +798,76 @@ function Kiosk({ isLargeText }) {
 				</Grid>
 				{menuData
 					.filter((item) => item.type === "Appetizer")
-					.map((appetizer) => (
-						<Grid item xs={12} sm={4} key={appetizer.menu_id}>
-							<Card
-								onClick={() => handleAddAppetizerOrDrink(appetizer)}
-								sx={{ cursor: "pointer" }}
-							>
-								<CardMedia
-									component="img"
-									image={getImageUrl(appetizer.name)}
-									alt={appetizer.name}
-									sx={{ height: 140, objectFit: "contain" }}
-								/>
-								<CardContent>
-									<Typography
-										variant="h6"
-										sx={{
-											fontSize: isLargeText ? "1.5rem" : "1rem",
-											fontWeight: "bold",
-										}}
-									>
-										{appetizer.name}
-									</Typography>
-									<Typography
-										sx={{
-											fontSize: isLargeText ? "1.25rem" : "0.875rem",
-											fontWeight: "normal",
-										}}
-									>
-										Price: ${appetizerPrice.toFixed(2)}
-									</Typography>
-								</CardContent>
-							</Card>
-						</Grid>
-					))}
+					.map((appetizer) => {
+						const selectedItem = selectedAppetizers.find(
+							(app) => app.item.menu_id === appetizer.menu_id
+						);
+						const quantity = selectedItem ? selectedItem.quantity : 0;
+						return (
+							<Grid item xs={12} sm={4} key={appetizer.menu_id}>
+								<Card sx={{ cursor: "pointer" }}>
+									<CardMedia
+										component="img"
+										image={getImageUrl(appetizer.name)}
+										alt={appetizer.name}
+										sx={{ height: 140, objectFit: "contain" }}
+									/>
+									<CardContent>
+										<Typography
+											variant="h6"
+											sx={{
+												fontSize: isLargeText ? "1.5rem" : "1rem",
+												fontWeight: "bold",
+											}}
+										>
+											{appetizer.name}
+										</Typography>
+										<Typography
+											sx={{
+												fontSize: isLargeText ? "1.25rem" : "0.875rem",
+												fontWeight: "normal",
+											}}
+										>
+											Price: ${appetizerPrice.toFixed(2)}
+										</Typography>
+										{/* Quantity Controls */}
+										<Box
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+												marginTop: 1,
+											}}
+										>
+											<IconButton
+												onClick={() =>
+													handleDecreaseAppetizerQuantity(appetizer)
+												}
+												disabled={quantity === 0}
+											>
+												<RemoveCircleOutlineIcon />
+											</IconButton>
+											<Typography
+												sx={{
+													margin: "0 1rem",
+													fontSize: isLargeText ? "1.25rem" : "1rem",
+												}}
+											>
+												{quantity}
+											</Typography>
+											<IconButton
+												onClick={() =>
+													handleIncreaseAppetizerQuantity(appetizer)
+												}
+											>
+												<AddCircleOutlineIcon />
+											</IconButton>
+										</Box>
+									</CardContent>
+								</Card>
+							</Grid>
+						);
+					})}
 			</Grid>
 
 			{/* Buttons */}
@@ -688,7 +876,6 @@ function Kiosk({ isLargeText }) {
 					display: "flex",
 					justifyContent: "space-between",
 					marginTop: 2,
-					maxWidth: "100%",
 				}}
 			>
 				<Button
@@ -697,14 +884,25 @@ function Kiosk({ isLargeText }) {
 				>
 					Back
 				</Button>
-				{/* No Next button in this step */}
+				{selectedAppetizers.length > 0 && (
+					<Button variant="contained" onClick={handleAddAppetizersToOrder}>
+						Add to Cart
+					</Button>
+				)}
 			</Box>
 		</Box>
 	);
 
 	const renderDrinkSelection = () => (
-		<Box sx={{ padding: 2 }}>
-			<Grid container spacing={2} sx={{ marginTop: 2 }}>
+		<Box
+			sx={{
+				padding: 2,
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
+			}}
+		>
+			<Grid container spacing={2} sx={{ marginTop: 2, flexGrow: 1 }}>
 				<Grid item xs={12}>
 					<Typography
 						variant="h4"
@@ -720,40 +918,72 @@ function Kiosk({ isLargeText }) {
 				</Grid>
 				{menuData
 					.filter((item) => item.type === "Drink")
-					.map((drink) => (
-						<Grid item xs={12} sm={4} key={drink.menu_id}>
-							<Card
-								onClick={() => handleAddAppetizerOrDrink(drink)}
-								sx={{ cursor: "pointer" }}
-							>
-								<CardMedia
-									component="img"
-									image={getImageUrl(drink.name)}
-									alt={drink.name}
-									sx={{ height: 140, objectFit: "contain" }}
-								/>
-								<CardContent>
-									<Typography
-										variant="h6"
-										sx={{
-											fontSize: isLargeText ? "1.5rem" : "1rem",
-											fontWeight: "bold",
-										}}
-									>
-										{drink.name}
-									</Typography>
-									<Typography
-										sx={{
-											fontSize: isLargeText ? "1.25rem" : "0.875rem",
-											fontWeight: "normal",
-										}}
-									>
-										Price: ${drinkPrice.toFixed(2)}
-									</Typography>
-								</CardContent>
-							</Card>
-						</Grid>
-					))}
+					.map((drink) => {
+						const selectedItem = selectedDrinks.find(
+							(dr) => dr.item.menu_id === drink.menu_id
+						);
+						const quantity = selectedItem ? selectedItem.quantity : 0;
+						return (
+							<Grid item xs={12} sm={4} key={drink.menu_id}>
+								<Card sx={{ cursor: "pointer" }}>
+									<CardMedia
+										component="img"
+										image={getImageUrl(drink.name)}
+										alt={drink.name}
+										sx={{ height: 140, objectFit: "contain" }}
+									/>
+									<CardContent>
+										<Typography
+											variant="h6"
+											sx={{
+												fontSize: isLargeText ? "1.5rem" : "1rem",
+												fontWeight: "bold",
+											}}
+										>
+											{drink.name}
+										</Typography>
+										<Typography
+											sx={{
+												fontSize: isLargeText ? "1.25rem" : "0.875rem",
+												fontWeight: "normal",
+											}}
+										>
+											Price: ${drinkPrice.toFixed(2)}
+										</Typography>
+										{/* Quantity Controls */}
+										<Box
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+												marginTop: 1,
+											}}
+										>
+											<IconButton
+												onClick={() => handleDecreaseDrinkQuantity(drink)}
+												disabled={quantity === 0}
+											>
+												<RemoveCircleOutlineIcon />
+											</IconButton>
+											<Typography
+												sx={{
+													margin: "0 1rem",
+													fontSize: isLargeText ? "1.25rem" : "1rem",
+												}}
+											>
+												{quantity}
+											</Typography>
+											<IconButton
+												onClick={() => handleIncreaseDrinkQuantity(drink)}
+											>
+												<AddCircleOutlineIcon />
+											</IconButton>
+										</Box>
+									</CardContent>
+								</Card>
+							</Grid>
+						);
+					})}
 			</Grid>
 
 			{/* Buttons */}
@@ -762,7 +992,6 @@ function Kiosk({ isLargeText }) {
 					display: "flex",
 					justifyContent: "space-between",
 					marginTop: 2,
-					maxWidth: "100%",
 				}}
 			>
 				<Button
@@ -771,13 +1000,23 @@ function Kiosk({ isLargeText }) {
 				>
 					Back
 				</Button>
-				{/* No Next button in this step */}
+				{selectedDrinks.length > 0 && (
+					<Button variant="contained" onClick={handleAddDrinksToOrder}>
+						Add to Cart
+					</Button>
+				)}
 			</Box>
 		</Box>
 	);
 
 	return (
-		<Box sx={{ display: "flex" }}>
+		<Box
+			sx={{
+				display: "flex",
+				height: "100%",
+				width: "100%",
+			}}
+		>
 			<CssBaseline />
 			{/* Snackbar for notifications */}
 			<Snackbar
@@ -818,7 +1057,7 @@ function Kiosk({ isLargeText }) {
 				</DialogActions>
 			</Dialog>
 
-			<Box sx={{ flex: 2, padding: 2 }}>
+			<Box sx={{ flex: 2, padding: 2, height: "100%", overflowY: "auto" }}>
 				{currentStep === "categorySelection" && renderCategorySelection()}
 				{currentStep === "comboSelection" && renderComboSelection()}
 				{currentStep === "sideSelection" && renderSideSelection()}
@@ -833,7 +1072,7 @@ function Kiosk({ isLargeText }) {
 					flex: 1,
 					padding: 2,
 					borderLeft: "1px solid #ccc",
-					maxHeight: "calc(100vh - 64px)",
+					height: "100%",
 					overflowY: "auto",
 				}}
 			>
@@ -906,9 +1145,9 @@ function Kiosk({ isLargeText }) {
 												fontWeight: "normal",
 											}}
 										>
-											- Side: {order.side.name}
+											Side: {order.side.name}
 										</Typography>
-										{order.entrees.map((entree, idx) => (
+										{order.entrees.map(({ entree, quantity }, idx) => (
 											<Typography
 												key={idx}
 												sx={{
@@ -916,10 +1155,32 @@ function Kiosk({ isLargeText }) {
 													fontWeight: "normal",
 												}}
 											>
-												- Entree: {entree.name}
+												Entree: {entree.name} x {quantity}
 											</Typography>
 										))}
 									</Box>
+								)}
+								{order.type === "Appetizer" && (
+									<Typography
+										sx={{
+											fontSize: isLargeText ? "1.25rem" : "0.875rem",
+											fontWeight: "normal",
+											marginLeft: 2,
+										}}
+									>
+										Quantity: {order.quantity}
+									</Typography>
+								)}
+								{order.type === "Drink" && (
+									<Typography
+										sx={{
+											fontSize: isLargeText ? "1.25rem" : "0.875rem",
+											fontWeight: "normal",
+											marginLeft: 2,
+										}}
+									>
+										Quantity: {order.quantity}
+									</Typography>
 								)}
 								<Typography
 									sx={{
