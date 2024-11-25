@@ -1,6 +1,6 @@
 // Customer.js
-import React from "react";
-import { Container, Box, AppBar, Toolbar } from "@mui/material";
+import React, { useState } from "react";
+import { Container, Box, AppBar, Toolbar, Button } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Kiosk from "../CustomerComponents/Kiosk";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -38,6 +38,12 @@ const theme = createTheme({
 });
 
 const Customer = () => {
+	const [isLargeText, setIsLargeText] = useState(false);
+
+	const toggleTextSize = () => {
+		setIsLargeText((prev) => !prev);
+	};
+
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
@@ -46,18 +52,29 @@ const Customer = () => {
 				elevation={0}
 				sx={{
 					backgroundColor: "#D1282E",
-					padding: ".5rem 0",
+					padding: "0 1rem",
 				}}
 			>
-				<img
-					src={Logo}
-					alt="Panda Express Logo"
-					style={{ maxHeight: "60px" }}
-				/>
+				<Toolbar sx={{ justifyContent: "space-between" }}>
+					<Box sx={{ display: "flex", alignItems: "center" }}>
+						<img
+							src={Logo}
+							alt="Panda Express Logo"
+							style={{ maxWidth: "100%", height: "60px" }}
+						/>
+					</Box>
+					<Button
+						onClick={toggleTextSize}
+						variant="contained"
+						color="secondary"
+					>
+						{isLargeText ? "Normal Text" : "Large Text"}
+					</Button>
+				</Toolbar>
 			</AppBar>
 			<Container maxWidth="xl" disableGutters>
 				<Box>
-					<Kiosk />
+					<Kiosk isLargeText={isLargeText} />
 				</Box>
 			</Container>
 		</ThemeProvider>
