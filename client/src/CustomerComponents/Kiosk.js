@@ -16,8 +16,10 @@ import {
 	Snackbar,
 	Alert,
 	CssBaseline,
+	Divider,
 } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import EditIcon from "@mui/icons-material/Edit";
 
 function Kiosk({ isLargeText }) {
 	const [menuData, setMenuData] = useState([]);
@@ -31,6 +33,7 @@ function Kiosk({ isLargeText }) {
 	const [selectedSide, setSelectedSide] = useState(null);
 	const [selectedEntrees, setSelectedEntrees] = useState([]);
 	const [mainOrderSummary, setMainOrderSummary] = useState([]);
+	const [editOrderIndex, setEditOrderIndex] = useState(null);
 
 	const [snackbar, setSnackbar] = useState({
 		open: false,
@@ -95,8 +98,17 @@ function Kiosk({ isLargeText }) {
 
 	const handleSelectEntree = (entree) => {
 		const maxEntrees = selectedCombo.number_of_entrees;
+		const isSelected = selectedEntrees.some(
+			(item) => item.menu_id === entree.menu_id
+		);
 
-		if (selectedEntrees.length < maxEntrees) {
+		if (isSelected) {
+			// Remove entree
+			setSelectedEntrees((prev) =>
+				prev.filter((item) => item.menu_id !== entree.menu_id)
+			);
+		} else if (selectedEntrees.length < maxEntrees) {
+			// Add entree
 			setSelectedEntrees([...selectedEntrees, entree]);
 		} else {
 			showSnackbar(
@@ -119,7 +131,18 @@ function Kiosk({ isLargeText }) {
 			entrees: selectedEntrees,
 			subtotal,
 		};
-		setMainOrderSummary([...mainOrderSummary, comboOrder]);
+
+		if (editOrderIndex !== null) {
+			// Edit existing combo
+			const updatedOrders = [...mainOrderSummary];
+			updatedOrders[editOrderIndex] = comboOrder;
+			setMainOrderSummary(updatedOrders);
+			setEditOrderIndex(null);
+		} else {
+			// Add new combo
+			setMainOrderSummary([...mainOrderSummary, comboOrder]);
+		}
+
 		// Reset selections
 		setSelectedCombo(null);
 		setSelectedSide(null);
@@ -151,6 +174,19 @@ function Kiosk({ isLargeText }) {
 		setConfirmDialogOpen(false);
 		setOrderToRemoveIndex(null);
 		showSnackbar("Item removed from order.", "success");
+	};
+
+	const handleEditOrder = (index) => {
+		const order = mainOrderSummary[index];
+		if (order.type === "Combo") {
+			setSelectedCombo(order.combo);
+			setSelectedSide(order.side);
+			setSelectedEntrees(order.entrees);
+			setEditOrderIndex(index);
+			setCurrentStep("entreeSelection");
+		} else {
+			showSnackbar("Only combos can be edited.", "warning");
+		}
 	};
 
 	const handlePlaceOrder = async () => {
@@ -387,6 +423,7 @@ function Kiosk({ isLargeText }) {
 					display: "flex",
 					justifyContent: "space-between",
 					marginTop: 2,
+					maxWidth: "100%",
 				}}
 			>
 				<Button
@@ -474,6 +511,7 @@ function Kiosk({ isLargeText }) {
 					display: "flex",
 					justifyContent: "space-between",
 					marginTop: 2,
+					maxWidth: "100%",
 				}}
 			>
 				<Button
@@ -517,47 +555,52 @@ function Kiosk({ isLargeText }) {
 					</Grid>
 					{menuData
 						.filter((item) => item.type === "Entree")
-						.map((entree) => (
-							<Grid item xs={12} sm={4} key={entree.menu_id}>
-								<Card
-									onClick={() => handleSelectEntree(entree)}
-									sx={{
-										cursor: "pointer",
-										border: selectedEntrees.includes(entree)
-											? "2px solid #D1282E"
-											: "1px solid #ccc",
-									}}
-								>
-									<CardMedia
-										component="img"
-										image={getImageUrl(entree.name)}
-										alt={entree.name}
-										sx={{ height: 140, objectFit: "contain" }}
-									/>
-									<CardContent>
-										<Typography
-											variant="h6"
-											sx={{
-												fontSize: isLargeText ? "1.5rem" : "1rem",
-												fontWeight: "bold",
-											}}
-										>
-											{entree.name}
-										</Typography>
-										{entree.extra_cost && entree.extra_cost !== "0" && (
+						.map((entree) => {
+							const isSelected = selectedEntrees.some(
+								(item) => item.menu_id === entree.menu_id
+							);
+							return (
+								<Grid item xs={12} sm={4} key={entree.menu_id}>
+									<Card
+										onClick={() => handleSelectEntree(entree)}
+										sx={{
+											cursor: "pointer",
+											border: isSelected
+												? "2px solid #D1282E"
+												: "1px solid #ccc",
+										}}
+									>
+										<CardMedia
+											component="img"
+											image={getImageUrl(entree.name)}
+											alt={entree.name}
+											sx={{ height: 140, objectFit: "contain" }}
+										/>
+										<CardContent>
 											<Typography
+												variant="h6"
 												sx={{
-													fontSize: isLargeText ? "1.25rem" : "0.875rem",
-													fontWeight: "normal",
+													fontSize: isLargeText ? "1.5rem" : "1rem",
+													fontWeight: "bold",
 												}}
 											>
-												Extra Cost: ${entree.extra_cost}
+												{entree.name}
 											</Typography>
-										)}
-									</CardContent>
-								</Card>
-							</Grid>
-						))}
+											{entree.extra_cost && entree.extra_cost !== "0" && (
+												<Typography
+													sx={{
+														fontSize: isLargeText ? "1.25rem" : "0.875rem",
+														fontWeight: "normal",
+													}}
+												>
+													Extra Cost: ${entree.extra_cost}
+												</Typography>
+											)}
+										</CardContent>
+									</Card>
+								</Grid>
+							);
+						})}
 				</Grid>
 
 				{/* Buttons */}
@@ -566,6 +609,7 @@ function Kiosk({ isLargeText }) {
 						display: "flex",
 						justifyContent: "space-between",
 						marginTop: 2,
+						maxWidth: "100%",
 					}}
 				>
 					<Button
@@ -576,7 +620,7 @@ function Kiosk({ isLargeText }) {
 					</Button>
 					{selectedEntrees.length === maxEntrees && (
 						<Button variant="contained" onClick={handleAddComboToOrder}>
-							Add to Cart
+							{editOrderIndex !== null ? "Update Cart" : "Add to Cart"}
 						</Button>
 					)}
 				</Box>
@@ -644,6 +688,7 @@ function Kiosk({ isLargeText }) {
 					display: "flex",
 					justifyContent: "space-between",
 					marginTop: 2,
+					maxWidth: "100%",
 				}}
 			>
 				<Button
@@ -717,6 +762,7 @@ function Kiosk({ isLargeText }) {
 					display: "flex",
 					justifyContent: "space-between",
 					marginTop: 2,
+					maxWidth: "100%",
 				}}
 			>
 				<Button
@@ -782,7 +828,15 @@ function Kiosk({ isLargeText }) {
 			</Box>
 
 			{/* Right Section - Order Summary */}
-			<Box sx={{ flex: 1, padding: 2, borderLeft: "1px solid #ccc" }}>
+			<Box
+				sx={{
+					flex: 1,
+					padding: 2,
+					borderLeft: "1px solid #ccc",
+					maxHeight: "calc(100vh - 64px)",
+					overflowY: "auto",
+				}}
+			>
 				{/* Main Order Summary */}
 				<Typography
 					variant="h5"
@@ -804,66 +858,95 @@ function Kiosk({ isLargeText }) {
 						No items added.
 					</Typography>
 				) : (
-					mainOrderSummary.map((order, index) => (
-						<Box key={index} sx={{ marginBottom: 2 }}>
-							<Box
-								sx={{
-									display: "flex",
-									alignItems: "center",
-									marginBottom: 1,
-								}}
-							>
-								<Typography
-									variant="h6"
+					<Box sx={{ maxWidth: "100%" }}>
+						{mainOrderSummary.map((order, index) => (
+							<Box key={index} sx={{ marginBottom: 2 }}>
+								<Box
 									sx={{
-										flexGrow: 1,
-										fontSize: isLargeText ? "1.5rem" : "1rem",
-										fontWeight: "bold",
+										display: "flex",
+										alignItems: "center",
+										justifyContent: "space-between",
 									}}
 								>
-									{order.type === "Combo" ? order.combo.name : order.item.name}
-								</Typography>
-								<IconButton
-									edge="end"
-									color="error"
-									onClick={() => handleRemoveOrder(index)}
-								>
-									<RemoveCircleOutlineIcon />
-								</IconButton>
-							</Box>
-							{order.type === "Combo" && (
-								<Box sx={{ marginLeft: 2 }}>
 									<Typography
+										variant="h6"
 										sx={{
-											fontSize: isLargeText ? "1.25rem" : "0.875rem",
-											fontWeight: "normal",
+											fontSize: isLargeText ? "1.5rem" : "1rem",
+											fontWeight: "bold",
 										}}
 									>
-										- Side: {order.side.name}
+										{order.type === "Combo"
+											? order.combo.name
+											: order.item.name}
 									</Typography>
-									{order.entrees.map((entree, idx) => (
+									<Box>
+										{order.type === "Combo" && (
+											<IconButton
+												edge="end"
+												color="primary"
+												onClick={() => handleEditOrder(index)}
+											>
+												<EditIcon />
+											</IconButton>
+										)}
+										<IconButton
+											edge="end"
+											color="error"
+											onClick={() => handleRemoveOrder(index)}
+										>
+											<RemoveCircleOutlineIcon />
+										</IconButton>
+									</Box>
+								</Box>
+								{order.type === "Combo" && (
+									<Box sx={{ marginLeft: 2 }}>
 										<Typography
-											key={idx}
 											sx={{
 												fontSize: isLargeText ? "1.25rem" : "0.875rem",
 												fontWeight: "normal",
 											}}
 										>
-											- Entree: {entree.name}
+											- Side: {order.side.name}
 										</Typography>
-									))}
-								</Box>
-							)}
-							<Typography
-								sx={{
-									fontSize: isLargeText ? "1.25rem" : "0.875rem",
-									fontWeight: "normal",
-								}}
-							>
-								Subtotal: ${order.subtotal.toFixed(2)}
-							</Typography>
-						</Box>
-					))
+										{order.entrees.map((entree, idx) => (
+											<Typography
+												key={idx}
+												sx={{
+													fontSize: isLargeText ? "1.25rem" : "0.875rem",
+													fontWeight: "normal",
+												}}
+											>
+												- Entree: {entree.name}
+											</Typography>
+										))}
+									</Box>
+								)}
+								<Typography
+									sx={{
+										fontSize: isLargeText ? "1.25rem" : "0.875rem",
+										fontWeight: "normal",
+									}}
+								>
+									Subtotal: ${order.subtotal.toFixed(2)}
+								</Typography>
+								<Divider sx={{ marginTop: 1, marginBottom: 1 }} />
+							</Box>
+						))}
+						{/* Total */}
+						<Typography
+							variant="h6"
+							sx={{
+								fontSize: isLargeText ? "1.5rem" : "1rem",
+								fontWeight: "bold",
+								marginTop: 2,
+							}}
+						>
+							Total: $
+							{mainOrderSummary
+								.reduce((total, order) => total + order.subtotal, 0)
+								.toFixed(2)}
+						</Typography>
+					</Box>
 				)}
 				{mainOrderSummary.length > 0 && (
 					<Button

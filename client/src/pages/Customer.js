@@ -1,4 +1,3 @@
-// Customer.js
 import React, { useState } from "react";
 import { Container, Box, AppBar, Toolbar, Button } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
