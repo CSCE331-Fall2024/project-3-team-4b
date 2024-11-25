@@ -1,14 +1,13 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+
 import Navbar from "../ManagerComponents/Navbar";
 import Menu from "../ManagerComponents/Menu";
 import Inventory from "../ManagerComponents/Inventory";
 import Orders from "../ManagerComponents/Orders";
 import Employees from "../ManagerComponents/Employees";
 import Analytics from "../ManagerComponents/Analytics";
-
-import { AuthContext } from "../LoginComponents/AuthContext";
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Manager component that serves as the main layout for the manager interface.
@@ -16,10 +15,9 @@ import { AuthContext } from "../LoginComponents/AuthContext";
  *
  * @returns {JSX.Element} The rendered Manager component.
  */
-function Manager() {
+function Manager( {role, user} ) {
 	const [selectedSection, setSelectedSection] = useState("Menu");
-	const { user, logout } = useContext(AuthContext); // Use AuthContext to access user and logout function
-	const navigate = useNavigate();
+	const employeeName = user.name;
 
 	/**
 	 * Handles the change of the selected section in the navigation.
@@ -27,17 +25,17 @@ function Manager() {
 	 * @param {string} section - The section selected by the user.
 	 */
 	const handleSectionChange = (section) => {
-		if (section === "Logout" || section === "Switch User") {
-			logout();
-			if (section === "Switch User") {
-				navigate("/", { state: { forceGoogleAccountSelection: true } });
-			} else {
-				navigate("/");
-			}
-		} else {
-			setSelectedSection(section);
-		}
+		setSelectedSection(section);
 	};
+
+	const navigate = useNavigate();
+
+    // Fetch menu data and container data on mount
+    useEffect(() => {
+        if(role !== "manager"){
+            navigate('/');
+        }
+    }, [role, navigate]);
 
 	return (
 		<Box
@@ -48,7 +46,7 @@ function Manager() {
 			}}
 		>
 			<Navbar
-				employeeName={user ? user.name : "Guest"}
+				employeeName={employeeName}
 				selectedSection={selectedSection}
 				onSectionChange={handleSectionChange}
 			/>
