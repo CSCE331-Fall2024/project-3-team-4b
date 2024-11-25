@@ -4,6 +4,9 @@ import { Container, Box, AppBar, Toolbar } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Kiosk from "../CustomerComponents/Kiosk";
 import CssBaseline from "@mui/material/CssBaseline";
+
+import Logo from "../assets/panda-logo.svg";
+
 const theme = createTheme({
 	palette: {
 		primary: {
@@ -38,26 +41,21 @@ const Customer = () => {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
+			<AppBar
+				position="static"
+				elevation={0}
+				sx={{
+					backgroundColor: "#D1282E",
+					padding: ".5rem 0",
+				}}
+			>
+				<img
+					src={Logo}
+					alt="Panda Express Logo"
+					style={{ maxHeight: "60px" }}
+				/>
+			</AppBar>
 			<Container maxWidth="xl" disableGutters>
-				{/* AppBar with Panda Express Logo */}
-				<AppBar
-					position="static"
-					elevation={0}
-					sx={{
-						backgroundColor: "#FFFFFF",
-						padding: "1rem 0",
-					}}
-				>
-					<Toolbar sx={{ justifyContent: "center" }}>
-						<img
-							src="/images/panda_express_logo.png"
-							alt="Panda Express Logo"
-							style={{ height: 60 }}
-						/>
-					</Toolbar>
-				</AppBar>
-
-				{/* Main content */}
 				<Box>
 					<Kiosk />
 				</Box>

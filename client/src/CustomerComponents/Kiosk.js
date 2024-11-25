@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 
+
 function Kiosk() {
 	const [menuData, setMenuData] = useState([]);
 	const [appetizerPrice, setAppetizerPrice] = useState(0);
