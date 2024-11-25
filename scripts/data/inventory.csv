@@ -1,0 +1,30 @@
+inventory_id,name,cost,max_qty,qty
+1,Chicken Egg Roll Wrapper,30,500,500
+2,Chicken Egg Roll Filling,40,400,400
+3,Veggie Spring Roll Wrapper,25,500,500
+4,Veggie Spring Roll Filling,30,400,400
+5,Cream Cheese,50,300,300
+6,Wonton Wrappers,25,400,400
+7,Apple Pie Filling,45,200,200
+8,Pie Roll Wrapper,25,300,300
+9,Chow Mein Noodles,50,800,800
+10,Fried Rice Mix,45,800,800
+11,White Steamed Rice,40,1000,1000
+12,Super Greens Mix,30,500,500
+13,Orange Chicken Sauce,60,500,500
+14,Grilled Teriyaki Chicken Sauce,55,300,300
+15,Honey Walnut Shrimp,180,200,200
+16,Broccoli,35,500,500
+17,Beef Strips,200,300,300
+18,Mushroom Chicken,150,400,400
+19,Sweet Fire Sauce,55,400,400
+20,Chicken Breast,150,400,400
+21,Mushrooms,35,400,400
+22,Walnuts,60,200,200
+23,Peppers,30,500,500
+24,Dr Pepper Syrup,20,100,100
+25,Sweet Tea Mix,15,200,200
+26,Pepsi Syrup,20,100,100
+27,Mountain Dew Syrup,20,100,100
+28,Sierra Mist Syrup,20,100,100
+29,Water Bottles,5,1000,1000
