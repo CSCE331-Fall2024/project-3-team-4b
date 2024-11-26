@@ -1,8 +1,8 @@
-const express = require('express');
+const express = require("express");
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
 
-const containerRoutes = require('./routes/containerRoutes');
+const containerRoutes = require("./routes/containerRoutes");
 const menuItemsRoutes = require("./routes/menuItemsRoutes");
 const inventoryRoutes = require("./routes/inventoryRoutes");
 const menuRoutes = require("./routes/menuRoutes");
@@ -14,20 +14,19 @@ const authenticationRoutes = require("./routes/authenticationRoutes");
 const orderItemsRoutes = require("./routes/orderItemsRoutes");
 
 const allowedOrigins = [
-  'http://localhost:3000',
-  'https://project-3-team-4b-client.vercel.app',
+	"http://localhost:3000",
+	"https://project-3-team-4b-client.vercel.app",
 ];
 
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
+	origin: function (origin, callback) {
+		if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+			callback(null, true);
+		} else {
+			callback(new Error("Not allowed by CORS"));
+		}
+	},
+	credentials: true,
 };
 
 app.use(cors(corsOptions));
@@ -43,7 +42,6 @@ app.use("/api", employeesRoutes);
 app.use("/api", analyticsRoutes);
 app.use("/api", authenticationRoutes);
 app.use("/api", orderItemsRoutes);
-
 
 app.get("/", (req, res) => {
 	res.send("Server is running.");
