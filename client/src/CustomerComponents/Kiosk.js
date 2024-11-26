@@ -1,4 +1,3 @@
-// Kiosk.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box, Snackbar, Alert, CssBaseline } from "@mui/material";
@@ -18,6 +17,10 @@ function Kiosk({ isLargeText }) {
 	const [appetizerPrice, setAppetizerPrice] = useState(0);
 	const [drinkPrice, setDrinkPrice] = useState(0);
 	const [containerData, setContainerData] = useState([]);
+
+	// Store container IDs for Appetizer and Drink
+	const [appetizerContainerId, setAppetizerContainerId] = useState(null);
+	const [drinkContainerId, setDrinkContainerId] = useState(null);
 
 	const [currentStep, setCurrentStep] = useState("categorySelection");
 	const [selectedCategory, setSelectedCategory] = useState(null);
@@ -40,7 +43,6 @@ function Kiosk({ isLargeText }) {
 	useEffect(() => {
 		fetchMenuData();
 		fetchContainerData();
-		fetchPrices();
 	}, []);
 
 	/**
@@ -48,9 +50,7 @@ function Kiosk({ isLargeText }) {
 	 */
 	const fetchMenuData = async () => {
 		try {
-			const response = await axios.get(
-				"https://project-3-team-4b-server.vercel.app/api/menu"
-			);
+			const response = await axios.get("/api/menu");
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
@@ -63,39 +63,29 @@ function Kiosk({ isLargeText }) {
 	 */
 	const fetchContainerData = async () => {
 		try {
-			const response = await axios.get(
-				"https://project-3-team-4b-server.vercel.app/api/containers"
-			);
-			const filteredContainers = response.data.filter((container) =>
+			const response = await axios.get("/api/containers");
+			const allContainers = response.data;
+			const comboContainers = allContainers.filter((container) =>
 				["Bowl", "Plate", "Bigger Plate"].includes(container.name)
 			);
-			setContainerData(filteredContainers);
-		} catch (error) {
-			console.error("Error fetching container data:", error);
-			showSnackbar("Error fetching container data.", "error");
-		}
-	};
+			setContainerData(comboContainers);
 
-	/**
-	 * Fetches prices for appetizers and drinks from the API.
-	 */
-	const fetchPrices = async () => {
-		try {
-			const response = await axios.get(
-				"https://project-3-team-4b-server.vercel.app/api/containers"
-			);
-			const appetizerContainer = response.data.find(
+			// Get container IDs and prices for "Appetizer" and "Drink"
+			const appetizerContainer = allContainers.find(
 				(container) => container.name === "Appetizer"
 			);
-			const drinkContainer = response.data.find(
+			const drinkContainer = allContainers.find(
 				(container) => container.name === "Drink"
 			);
+
+			setAppetizerContainerId(appetizerContainer?.container_id || null);
+			setDrinkContainerId(drinkContainer?.container_id || null);
 
 			setAppetizerPrice(Number(appetizerContainer?.price) || 0);
 			setDrinkPrice(Number(drinkContainer?.price) || 0);
 		} catch (error) {
-			console.error("Error fetching appetizer and drink prices:", error);
-			showSnackbar("Error fetching appetizer and drink prices.", "error");
+			console.error("Error fetching container data:", error);
+			showSnackbar("Error fetching container data.", "error");
 		}
 	};
 
@@ -354,73 +344,119 @@ function Kiosk({ isLargeText }) {
 			return;
 		}
 
+		// Format the date correctly
+		const time = new Date().toISOString().slice(0, 19).replace("T", " ");
+
 		const orderPayload = {
-			time: new Date().toISOString(),
+			time,
 			total: mainOrderSummary.reduce(
 				(total, order) => total + order.subtotal,
 				0
 			), // Grand total
-			employee_id: 99,
+			employee_id: 1, // Ensure this employee_id exists in your database
 		};
 
-		// Before the first POST request
 		console.log("Order Payload:", orderPayload);
 
 		try {
-			const orderResponse = await axios.post(
-				"https://project-3-team-4b-server.vercel.app/api/orders",
-				orderPayload
-			);
-
+			const orderResponse = await axios.post("/api/orders", orderPayload);
 			const orderId = orderResponse.data.order_id;
 
-			const orderItemsPayload = mainOrderSummary.flatMap((order) => {
-				if (order.type === "Combo") {
-					const payload = [
-						{
-							order_id: orderId,
-							quantity: 1,
-							container_id: order.combo.container_id,
-						},
-						{
-							order_id: orderId,
-							quantity: 1,
-							menu_id: order.side.menu_id,
-						},
-					];
-					order.entrees.forEach(({ entree, quantity }) => {
-						payload.push({
-							order_id: orderId,
-							quantity,
-							menu_id: entree.menu_id,
-						});
-					});
-					return payload;
-				} else {
-					return [
-						{
-							order_id: orderId,
-							quantity: order.quantity,
-							menu_id: order.item.menu_id,
-						},
-					];
-				}
-			});
+			console.log("Order ID received:", orderId);
 
-			await Promise.all(
-				orderItemsPayload.map((orderItem) =>
-					axios.post(
-						"https://project-3-team-4b-server.vercel.app/api/order-items",
-						orderItem
-					)
-				)
-			);
+			// Process each item in the order
+			for (const order of mainOrderSummary) {
+				if (order.type === "Combo") {
+					// Insert into order_items with container_id and order_id
+					const orderItemPayload = {
+						order_id: orderId,
+						quantity: 1,
+						container_id: order.combo.container_id,
+					};
+
+					const orderItemResponse = await axios.post(
+						"/api/order-items",
+						orderItemPayload
+					);
+					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Insert side into menu_items
+					await axios.post("/api/menu-items", {
+						order_item_id: orderItemId,
+						menu_id: order.side.menu_id,
+					});
+
+					// Insert entrees into menu_items
+					for (const { entree, quantity } of order.entrees) {
+						for (let i = 0; i < quantity; i++) {
+							await axios.post("/api/menu-items", {
+								order_item_id: orderItemId,
+								menu_id: entree.menu_id,
+							});
+						}
+					}
+				} else if (order.type === "Appetizer") {
+					if (appetizerContainerId === null) {
+						showSnackbar("Appetizer container not found.", "error");
+						return;
+					}
+
+					// Insert into order_items
+					const orderItemPayload = {
+						order_id: orderId,
+						quantity: order.quantity,
+						container_id: appetizerContainerId,
+					};
+					const orderItemResponse = await axios.post(
+						"/api/order-items",
+						orderItemPayload
+					);
+					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Insert into menu_items
+					await axios.post("/api/menu-items", {
+						order_item_id: orderItemId,
+						menu_id: order.item.menu_id,
+					});
+				} else if (order.type === "Drink") {
+					if (drinkContainerId === null) {
+						showSnackbar("Drink container not found.", "error");
+						return;
+					}
+
+					// Insert into order_items
+					const orderItemPayload = {
+						order_id: orderId,
+						quantity: order.quantity,
+						container_id: drinkContainerId,
+					};
+					const orderItemResponse = await axios.post(
+						"/api/order-items",
+						orderItemPayload
+					);
+					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Insert into menu_items
+					await axios.post("/api/menu-items", {
+						order_item_id: orderItemId,
+						menu_id: order.item.menu_id,
+					});
+				}
+			}
 
 			showSnackbar(`Order placed successfully: Order ID ${orderId}`, "success");
 			setMainOrderSummary([]);
 		} catch (error) {
 			console.error("Error placing order:", error);
-			showSnackbar("Failed to place order. Please try again.", "error");
+			if (error.response) {
+				console.error("Server responded with:", error.response.data);
+				showSnackbar(
+					`Failed to place order: ${error.response.data.error}`,
+					"error"
+				);
+			} else {
+				showSnackbar("Failed to place order. Please try again.", "error");
+			}
 		}
 	};
 
@@ -493,10 +529,6 @@ function Kiosk({ isLargeText }) {
 					{snackbar.message}
 				</Alert>
 			</Snackbar>
-
-			{/* Confirm Remove Order Dialog */}
-			{/* Include your dialog component here if needed */}
-			{/* ... */}
 
 			{/* Left Section - Selection Steps */}
 			<Box sx={{ flex: 2, padding: 2, height: "100%", overflowY: "auto" }}>
