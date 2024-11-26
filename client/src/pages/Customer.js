@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Box, AppBar, Toolbar, Button } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Kiosk from "../CustomerComponents/Kiosk";
@@ -39,8 +39,24 @@ const theme = createTheme({
 const Customer = () => {
 	const [isLargeText, setIsLargeText] = useState(false);
 
+	useEffect(() => {
+		addGoogleTranslateScript();
+	}, []);
+
 	const toggleTextSize = () => {
 		setIsLargeText((prev) => !prev);
+	};
+
+	const addGoogleTranslateScript = () => {
+		const script = document.createElement("script");
+		script.type = "text/javascript";
+		script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+		script.async = true;
+		document.body.appendChild(script);
+
+		window.googleTranslateElementInit = () => {
+			new window.google.translate.TranslateElement({ pageLanguage: 'en' }, 'google_translate_element');
+		};
 	};
 
 	return (
@@ -62,15 +78,21 @@ const Customer = () => {
 							style={{ maxWidth: "100%", height: "60px" }}
 						/>
 					</Box>
-					<Button
-						onClick={toggleTextSize}
-						variant="contained"
-						color="secondary"
-					>
-						{isLargeText ? "Normal Text" : "Large Text"}
-					</Button>
+					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+						<Button
+							onClick={toggleTextSize}
+							variant="contained"
+							color="secondary"
+						>
+							{isLargeText ? "Normal Text" : "Large Text"}
+						</Button>
+					</Box>
 				</Toolbar>
 			</AppBar>
+			{/* Google Translate Element */}
+			<Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
+				<div id="google_translate_element"></div>
+			</Box>
 			<Container
 				maxWidth="xl"
 				disableGutters
