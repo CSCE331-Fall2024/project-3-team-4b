@@ -37,12 +37,7 @@ function App() {
 					/>
 				</Routes>
 			</Router>
-			{JSON.stringify(user)}
-			{role}
-			{role === "cashier"}
-			{role !== "cashier"}
-			{role === "manager"}
-			{role !== "manager"}
+
 		</div>
 	);
 }
