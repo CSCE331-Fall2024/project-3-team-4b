@@ -152,7 +152,7 @@ const Customer = () => {
 						/>
 					</Box>
 
-					<Box sx={{ display: "flex", alignItems: "center" }}>
+					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 						<Typography
 							variant="body1"
 							sx={{ color: "#FFFFFF", marginRight: "1rem" }}
@@ -160,7 +160,7 @@ const Customer = () => {
 							{weatherDescription}
 						</Typography>
 
-					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+					
 
 						<Button
 							onClick={toggleTextSize}
