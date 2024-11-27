@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-
-import { Container, Box, AppBar, Toolbar, Button, Typography } from "@mui/material";
+import { Container, Box, AppBar, Toolbar, Button } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Kiosk from "../CustomerComponents/Kiosk";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -39,98 +38,55 @@ const theme = createTheme({
 
 const Customer = () => {
 	const [isLargeText, setIsLargeText] = useState(false);
-	const [weatherDescription, setWeatherDescription] = useState("Fetching location...");
-
-	useEffect(() => {
-		addGoogleTranslateScript();
-	}, []);
+	const [weatherDescription, setWeatherDescription] = useState("Fetching weather...");
 
 	const toggleTextSize = () => {
 		setIsLargeText((prev) => !prev);
 	};
 
-
 	useEffect(() => {
 		const fetchLocationAndWeather = async () => {
 			try {
-				// Step 1: Get user's location
-				if (!navigator.geolocation) {
-					setWeatherDescription("Geolocation not supported");
-					return;
+				
+				const locationResponse = await fetch("http://ip-api.com/json/");
+				if (!locationResponse.ok) {
+					throw new Error("Error fetching location data");
 				}
+				const locationData = await locationResponse.json();
 
-				navigator.geolocation.getCurrentPosition(
-					async (position) => {
-						const { latitude, longitude } = position.coords;
+				const { city, region, lat, lon } = locationData;
 
-						// Step 2: Reverse geocoding to get city and state
-						const locationResponse = await fetch(
-							`https://geocode.xyz/${latitude},${longitude}?geoit=json`
-						);
+				
+				const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+				if (!pointsResponse.ok) {
+					throw new Error("Error fetching weather grid points");
+				}
+				const pointsData = await pointsResponse.json();
+				const forecastUrl = pointsData.properties.forecast;
 
-						if (!locationResponse.ok) {
-							throw new Error("Error fetching location details");
-						}
+				const forecastResponse = await fetch(forecastUrl);
+				if (!forecastResponse.ok) {
+					throw new Error("Error fetching weather forecast");
+				}
+				const forecastData = await forecastResponse.json();
 
-						const locationData = await locationResponse.json();
-						const city = locationData.city || "Unknown City";
-						const state = locationData.state || "Unknown State";
+				const period = forecastData.properties.periods[0];
+				const temperature = period?.temperature || "N/A";
+				const temperatureUnit = period?.temperatureUnit || "°F";
+				const shortForecast = period?.shortForecast || "N/A";
 
-						// Step 3: Fetch weather data using Weather.gov API
-						const pointResponse = await fetch(
-							`https://api.weather.gov/points/${latitude},${longitude}`
-						);
-
-						if (!pointResponse.ok) {
-							throw new Error("Error fetching weather grid points");
-						}
-
-						const pointData = await pointResponse.json();
-						const forecastUrl = pointData.properties.forecast;
-
-						const forecastResponse = await fetch(forecastUrl);
-
-						if (!forecastResponse.ok) {
-							throw new Error("Error fetching weather data");
-						}
-
-						const forecastData = await forecastResponse.json();
-						const period = forecastData.properties.periods[0];
-						const temperature = period?.temperature || "N/A";
-						const temperatureUnit = period?.temperatureUnit || "°F";
-						const shortForecast = period?.shortForecast || "N/A";
-
-						// Update weather description
-						setWeatherDescription(
-							`${temperature}${temperatureUnit} in ${city}, ${state} | ${shortForecast}`
-						);
-					},
-					(error) => {
-						console.error("Geolocation error:", error);
-						setWeatherDescription("Unable to fetch location");
-					}
+				
+				setWeatherDescription(
+					`${temperature}${temperatureUnit} in ${city}, ${region} | ${shortForecast}`
 				);
 			} catch (error) {
-				console.error("Error fetching weather data:", error);
+				console.error("Error fetching weather or location data:", error);
 				setWeatherDescription("Unable to fetch weather");
 			}
 		};
 
 		fetchLocationAndWeather();
 	}, []);
-
-	const addGoogleTranslateScript = () => {
-		const script = document.createElement("script");
-		script.type = "text/javascript";
-		script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-		script.async = true;
-		document.body.appendChild(script);
-
-		window.googleTranslateElementInit = () => {
-			new window.google.translate.TranslateElement({ pageLanguage: 'en' }, 'google_translate_element');
-		};
-	};
-
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -151,17 +107,8 @@ const Customer = () => {
 							style={{ maxWidth: "100%", height: "60px" }}
 						/>
 					</Box>
-
-					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-						<Typography
-							variant="body1"
-							sx={{ color: "#FFFFFF", marginRight: "1rem" }}
-						>
-							{weatherDescription}
-						</Typography>
-
-					
-
+					<Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+						<div>{weatherDescription}</div>
 						<Button
 							onClick={toggleTextSize}
 							variant="contained"
@@ -172,10 +119,6 @@ const Customer = () => {
 					</Box>
 				</Toolbar>
 			</AppBar>
-			{/* Google Translate Element */}
-			<Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
-				<div id="google_translate_element"></div>
-			</Box>
 			<Container
 				maxWidth="xl"
 				disableGutters
