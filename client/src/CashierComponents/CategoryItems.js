@@ -11,11 +11,13 @@ function CategoryItems({ items, selectedCategory, onItemSelect }) {
                         <Button
                             variant="contained"
                             fullWidth
+                            sx={{ bgcolor: "#D1282E", color: "#FFFFFF", fontFamily: "proxima-nova" }} // Red color for item buttons
                             onClick={() => onItemSelect(item)}
                         >
-                            {item.name} {/* Display only the item name */}
-                            {item.isPremium && <span> (Premium)</span>} {/* Still show if it's premium */}
+                            {item.name}
+                            {item.isPremium && <span> (Premium)</span>}
                         </Button>
+
                     </Grid>
                 ))}
             </Grid>

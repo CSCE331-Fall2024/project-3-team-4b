@@ -3,13 +3,15 @@ import axios from "axios";
 import MenuCategories from "../CashierComponents/MenuCategories";
 import CategoryItems from "../CashierComponents/CategoryItems";
 import OrderSummary from "../CashierComponents/OrderSummary";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
+import "../styles/Cashier.css";
 
-function Cashier( {role, user} ) {
+function Cashier({ role, user }) {
     const [selectedCategory, setSelectedCategory] = useState("Containers");
     const [currentContainerId, setCurrentContainerId] = useState(null); // Track the active container ID
     const [orderItems, setOrderItems] = useState([]);
+    const [openLogoutDialog, setOpenLogoutDialog] = useState(false); // State for logout confirmation dialog
     const [categoryData, setCategoryData] = useState({
         Containers: [],
         Appetizers: [],
@@ -21,41 +23,38 @@ function Cashier( {role, user} ) {
     const [entreesRemaining, setEntreesRemaining] = useState(0);
     const navigate = useNavigate();
 
-    // Fetch menu data and container data on mount
     useEffect(() => {
         fetchMenuAndContainerData();
     }, []);
 
     useEffect(() => {
-        if(role !== "cashier"){
+        if (role !== "cashier") {
             navigate('/');
         }
     }, [role, navigate]);
-    
+
     const fetchMenuAndContainerData = async () => {
         try {
             setLoading(true);
-            
+
             const menuResponse = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
             const containerResponse = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
-    
+
             const filteredContainers = containerResponse.data
                 .filter(container => ["Bowl", "Plate", "Bigger Plate", "Drink", "Appetizer"].includes(container.name))
                 .map(container => ({
                     ...container,
-                    price: Number(container.price) || 0, // Ensure price is a number
+                    price: Number(container.price) || 0,
                     number_of_entrees: container.name === "Bowl" ? 1 : container.name === "Plate" ? 2 : container.name === "Bigger Plate" ? 3 : 0,
                     number_of_sides: container.name === "Bowl" || container.name === "Plate" || container.name === "Bigger Plate" ? 1 : 0
                 }));
-    
-            // Ensure menu item prices are numbers
+
             const menuItems = menuResponse.data.map(item => ({
                 ...item,
-                price: Number(item.price) || 0, // Ensure price is a number
-                extra_cost: Number(item.extra_cost) || 0 // Ensure extra cost is a number
+                price: Number(item.price) || 0,
+                extra_cost: Number(item.extra_cost) || 0
             }));
-    
-            // Set fetched data in categoryData
+
             setCategoryData({
                 Containers: filteredContainers,
                 Appetizers: menuItems.filter(item => item.type === "Appetizer"),
@@ -63,16 +62,13 @@ function Cashier( {role, user} ) {
                 Entrees: menuItems.filter(item => item.type === "Entree"),
                 Drinks: menuItems.filter(item => item.type === "Drink"),
             });
-    
+
             setLoading(false);
         } catch (error) {
             console.error("Error fetching menu and container data:", error);
             setLoading(false);
         }
     };
-    
-    
-    
 
     const handleCategoryChange = (category) => {
         setSelectedCategory(category);
@@ -87,12 +83,12 @@ function Cashier( {role, user} ) {
             type: "Container",
             items: [],
         };
-    
-        // If the container is Appetizer or Drink, switch to respective category
-        if (container.name === "Appetizers") {
+
+        // If the container is Appetizer or Drink, switch to respective category for selection
+        if (container.name === "Appetizer") {
             setCurrentContainerId(newContainerId);
             setSelectedCategory("Appetizers"); // Switch to appetizers selection
-        } else if (container.name === "Drinks") {
+        } else if (container.name === "Drink") {
             setCurrentContainerId(newContainerId);
             setSelectedCategory("Drinks"); // Switch to drinks selection
         } else if (container.number_of_entrees > 0 || container.number_of_sides > 0) {
@@ -101,22 +97,19 @@ function Cashier( {role, user} ) {
             setEntreesRemaining(container.number_of_entrees);
             setSelectedCategory("Sides"); // Switch to sides selection if applicable
         }
-    
+
         // Add the container to the order items
         setOrderItems([...orderItems, newContainer]);
     };
-    
-    
 
     const handleItemSelect = (item) => {
-        // Appetizers and drinks are added to their respective container only
         if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
             setOrderItems((prevOrderItems) => {
                 return prevOrderItems.map((orderItem) => {
                     if (
                         orderItem.type === "Container" &&
                         orderItem.id === currentContainerId &&
-                        (orderItem.name === "Appetizers" || orderItem.name === "Drinks")
+                        (orderItem.name === "Appetizer" || orderItem.name === "Drink")
                     ) {
                         const updatedContainer = { ...orderItem };
                         updatedContainer.items.push({ ...item, type: selectedCategory });
@@ -125,11 +118,10 @@ function Cashier( {role, user} ) {
                     return orderItem;
                 });
             });
-            setSelectedCategory("Containers"); // Switch back to containers after selecting an item
+            setSelectedCategory("Containers");
             return;
         }
     
-        // For sides and entrees, ensure a container is selected
         if (!currentContainerId) {
             alert("Please select a container before adding items.");
             return;
@@ -140,7 +132,6 @@ function Cashier( {role, user} ) {
     
         setOrderItems((prevOrderItems) => {
             return prevOrderItems.map((orderItem) => {
-                // Ensure we are adding sides or entrees to Bowl, Plate, or Bigger Plate containers only
                 if (
                     orderItem.type === "Container" &&
                     orderItem.id === currentContainerId &&
@@ -149,14 +140,13 @@ function Cashier( {role, user} ) {
                     const updatedContainer = { ...orderItem };
     
                     if (isSide) {
-                        // Prevent adding more than one side to a container
                         const hasSide = updatedContainer.items.some((item) => item.type === "Side");
                         if (hasSide) {
                             alert("You have reached the limit for sides in this container.");
                             return updatedContainer;
                         }
                         updatedContainer.items.push({ ...item, type: "Side" });
-                        setSelectedCategory("Entrees"); // Switch to entrees after selecting a side
+                        setSelectedCategory("Entrees");
                     }
     
                     if (isEntree) {
@@ -165,13 +155,8 @@ function Cashier( {role, user} ) {
                             return updatedContainer;
                         }
     
-                        // Add entree and handle premium cost if applicable
-                        if (item.isPremium && item.extra_cost) {
-                            updatedContainer.price += item.extra_cost; // Add premium charge using `extra_cost`
-                        }
-                        updatedContainer.items.push({ ...item, type: "Entree" });
-    
-                        setEntreesRemaining((prev) => prev - 1); // Decrement the remaining entrees
+                        updatedContainer.items.push({ ...item, type: "Entree", extra_cost: item.extra_cost || 0 });
+                        setEntreesRemaining((prev) => prev - 1);
                     }
     
                     return updatedContainer;
@@ -189,27 +174,107 @@ function Cashier( {role, user} ) {
         setEntreesRemaining(0);
     };
 
+    const handleRemoveItem = (containerId, itemName = null) => {
+        setOrderItems((prevOrderItems) => {
+            return prevOrderItems
+                .map((orderItem) => {
+                    if (orderItem.id === containerId) {
+                        if (itemName) {
+                            // Remove the specific item from the container
+                            const updatedItems = orderItem.items.filter((item) => item.name !== itemName);
+                            return { ...orderItem, items: updatedItems };
+                        } else {
+                            // Remove the container entirely
+                            return null;
+                        }
+                    }
+                    return orderItem;
+                })
+                .filter((orderItem) => orderItem !== null);  // Filter out removed containers
+        });
+    };
+
+    const handleLogoutClick = () => {
+        setOpenLogoutDialog(true); // Open the logout confirmation dialog
+    };
+    
+    const handleConfirmLogout = () => {
+        setOpenLogoutDialog(false); // Close the dialog
+        navigate('/');  // Navigate to login page after confirmation
+    };
+    
+    
+    const handleCancelLogout = () => {
+        setOpenLogoutDialog(false); // Close the dialog without logging out
+    };
+    
+    
+
     return (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-            <Box sx={{ flex: 2 }}>
-                {loading ? (
-                    <Typography>Loading...</Typography>
-                ) : (
-                    <>
-                        <MenuCategories selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
-                        <CategoryItems
-                            items={categoryData[selectedCategory]}
-                            selectedCategory={selectedCategory}
-                            onItemSelect={selectedCategory === "Containers" ? handleSelectContainer : handleItemSelect}
-                        />
-                    </>
-                )}
+        <Box sx={{ position: "relative", minHeight: "100vh", bgcolor: "#FFFFFF", color: "#2B2A2A", overflowX: "hidden" }}>
+            <Box sx={{ display: "flex", gap: "1rem", p: 2 }}>
+                <Box sx={{ flex: 2 }}>
+                    {loading ? (
+                        <Typography variant="h5" fontFamily="proxima-nova" color="#2B2A2A">Loading...</Typography>
+                    ) : (
+                        <>
+                            <MenuCategories selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
+                            <CategoryItems
+                                items={categoryData[selectedCategory]}
+                                selectedCategory={selectedCategory}
+                                onItemSelect={selectedCategory === "Containers" ? handleSelectContainer : handleItemSelect}
+                            />
+                        </>
+                    )}
+                </Box>
+                <Box sx={{ flex: 1, bgcolor: "#F6F6F6", p: 2, borderRadius: 2 }}>
+                    <OrderSummary orderItems={orderItems} onClearOrder={handleClearOrder} onRemoveItem={handleRemoveItem} />
+                </Box>
             </Box>
-            <Box sx={{ flex: 1 }}>
-                <OrderSummary orderItems={orderItems} onClearOrder={handleClearOrder} />
+            <Box sx={{ position: "absolute", bottom: 0, width: "100%", bgcolor: "#D1282E", color: "#FFFFFF", display: "flex", alignItems: "center", p: 4 }}>
+                <img src="/panda_express_logo.png" alt="Panda Express Logo" style={{ height: "80px", marginRight: "1.5rem" }} />
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={handleLogoutClick}
+                    sx={{
+                        position: "fixed",
+                        right: 30,
+                        bottom: 45,
+                        bgcolor: "#2B2A2A",
+                        color: "#FFFFFF",
+                        fontSize: "1rem",
+                        padding: "12px 24px",
+                        zIndex: 1000
+                    }}
+                >
+                    Log Out
+                </Button>
             </Box>
+            <Dialog
+                open={openLogoutDialog}
+                onClose={handleCancelLogout}
+                aria-labelledby="logout-dialog-title"
+                aria-describedby="logout-dialog-description"
+            >
+                <DialogTitle id="logout-dialog-title">{"Confirm Logout"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="logout-dialog-description">
+                        Are you sure you want to log out?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelLogout} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleConfirmLogout} color="secondary" autoFocus>
+                        Log Out
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }
 
 export default Cashier;
+
