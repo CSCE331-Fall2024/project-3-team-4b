@@ -15,6 +15,7 @@ function RestaurantMenu() {
     useEffect(() => {
         fetchMenuData();
         fetchContainerData();
+        addGoogleTranslateScript();
     }, []);
 
     /**
@@ -25,7 +26,7 @@ function RestaurantMenu() {
      */
     const fetchMenuData = async () => {
         try {
-            const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
+            const response = await axios.get("/api/menu");
             setMenuData(response.data);
         } catch (error) {
             console.error("Error fetching menu data:", error);
@@ -41,8 +42,8 @@ function RestaurantMenu() {
      */
     const fetchContainerData = async () => {
         try {
-            const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
-            const filteredContainers = response.data.filter(container =>
+            const response = await axios.get("/api/containers");
+            const filteredContainers = response.data.body.filter(container =>
                 ["Bowl", "Plate", "Bigger Plate"].includes(container.name)
             );
             setContainerData(filteredContainers);
@@ -57,6 +58,19 @@ function RestaurantMenu() {
      * @param {string} name - The name of the item for which to generate the image URL.
      * @returns {string} The formatted image URL.
      */
+=======
+    const addGoogleTranslateScript = () => {
+        const script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+        script.async = true;
+        document.body.appendChild(script);
+
+        window.googleTranslateElementInit = () => {
+            new window.google.translate.TranslateElement({ pageLanguage: 'en' }, 'google_translate_element');
+        };
+    };
+
     const getImageUrl = (name) => {
         const formattedName = name.toLowerCase().replace(/\s+/g, "_");
         return `/images/${formattedName}.png`;
@@ -64,6 +78,9 @@ function RestaurantMenu() {
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 2 }}>
+            {/* Google Translate Element */}
+            <div id="google_translate_element" style={{ marginBottom: '20px' }}></div>
+
             {/* Container Section */}
             <Typography variant="h4" sx={{ marginBottom: 3 }}>Containers</Typography>
             <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3, marginBottom: 5 }}>
