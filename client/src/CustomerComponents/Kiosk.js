@@ -35,11 +35,8 @@ function Kiosk({ isLargeText }) {
 		setSnackbar,
 		confirmDialogOpen,
 		setConfirmDialogOpen,
-<<<<<<< HEAD
 		showSnackbar,
 		confirmRemoveOrder,
-=======
->>>>>>> 1a62400 (fix: merge main)
 	} = useContext(KioskContext);
 
 	useEffect(() => {
