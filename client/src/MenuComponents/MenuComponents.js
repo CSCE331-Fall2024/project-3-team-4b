@@ -25,32 +25,36 @@ function RestaurantMenu() {
      * @function fetchMenuData
      */
     const fetchMenuData = async () => {
-        try {
-            const response = await axios.get("/api/menu");
-            setMenuData(response.data);
-        } catch (error) {
-            console.error("Error fetching menu data:", error);
-        }
-    };
+			try {
+				const response = await axios.get(
+					"https://project-3-team-4b-server.vercel.app/api/menu"
+				);
+				setMenuData(response.data);
+			} catch (error) {
+				console.error("Error fetching menu data:", error);
+			}
+		};
 
-    /**
-     * Fetches container data from the server API, filters it for specific container types,
-     * and sets the containerData state.
-     *
-     * @async
-     * @function fetchContainerData
-     */
-    const fetchContainerData = async () => {
-        try {
-            const response = await axios.get("/api/containers");
-            const filteredContainers = response.data.body.filter(container =>
-                ["Bowl", "Plate", "Bigger Plate"].includes(container.name)
-            );
-            setContainerData(filteredContainers);
-        } catch (error) {
-            console.error("Error fetching container data:", error);
-        }
-    };
+		/**
+		 * Fetches container data from the server API, filters it for specific container types,
+		 * and sets the containerData state.
+		 *
+		 * @async
+		 * @function fetchContainerData
+		 */
+		const fetchContainerData = async () => {
+			try {
+				const response = await axios.get(
+					"https://project-3-team-4b-server.vercel.app/api/containers"
+				);
+				const filteredContainers = response.data.body.filter((container) =>
+					["Bowl", "Plate", "Bigger Plate"].includes(container.name)
+				);
+				setContainerData(filteredContainers);
+			} catch (error) {
+				console.error("Error fetching container data:", error);
+			}
+		};
 
     /**
      * Generates the image URL for a given menu item or container.
