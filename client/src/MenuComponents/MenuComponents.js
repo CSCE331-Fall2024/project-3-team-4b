@@ -58,7 +58,7 @@ function RestaurantMenu() {
      * @param {string} name - The name of the item for which to generate the image URL.
      * @returns {string} The formatted image URL.
      */
-=======
+
     const addGoogleTranslateScript = () => {
         const script = document.createElement("script");
         script.type = "text/javascript";
