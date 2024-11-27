@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Box, AppBar, Toolbar, Button, Typography } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Kiosk from "../CustomerComponents/Kiosk";
+import { KioskProvider } from "../CustomerComponents/KioskContext";
 import CssBaseline from "@mui/material/CssBaseline";
 
 import Logo from "../assets/panda-logo.svg";
@@ -182,7 +183,9 @@ const Customer = () => {
 				sx={{ height: "calc(100vh - 64px)" }}
 			>
 				<Box sx={{ height: "100%" }}>
-					<Kiosk isLargeText={isLargeText} />
+					<KioskProvider>
+						<Kiosk isLargeText={isLargeText} />
+					</KioskProvider>
 				</Box>
 			</Container>
 		</ThemeProvider>
