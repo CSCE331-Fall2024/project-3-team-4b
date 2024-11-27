@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+
 import {
 	Container,
 	Box,
@@ -9,22 +10,38 @@ import {
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import Kiosk from "../CustomerComponents/Kiosk";
-import CssBaseline from "@mui/material/CssBaseline";
-import Logo from "../assets/panda-logo.svg";
 import { KioskProvider } from "../CustomerComponents/KioskContext";
+import CssBaseline from "@mui/material/CssBaseline";
+
+import Logo from "../assets/panda-logo.svg";
 
 const theme = createTheme({
 	palette: {
-		primary: { main: "#D1282E" }, // Red
-		secondary: { main: "#2B2A2A" }, // Black
-		background: { default: "#FFFFFF" }, // White
-		text: { primary: "#2B2A2A" }, // Black
+		primary: {
+			main: "#D1282E", // Red
+		},
+		secondary: {
+			main: "#2B2A2A", // Black
+		},
+		background: {
+			default: "#FFFFFF", // White
+		},
+		text: {
+			primary: "#2B2A2A", // Black
+		},
 	},
 	typography: {
 		fontFamily: "Proxima Nova, Arial, sans-serif",
-		h4: { fontWeight: 700 },
-		h5: { fontWeight: 700 },
-		button: { textTransform: "none", fontWeight: 700 },
+		h4: {
+			fontWeight: 700,
+		},
+		h5: {
+			fontWeight: 700,
+		},
+		button: {
+			textTransform: "none",
+			fontWeight: 700,
+		},
 	},
 });
 
@@ -35,88 +52,73 @@ const Customer = () => {
 	);
 
 	useEffect(() => {
-		if (!window.googleTranslateElementInit) {
-			// Define googleTranslateElementInit globally
-			window.googleTranslateElementInit = () => {
-				try {
-					new window.google.translate.TranslateElement(
-						{ pageLanguage: "en" },
-						"google_translate_element"
-					);
-				} catch (error) {
-					console.error(
-						"Failed to initialize Google Translate element:",
-						error
-					);
-				}
-			};
-		}
 		addGoogleTranslateScript();
-
-		// Clean up on component unmount
-		return () => {
-			removeGoogleTranslateScript();
-		};
 	}, []);
 
 	const toggleTextSize = () => {
 		setIsLargeText((prev) => !prev);
 	};
 
-	const addGoogleTranslateScript = () => {
-		try {
-			// Check if the script is already loaded
-			const existingScript = document.querySelector(
-				'script[src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"]'
-			);
-
-			if (existingScript) {
-				console.warn("Google Translate script is already loaded.");
-				return;
-			}
-
-			// Add the script dynamically
-			const script = document.createElement("script");
-			script.type = "text/javascript";
-			script.src =
-				"//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-			script.async = true;
-
-			// Handle script load and error events
-			script.onload = () => {
-				if (typeof window.googleTranslateElementInit === "function") {
-					window.googleTranslateElementInit();
-				} else {
-					console.error("Google Translate initialization function not found.");
+	useEffect(() => {
+		const fetchLocationAndWeather = async () => {
+			try {
+				// Step 1: Fetch location details using IP Geolocation API
+				const locationResponse = await fetch("http://ip-api.com/json/");
+				if (!locationResponse.ok) {
+					throw new Error("Error fetching location data");
 				}
-			};
+				const locationData = await locationResponse.json();
 
-			script.onerror = () => {
-				console.error("Failed to load Google Translate script.");
-			};
+				const { city, region, lat, lon } = locationData;
 
-			document.body.appendChild(script);
-		} catch (error) {
-			console.error("Error while adding Google Translate script:", error);
-		}
-	};
+				// Step 2: Fetch weather data using Weather.gov
+				const pointsResponse = await fetch(
+					`https://api.weather.gov/points/${lat},${lon}`
+				);
+				if (!pointsResponse.ok) {
+					throw new Error("Error fetching weather grid points");
+				}
+				const pointsData = await pointsResponse.json();
+				const forecastUrl = pointsData.properties.forecast;
 
-	const removeGoogleTranslateScript = () => {
-		// Remove existing Google Translate script
-		const existingScript = document.querySelector(
-			'script[src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"]'
-		);
-		if (existingScript) {
-			existingScript.remove();
-		}
+				const forecastResponse = await fetch(forecastUrl);
+				if (!forecastResponse.ok) {
+					throw new Error("Error fetching weather forecast");
+				}
+				const forecastData = await forecastResponse.json();
 
-		// Remove the Google Translate element container
-		const translateElement = document.getElementById(
-			"google_translate_element"
-		);
-		if (translateElement) {
-			translateElement.innerHTML = ""; // Clear content to avoid duplication
-		}
+				const period = forecastData.properties.periods[0];
+				const temperature = period?.temperature || "N/A";
+				const temperatureUnit = period?.temperatureUnit || "°F";
+				const shortForecast = period?.shortForecast || "N/A";
+
+				// Step 3: Update weather description
+				setWeatherDescription(
+					`${temperature}${temperatureUnit} in ${city}, ${region} | ${shortForecast}`
+				);
+			} catch (error) {
+				console.error("Error fetching geolocation data:", error);
+				setWeatherDescription("Unable to fetch location data");
+			}
+		};
+
+		fetchLocationAndWeather();
+	}, []);
+
+	const addGoogleTranslateScript = () => {
+		const script = document.createElement("script");
+		script.type = "text/javascript";
+		script.src =
+			"//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+		script.async = true;
+		document.body.appendChild(script);
+
+		window.googleTranslateElementInit = () => {
+			new window.google.translate.TranslateElement(
+				{ pageLanguage: "en" },
+				"google_translate_element"
+			);
+		};
 	};
 
 	return (
@@ -139,7 +141,7 @@ const Customer = () => {
 						/>
 					</Box>
 
-					<Box sx={{ display: "flex", alignItems: "center" }}>
+					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 						<Typography
 							variant="body1"
 							sx={{ color: "#FFFFFF", marginRight: "1rem" }}
@@ -157,15 +159,10 @@ const Customer = () => {
 					</Box>
 				</Toolbar>
 			</AppBar>
-
 			{/* Google Translate Element */}
 			<Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
-				<div
-					id="google_translate_element"
-					style={{ marginBottom: "20px" }}
-				></div>
+				<div id="google_translate_element"></div>
 			</Box>
-
 			<Container
 				maxWidth="xl"
 				disableGutters
