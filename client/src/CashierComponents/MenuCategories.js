@@ -6,23 +6,14 @@ function MenuCategories({ selectedCategory, onCategoryChange }) {
 
     return (
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-            <Tabs
+            <Tabs 
                 value={selectedCategory}
                 onChange={(e, newValue) => onCategoryChange(newValue)}
                 variant="scrollable"
                 scrollButtons="auto"
-                sx={{ ".MuiTabs-indicator": { backgroundColor: "#D1282E" } }} // Red indicator for active tab
             >
                 {categories.map((category) => (
-                    <Tab
-                        key={category}
-                        label={category}
-                        value={category}
-                        sx={{
-                            color: selectedCategory === category ? "#D1282E" : "#2B2A2A", // Red for active, Black for inactive
-                            fontFamily: "proxima-nova"
-                        }}
-                    />
+                    <Tab key={category} label={category} value={category} />
                 ))}
             </Tabs>
         </Box>
