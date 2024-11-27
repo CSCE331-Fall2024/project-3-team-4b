@@ -51,14 +51,11 @@ const Customer = () => {
 		"Fetching location..."
 	);
 
-	useEffect(() => {
-		addGoogleTranslateScript();
-	}, []);
+
 
 	const toggleTextSize = () => {
 		setIsLargeText((prev) => !prev);
 	};
-
 	useEffect(() => {
 		const fetchLocationAndWeather = async () => {
 			try {
@@ -106,20 +103,27 @@ const Customer = () => {
 	}, []);
 
 	const addGoogleTranslateScript = () => {
-		const script = document.createElement("script");
-		script.type = "text/javascript";
-		script.src =
-			"//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-		script.async = true;
-		document.body.appendChild(script);
+		if (!document.getElementById("google-translate-script")) {
+			const script = document.createElement("script");
+			script.id = "google-translate-script";
+			script.type = "text/javascript";
+			script.src =
+				"//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+			script.async = true;
+			document.body.appendChild(script);
 
-		window.googleTranslateElementInit = () => {
-			new window.google.translate.TranslateElement(
-				{ pageLanguage: "en" },
-				"google_translate_element"
-			);
-		};
+			window.googleTranslateElementInit = () => {
+				new window.google.translate.TranslateElement(
+					{ pageLanguage: "en" },
+					"google_translate_element"
+				);
+			};
+		}
 	};
+
+	useEffect(() => {
+		addGoogleTranslateScript();
+	}, []);
 
 	return (
 		<ThemeProvider theme={theme}>
@@ -142,6 +146,9 @@ const Customer = () => {
 					</Box>
 
 					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+						<Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
+							<div id="google_translate_element"></div>
+						</Box>
 						<Typography
 							variant="body1"
 							sx={{ color: "#FFFFFF", marginRight: "1rem" }}
@@ -160,9 +167,7 @@ const Customer = () => {
 				</Toolbar>
 			</AppBar>
 			{/* Google Translate Element */}
-			<Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
-				<div id="google_translate_element"></div>
-			</Box>
+
 			<Container
 				maxWidth="xl"
 				disableGutters
