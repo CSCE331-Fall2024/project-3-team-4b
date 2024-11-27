@@ -271,6 +271,7 @@ function Orders() {
 						employee_id: parseInt(employee_id),
 					}
 				);
+				console.log("Order: ", time, total, employee_id);
 				setSnackbarMessage("Order added successfully.");
 			} else if (dialogType === "Edit") {
 				await axios.put(
