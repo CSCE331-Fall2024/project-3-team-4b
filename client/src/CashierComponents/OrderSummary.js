@@ -1,10 +1,23 @@
 import React from "react";
-import { Box, Typography, List, ListItem, ListItemText, Divider, Button } from "@mui/material";
+import { Box, Typography, List, ListItem, ListItemText, Divider, Button, IconButton } from "@mui/material";
 import axios from "axios";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-function OrderSummary({ orderItems, onClearOrder }) {
+function OrderSummary({ orderItems, onClearOrder, onRemoveItem }) {
     // Calculate subtotal by summing up the price of all containers and other items
-    const subtotal = orderItems.reduce((total, item) => total + (Number(item.price) || 0), 0);
+    const subtotal = orderItems.reduce((total, orderItem) => {
+    let itemTotal = Number(orderItem.price) || 0;
+
+    // Add the cost of each item within the container, including premium charges if applicable
+    if (orderItem.items && orderItem.items.length > 0) {
+        itemTotal += orderItem.items.reduce((containerTotal, item) => {
+            return containerTotal + (Number(item.extra_cost) || 0);
+        }, 0);
+    }
+
+    return total + itemTotal;
+}, 0);
+
     const tax = subtotal * 0.08;
     const total = subtotal + tax;
 
@@ -74,34 +87,45 @@ function OrderSummary({ orderItems, onClearOrder }) {
         <Box sx={{ p: 2, borderLeft: "1px solid gray" }}>
             <Typography variant="h6">Order Summary</Typography>
             <List>
-                {/* Render Containers with Their Items */}
                 {orderItems.map((orderItem, index) => {
                     if (orderItem.type === "Container") {
                         return (
                             <React.Fragment key={index}>
-                                <ListItem>
+                                <ListItem
+                                    secondaryAction={
+                                        <IconButton edge="end" onClick={() => onRemoveItem(orderItem.id)}>
+                                            <DeleteIcon />
+                                        </IconButton>
+                                    }
+                                >
                                     <ListItemText 
                                         primary={orderItem.name} 
                                         secondary={`$${Number(orderItem.price).toFixed(2)}`} 
                                     />
                                 </ListItem>
                                 {orderItem.items.map((item, subIndex) => (
-                                    <ListItem key={`${index}-${subIndex}`} sx={{ pl: 4 }}>
-                                        <ListItemText 
-                                            primary={`- ${item.name}`} 
-                                        />
+                                    <ListItem key={`${index}-${subIndex}`} sx={{ pl: 4 }}
+                                        secondaryAction={
+                                            <IconButton edge="end" onClick={() => onRemoveItem(orderItem.id, item.name)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        }
+                                    >
+                                        <ListItemText primary={`- ${item.name}`} />
                                     </ListItem>
                                 ))}
                             </React.Fragment>
                         );
                     } else {
-                        // Render other items that were added without a container
                         return (
                             <ListItem key={index}>
                                 <ListItemText 
                                     primary={`${orderItem.name}`} 
                                     secondary={orderItem.price > 0 ? `$${Number(orderItem.price).toFixed(2)}` : null} 
                                 />
+                                <IconButton edge="end" onClick={() => onRemoveItem(orderItem.id)}>
+                                    <DeleteIcon />
+                                </IconButton>
                             </ListItem>
                         );
                     }
@@ -113,10 +137,21 @@ function OrderSummary({ orderItems, onClearOrder }) {
             <Typography variant="body1">Tax: ${tax.toFixed(2)}</Typography>
             <Typography variant="h6">Total: ${total.toFixed(2)}</Typography>
             <Box sx={{ mt: 2 }}>
-                <Button variant="contained" color="primary" onClick={handlePlaceOrder} fullWidth>
+                <Button
+                    variant="contained"
+                    sx={{ bgcolor: "#2B2A2A", color: "#FFFFFF", fontFamily: "proxima-nova" }} // Black color for Place Order button
+                    onClick={handlePlaceOrder}
+                    fullWidth
+                >
                     Place Order
                 </Button>
-                <Button variant="outlined" color="secondary" onClick={onClearOrder} fullWidth sx={{ mt: 1 }}>
+                <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={onClearOrder}
+                    fullWidth
+                    sx={{ mt: 1, color: "#D1282E", borderColor: "#D1282E", fontFamily: "proxima-nova" }}
+                >
                     Clear Order
                 </Button>
             </Box>
@@ -125,5 +160,7 @@ function OrderSummary({ orderItems, onClearOrder }) {
 }
 
 export default OrderSummary;
+
+
 
 

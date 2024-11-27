@@ -1,0 +1,31 @@
+button {
+    background-color: #D1282E; /* Red color for all buttons */
+    color: #FFFFFF;
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+button:hover {
+    background-color: #A82228;
+}
+
+.MenuCategories-tab {
+    color: #2B2A2A; /* Black for inactive tabs */
+    font-family: 'proxima-nova', sans-serif;
+    font-weight: bold;
+}
+
+.MenuCategories-tab-selected {
+    color: #D1282E; /* Red for active tabs */
+    background-color: #FFFFFF;
+    font-family: 'proxima-nova', sans-serif;
+}
+
+.OrderSummary-total {
+    color: #D1282E;
+    font-size: 1.5rem;
+    font-weight: bold;
+    font-family: 'proxima-nova', sans-serif;
+}
+
