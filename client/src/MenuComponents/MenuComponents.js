@@ -58,18 +58,51 @@ function RestaurantMenu() {
      * @param {string} name - The name of the item for which to generate the image URL.
      * @returns {string} The formatted image URL.
      */
-=======
+
     const addGoogleTranslateScript = () => {
+        if (document.querySelector('script[src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"]')) {
+          console.warn("Google Translate script already loaded");
+          return;
+        }
+    
+        removeGoogleTranslateScript();
+    
         const script = document.createElement("script");
         script.type = "text/javascript";
         script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
         script.async = true;
-        document.body.appendChild(script);
-
-        window.googleTranslateElementInit = () => {
-            new window.google.translate.TranslateElement({ pageLanguage: 'en' }, 'google_translate_element');
+        script.onerror = () => {
+          console.error("Failed to load Google Translate script.");
         };
-    };
+        document.body.appendChild(script);
+    
+        window.googleTranslateElementInit = () => {
+          try {
+            new window.google.translate.TranslateElement(
+              { pageLanguage: "en" },
+              "google_translate_element"
+            );
+          } catch (error) {
+            console.error("Failed to initialize Google Translate element:", error);
+          }
+        };
+      };
+    
+      const removeGoogleTranslateScript = () => {
+        // Remove existing Google Translate script
+        const existingScript = document.querySelector(
+          'script[src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"]'
+        );
+        if (existingScript) {
+          existingScript.remove();
+        }
+    
+        // Remove the Google Translate element container
+        const translateElement = document.getElementById("google_translate_element");
+        if (translateElement) {
+          translateElement.innerHTML = ""; // Clear content to avoid duplication
+        }
+      };
 
     const getImageUrl = (name) => {
         const formattedName = name.toLowerCase().replace(/\s+/g, "_");
