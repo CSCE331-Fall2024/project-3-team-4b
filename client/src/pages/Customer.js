@@ -53,71 +53,47 @@ const Customer = () => {
 	useEffect(() => {
 		const fetchLocationAndWeather = async () => {
 			try {
-				// Step 1: Get user's location
-				if (!navigator.geolocation) {
-					setWeatherDescription("Geolocation not supported");
-					return;
+				// Step 1: Fetch location details using IP Geolocation API
+				const locationResponse = await fetch("http://ip-api.com/json/");
+				if (!locationResponse.ok) {
+					throw new Error("Error fetching location data");
 				}
+				const locationData = await locationResponse.json();
 
-				navigator.geolocation.getCurrentPosition(
-					async (position) => {
-						const { latitude, longitude } = position.coords;
+				const { city, region, lat, lon } = locationData;
 
-						// Step 2: Reverse geocoding to get city and state
-						const locationResponse = await fetch(
-							`https://geocode.xyz/${latitude},${longitude}?geoit=json`
-						);
+				// Step 2: Fetch weather data using Weather.gov
+				const pointsResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+				if (!pointsResponse.ok) {
+					throw new Error("Error fetching weather grid points");
+				}
+				const pointsData = await pointsResponse.json();
+				const forecastUrl = pointsData.properties.forecast;
 
-						if (!locationResponse.ok) {
-							throw new Error("Error fetching location details");
-						}
+				const forecastResponse = await fetch(forecastUrl);
+				if (!forecastResponse.ok) {
+					throw new Error("Error fetching weather forecast");
+				}
+				const forecastData = await forecastResponse.json();
 
-						const locationData = await locationResponse.json();
-						const city = locationData.city || "Unknown City";
-						const state = locationData.state || "Unknown State";
+				const period = forecastData.properties.periods[0];
+				const temperature = period?.temperature || "N/A";
+				const temperatureUnit = period?.temperatureUnit || "°F";
+				const shortForecast = period?.shortForecast || "N/A";
 
-						// Step 3: Fetch weather data using Weather.gov API
-						const pointResponse = await fetch(
-							`https://api.weather.gov/points/${latitude},${longitude}`
-						);
-
-						if (!pointResponse.ok) {
-							throw new Error("Error fetching weather grid points");
-						}
-
-						const pointData = await pointResponse.json();
-						const forecastUrl = pointData.properties.forecast;
-
-						const forecastResponse = await fetch(forecastUrl);
-
-						if (!forecastResponse.ok) {
-							throw new Error("Error fetching weather data");
-						}
-
-						const forecastData = await forecastResponse.json();
-						const period = forecastData.properties.periods[0];
-						const temperature = period?.temperature || "N/A";
-						const temperatureUnit = period?.temperatureUnit || "°F";
-						const shortForecast = period?.shortForecast || "N/A";
-
-						// Update weather description
-						setWeatherDescription(
-							`${temperature}${temperatureUnit} in ${city}, ${state} | ${shortForecast}`
-						);
-					},
-					(error) => {
-						console.error("Geolocation error:", error);
-						setWeatherDescription("Unable to fetch location");
-					}
+				// Step 3: Update weather description
+				setWeatherDescription(
+					`${temperature}${temperatureUnit} in ${city}, ${region} | ${shortForecast}`
 				);
 			} catch (error) {
-				console.error("Error fetching weather data:", error);
-				setWeatherDescription("Unable to fetch weather");
+				console.error("Error fetching geolocation data:", error);
+				setWeatherDescription("Unable to fetch location data");
 			}
 		};
 
 		fetchLocationAndWeather();
 	}, []);
+
 
 	const addGoogleTranslateScript = () => {
 		const script = document.createElement("script");
@@ -160,7 +136,7 @@ const Customer = () => {
 							{weatherDescription}
 						</Typography>
 
-					
+
 
 						<Button
 							onClick={toggleTextSize}
