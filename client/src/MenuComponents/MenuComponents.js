@@ -2,6 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box, Typography } from "@mui/material";
 
+/**
+ * RestaurantMenu component that displays the menu, including containers, entrees, and sides.
+ * It fetches data from the API to dynamically render the menu items.
+ *
+ * @returns {JSX.Element} The rendered RestaurantMenu component.
+ */
 function RestaurantMenu() {
     const [menuData, setMenuData] = useState([]);
     const [containerData, setContainerData] = useState([]);
@@ -11,6 +17,12 @@ function RestaurantMenu() {
         fetchContainerData();
     }, []);
 
+    /**
+     * Fetches menu data from the server API and sets the menuData state.
+     *
+     * @async
+     * @function fetchMenuData
+     */
     const fetchMenuData = async () => {
         try {
             const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/menu");
@@ -20,6 +32,13 @@ function RestaurantMenu() {
         }
     };
 
+    /**
+     * Fetches container data from the server API, filters it for specific container types,
+     * and sets the containerData state.
+     *
+     * @async
+     * @function fetchContainerData
+     */
     const fetchContainerData = async () => {
         try {
             const response = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
@@ -32,6 +51,12 @@ function RestaurantMenu() {
         }
     };
 
+    /**
+     * Generates the image URL for a given menu item or container.
+     *
+     * @param {string} name - The name of the item for which to generate the image URL.
+     * @returns {string} The formatted image URL.
+     */
     const getImageUrl = (name) => {
         const formattedName = name.toLowerCase().replace(/\s+/g, "_");
         return `/images/${formattedName}.png`;
