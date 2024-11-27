@@ -5,6 +5,7 @@ import CategoryItems from "../CashierComponents/CategoryItems";
 import OrderSummary from "../CashierComponents/OrderSummary";
 import { Box, Button, Typography } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
+import "../styles/Cashier.css";
 
 function Cashier( {role, user} ) {
     const [selectedCategory, setSelectedCategory] = useState("Containers");
@@ -40,7 +41,7 @@ function Cashier( {role, user} ) {
             const containerResponse = await axios.get("https://project-3-team-4b-server.vercel.app/api/containers");
     
             const filteredContainers = containerResponse.data
-                .filter(container => ["Bowl", "Plate", "Bigger Plate", "Drinks", "Appetizers"].includes(container.name))
+                .filter(container => ["Bowl", "Plate", "Bigger Plate", "Drink", "Appetizer"].includes(container.name))
                 .map(container => ({
                     ...container,
                     price: Number(container.price) || 0, // Ensure price is a number
@@ -190,23 +191,28 @@ function Cashier( {role, user} ) {
     };
 
     return (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-            <Box sx={{ flex: 2 }}>
-                {loading ? (
-                    <Typography>Loading...</Typography>
-                ) : (
-                    <>
-                        <MenuCategories selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
-                        <CategoryItems
-                            items={categoryData[selectedCategory]}
-                            selectedCategory={selectedCategory}
-                            onItemSelect={selectedCategory === "Containers" ? handleSelectContainer : handleItemSelect}
-                        />
-                    </>
-                )}
+        <Box sx={{ position: "relative", minHeight: "100vh", bgcolor: "#FFFFFF", color: "#2B2A2A" }}>
+            <Box sx={{ display: "flex", gap: "1rem", p: 2 }}>
+                <Box sx={{ flex: 2 }}>
+                    {loading ? (
+                        <Typography variant="h5" fontFamily="proxima-nova" color="#2B2A2A">Loading...</Typography>
+                    ) : (
+                        <>
+                            <MenuCategories selectedCategory={selectedCategory} onCategoryChange={handleCategoryChange} />
+                            <CategoryItems
+                                items={categoryData[selectedCategory]}
+                                selectedCategory={selectedCategory}
+                                onItemSelect={selectedCategory === "Containers" ? handleSelectContainer : handleItemSelect}
+                            />
+                        </>
+                    )}
+                </Box>
+                <Box sx={{ flex: 1, bgcolor: "#F6F6F6", p: 2, borderRadius: 2 }}>
+                    <OrderSummary orderItems={orderItems} onClearOrder={handleClearOrder} />
+                </Box>
             </Box>
-            <Box sx={{ flex: 1 }}>
-                <OrderSummary orderItems={orderItems} onClearOrder={handleClearOrder} />
+            <Box sx={{ position: "absolute", bottom: 0, width: "100%", bgcolor: "#D1282E", color: "#FFFFFF", display: "flex", alignItems: "center", p: 4 }}>
+                <img src="/panda_express_logo.png" alt="Panda Express Logo" style={{ height: "80px", marginRight: "1.5rem" }} />
             </Box>
         </Box>
     );

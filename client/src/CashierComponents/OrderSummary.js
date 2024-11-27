@@ -113,10 +113,21 @@ function OrderSummary({ orderItems, onClearOrder }) {
             <Typography variant="body1">Tax: ${tax.toFixed(2)}</Typography>
             <Typography variant="h6">Total: ${total.toFixed(2)}</Typography>
             <Box sx={{ mt: 2 }}>
-                <Button variant="contained" color="primary" onClick={handlePlaceOrder} fullWidth>
+                <Button
+                    variant="contained"
+                    sx={{ bgcolor: "#2B2A2A", color: "#FFFFFF", fontFamily: "proxima-nova" }} // Black color for Place Order button
+                    onClick={handlePlaceOrder}
+                    fullWidth
+                >
                     Place Order
                 </Button>
-                <Button variant="outlined" color="secondary" onClick={onClearOrder} fullWidth sx={{ mt: 1 }}>
+                <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={onClearOrder}
+                    fullWidth
+                    sx={{ mt: 1, color: "#D1282E", borderColor: "#D1282E", fontFamily: "proxima-nova" }}
+                >
                     Clear Order
                 </Button>
             </Box>
