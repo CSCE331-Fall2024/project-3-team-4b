@@ -49,6 +49,7 @@ function Kiosk({ isLargeText }) {
 			const response = await axios.get(
 				"https://project-3-team-4b-server.vercel.app/api/menu"
 			);
+
 			setMenuData(response.data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
