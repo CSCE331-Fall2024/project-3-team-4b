@@ -1,26 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
+import { KioskContext } from "./KioskContext";
 import { Box, Typography, IconButton, Button, Divider } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
-import EditIcon from "@mui/icons-material/Edit";
 
-/**
- * Component to display the order summary (cart) with receipt-like formatting.
- *
- * @param {Object} props - Component props.
- * @param {Array} props.mainOrderSummary - Array of order items.
- * @param {Function} props.handleEditOrder - Function to handle editing an order item.
- * @param {Function} props.handleRemoveOrder - Function to handle removing an order item.
- * @param {Function} props.handlePlaceOrder - Function to handle placing the order.
- * @param {boolean} props.isLargeText - Flag to determine if large text is enabled.
- * @returns {JSX.Element} OrderSummary component.
- */
-function OrderSummary({
-	mainOrderSummary,
-	handleEditOrder,
-	handleRemoveOrder,
-	handlePlaceOrder,
-	isLargeText,
-}) {
+function OrderSummary({ isLargeText }) {
+	const { mainOrderSummary, handleRemoveOrder, handlePlaceOrder } =
+		useContext(KioskContext);
+
 	return (
 		<>
 			<Typography
@@ -45,11 +31,17 @@ function OrderSummary({
 			) : (
 				<Box sx={{ maxWidth: "100%" }}>
 					{mainOrderSummary.map((order, index) => (
-						<Box key={index} sx={{ marginBottom: 2 }}>
+						<Box
+							key={index}
+							sx={{
+								marginBottom: 2,
+							}}
+						>
 							<Box
 								sx={{
 									display: "flex",
 									alignItems: "center",
+									justifyItems: "left",
 									justifyContent: "space-between",
 								}}
 							>
@@ -62,27 +54,23 @@ function OrderSummary({
 								>
 									{order.type === "Combo" ? order.combo.name : order.item.name}
 								</Typography>
-								<Box>
-									{order.type === "Combo" && (
-										<IconButton
-											edge="end"
-											color="primary"
-											onClick={() => handleEditOrder(index)}
-										>
-											<EditIcon />
-										</IconButton>
-									)}
-									<IconButton
-										edge="end"
-										color="error"
-										onClick={() => handleRemoveOrder(index)}
-									>
-										<RemoveCircleOutlineIcon />
-									</IconButton>
-								</Box>
+								<IconButton
+									edge="end"
+									color="error"
+									onClick={() => handleRemoveOrder(index)}
+								>
+									<RemoveCircleOutlineIcon />
+								</IconButton>
 							</Box>
 							{order.type === "Combo" && (
-								<Box sx={{ marginLeft: 2 }}>
+								<Box
+									sx={{
+										alignSelf: "left",
+										alignContent: "left",
+										justifyContent: "left",
+										justifyItems: "left",
+									}}
+								>
 									<Typography
 										sx={{
 											fontSize: isLargeText ? "1.25rem" : "0.875rem",
@@ -104,32 +92,23 @@ function OrderSummary({
 									))}
 								</Box>
 							)}
-							{order.type === "Appetizer" && (
+							{(order.type === "Appetizer" || order.type === "Drink") && (
 								<Typography
 									sx={{
 										fontSize: isLargeText ? "1.25rem" : "0.875rem",
 										fontWeight: "normal",
-										marginLeft: 2,
+										justifySelf: "left",
 									}}
 								>
-									Quantity: {order.quantity}
-								</Typography>
-							)}
-							{order.type === "Drink" && (
-								<Typography
-									sx={{
-										fontSize: isLargeText ? "1.25rem" : "0.875rem",
-										fontWeight: "normal",
-										marginLeft: 2,
-									}}
-								>
-									Quantity: {order.quantity}
+									Qty: {order.quantity}
 								</Typography>
 							)}
 							<Typography
 								sx={{
 									fontSize: isLargeText ? "1.25rem" : "0.875rem",
-									fontWeight: "normal",
+									fontWeight: "bold",
+									justifySelf: "left",
+									marginTop: 1.5,
 								}}
 							>
 								Subtotal: ${order.subtotal.toFixed(2)}
@@ -137,7 +116,6 @@ function OrderSummary({
 							<Divider sx={{ marginTop: 1, marginBottom: 1 }} />
 						</Box>
 					))}
-					{/* Total */}
 					<Typography
 						variant="h6"
 						sx={{
