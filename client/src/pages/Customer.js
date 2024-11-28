@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import axios from 'axios';
 import {
 	Container,
 	Box,
@@ -59,46 +59,41 @@ const Customer = () => {
 	useEffect(() => {
 		const fetchLocationAndWeather = async () => {
 			try {
-				// Step 1: Fetch location details using IP Geolocation API
-				const locationResponse = await fetch("http://ip-api.com/json/");
-				if (!locationResponse.ok) {
-					throw new Error("Error fetching location data");
+				// Step 1: Fetch the user's current location using the HTML Geolocation API
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(async (position) => {
+						const lat = position.coords.latitude;
+						const lon = position.coords.longitude;
+	
+						// Step 2: Make a call to the OpenWeatherMap API using the user's location
+						const apiKey = 'c8cd922e4110179020c01d43f93a7df6'; // Replace with your OpenWeatherMap API key
+						const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`; // Units are set to 'metric' for Celsius, use 'imperial' for Fahrenheit
+	
+						// Fetch weather data
+						const weatherResponse = await axios.get(weatherUrl);
+						const weatherData = weatherResponse.data;
+	
+						// Extract relevant data (temperature, weather description)
+						const temperature = weatherData.main.temp || "N/A";
+						const temperatureUnit = "°F"; // Since we set units to 'metric'
+						const weatherDescription = weatherData.weather[0]?.description || "N/A";
+	
+						// Step 3: Update weather description
+						setWeatherDescription(
+							`${temperature}${temperatureUnit} | ${weatherDescription}`
+						);
+					}, (error) => {
+						throw new Error("Error retrieving location: " + error.message);
+					});
+				} else {
+					throw new Error("Geolocation is not supported by this browser.");
 				}
-				const locationData = await locationResponse.json();
-
-				const { city, region, lat, lon } = locationData;
-
-				// Step 2: Fetch weather data using Weather.gov
-				const pointsResponse = await fetch(
-					`https://api.weather.gov/points/${lat},${lon}`
-				);
-				if (!pointsResponse.ok) {
-					throw new Error("Error fetching weather grid points");
-				}
-				const pointsData = await pointsResponse.json();
-				const forecastUrl = pointsData.properties.forecast;
-
-				const forecastResponse = await fetch(forecastUrl);
-				if (!forecastResponse.ok) {
-					throw new Error("Error fetching weather forecast");
-				}
-				const forecastData = await forecastResponse.json();
-
-				const period = forecastData.properties.periods[0];
-				const temperature = period?.temperature || "N/A";
-				const temperatureUnit = period?.temperatureUnit || "°F";
-				const shortForecast = period?.shortForecast || "N/A";
-
-				// Step 3: Update weather description
-				setWeatherDescription(
-					`${temperature}${temperatureUnit} in ${city}, ${region} | ${shortForecast}`
-				);
 			} catch (error) {
-				console.error("Error fetching geolocation data:", error);
-				setWeatherDescription("Unable to fetch location data");
+				console.error("Error fetching location or weather data:", error);
+				setWeatherDescription("Unable to fetch location or weather data");
 			}
 		};
-
+	
 		fetchLocationAndWeather();
 	}, []);
 
