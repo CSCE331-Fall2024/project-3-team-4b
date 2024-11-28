@@ -47,7 +47,7 @@ function RestaurantMenu() {
 			const response = await axios.get(
 				"https://project-3-team-4b-server.vercel.app/api/containers"
 			);
-			const filteredContainers = response.data.body.filter((container) =>
+			const filteredContainers = response.data.filter((container) =>
 				["Bowl", "Plate", "Bigger Plate"].includes(container.name)
 			);
 			setContainerData(filteredContainers);
