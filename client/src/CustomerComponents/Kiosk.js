@@ -13,23 +13,18 @@ import {
 	DialogActions,
 	Button,
 } from "@mui/material";
-import SelectionSteps from "../CustomerComponents/SelectionSteps";
-import OrderSummary from "../CustomerComponents/OrderSummary";
-import { KioskContext } from "../CustomerComponents/KioskContext";
+import SelectionSteps from "./SelectionSteps"; // Adjusted import path
+import OrderSummary from "./OrderSummary"; // Ensure this component exists
+import { KioskContext } from "./KioskContext"; // Adjusted import path
+import AlanAIHandler from "./AlanAIHandler";
 
 function Kiosk({ isLargeText }) {
 	const {
-		menuData,
 		setMenuData,
-		containerData,
 		setContainerData,
-		appetizerPrice,
 		setAppetizerPrice,
-		drinkPrice,
 		setDrinkPrice,
-		appetizerContainerId,
 		setAppetizerContainerId,
-		drinkContainerId,
 		setDrinkContainerId,
 		snackbar,
 		setSnackbar,
@@ -113,6 +108,7 @@ function Kiosk({ isLargeText }) {
 					{snackbar.message}
 				</Alert>
 			</Snackbar>
+			<AlanAIHandler />
 			<Box sx={{ flex: 2, padding: 2, height: "100%", overflowY: "auto" }}>
 				<SelectionSteps isLargeText={isLargeText} />
 			</Box>

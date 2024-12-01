@@ -1,4 +1,5 @@
-import React, { useContext } from "react";
+// AppetizerSelection.js
+import React, { useContext, useEffect, useState } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -16,23 +17,40 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 function AppetizerSelection({ isLargeText }) {
 	const {
 		menuData,
-		selectedAppetizers,
 		appetizerPrice,
-		updateItemQuantity,
-		handleAddAppetizersToOrder,
+		handleAddItemsToOrder,
 		setCurrentStep,
+		showSnackbar,
 	} = useContext(KioskContext);
+
+	// Local state for selected appetizers
+	const [selectedAppetizers, setSelectedAppetizers] = useState([]);
 
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
-	const handleIncreaseAppetizerQuantity = (appetizer) => {
-		updateItemQuantity("appetizer", appetizer, 1);
+	const updateAppetizerQuantity = (appetizer, delta) => {
+		setSelectedAppetizers((prevItems) => {
+			const index = prevItems.findIndex(
+				(item) => item.menu_id === appetizer.menu_id
+			);
+			const updatedItems = [...prevItems];
+			if (index >= 0) {
+				updatedItems[index].quantity += delta;
+				if (updatedItems[index].quantity <= 0) {
+					updatedItems.splice(index, 1);
+				}
+			} else if (delta > 0) {
+				updatedItems.push({ ...appetizer, quantity: delta });
+			}
+			return updatedItems;
+		});
 	};
 
-	const handleDecreaseAppetizerQuantity = (appetizer) => {
-		updateItemQuantity("appetizer", appetizer, -1);
-	};
+	// Set currentStep to 'appetizerSelection' when component mounts
+	useEffect(() => {
+		setCurrentStep("appetizerSelection");
+	}, [setCurrentStep]);
 
 	return (
 		<Box
@@ -61,7 +79,7 @@ function AppetizerSelection({ isLargeText }) {
 					.filter((item) => item.type === "Appetizer")
 					.map((appetizer) => {
 						const selectedItem = selectedAppetizers.find(
-							(app) => app.item.menu_id === appetizer.menu_id
+							(app) => app.menu_id === appetizer.menu_id
 						);
 						const quantity = selectedItem ? selectedItem.quantity : 0;
 						return (
@@ -100,9 +118,7 @@ function AppetizerSelection({ isLargeText }) {
 											}}
 										>
 											<IconButton
-												onClick={() =>
-													handleDecreaseAppetizerQuantity(appetizer)
-												}
+												onClick={() => updateAppetizerQuantity(appetizer, -1)}
 												disabled={quantity === 0}
 											>
 												<RemoveCircleOutlineIcon />
@@ -116,9 +132,7 @@ function AppetizerSelection({ isLargeText }) {
 												{quantity}
 											</Typography>
 											<IconButton
-												onClick={() =>
-													handleIncreaseAppetizerQuantity(appetizer)
-												}
+												onClick={() => updateAppetizerQuantity(appetizer, 1)}
 											>
 												<AddCircleOutlineIcon />
 											</IconButton>
@@ -143,7 +157,21 @@ function AppetizerSelection({ isLargeText }) {
 					Back
 				</Button>
 				{selectedAppetizers.length > 0 && (
-					<Button variant="contained" onClick={handleAddAppetizersToOrder}>
+					<Button
+						variant="contained"
+						onClick={() => {
+							const appetizersOrder = selectedAppetizers.map((appetizer) => ({
+								type: "Appetizer",
+								item: appetizer,
+								quantity: appetizer.quantity,
+								subtotal: appetizerPrice * appetizer.quantity,
+							}));
+							handleAddItemsToOrder(appetizersOrder);
+							setSelectedAppetizers([]);
+							showSnackbar("Appetizers added to cart.", "success");
+							setCurrentStep("categorySelection");
+						}}
+					>
 						Add to Cart
 					</Button>
 				)}

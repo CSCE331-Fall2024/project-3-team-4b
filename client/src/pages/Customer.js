@@ -1,5 +1,5 @@
+// Customer.js
 import React, { useState, useEffect } from "react";
-
 import {
 	Container,
 	Box,
@@ -9,25 +9,24 @@ import {
 	Typography,
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import Kiosk from "../CustomerComponents/Kiosk";
-import { KioskProvider } from "../CustomerComponents/KioskContext";
+import Kiosk from "../CustomerComponents/Kiosk"; // Adjusted import path
+import { KioskProvider } from "../CustomerComponents/KioskContext"; // Adjusted import path
 import CssBaseline from "@mui/material/CssBaseline";
-
-import Logo from "../assets/panda-logo.svg";
+import Logo from "../assets/panda-logo.svg"; // Ensure the logo path is correct
 
 const theme = createTheme({
 	palette: {
 		primary: {
-			main: "#D1282E", // Red
+			main: "#D1282E",
 		},
 		secondary: {
-			main: "#2B2A2A", // Black
+			main: "#2B2A2A",
 		},
 		background: {
-			default: "#FFFFFF", // White
+			default: "#FFFFFF",
 		},
 		text: {
-			primary: "#2B2A2A", // Black
+			primary: "#2B2A2A",
 		},
 	},
 	typography: {
@@ -51,24 +50,27 @@ const Customer = () => {
 		"Fetching location..."
 	);
 
-
-
 	const toggleTextSize = () => {
 		setIsLargeText((prev) => !prev);
 	};
+
 	useEffect(() => {
 		const fetchLocationAndWeather = async () => {
 			try {
-				// Step 1: Fetch location details using IP Geolocation API
-				const locationResponse = await fetch("http://ip-api.com/json/");
+				const locationResponse = await fetch("https://ipapi.co/json/");
 				if (!locationResponse.ok) {
 					throw new Error("Error fetching location data");
 				}
 				const locationData = await locationResponse.json();
 
-				const { city, region, lat, lon } = locationData;
+				const {
+					city,
+					region_code: region,
+					latitude: lat,
+					longitude: lon,
+				} = locationData;
 
-				// Step 2: Fetch weather data using Weather.gov
+				// Fetch weather data using Weather.gov
 				const pointsResponse = await fetch(
 					`https://api.weather.gov/points/${lat},${lon}`
 				);
@@ -89,7 +91,7 @@ const Customer = () => {
 				const temperatureUnit = period?.temperatureUnit || "°F";
 				const shortForecast = period?.shortForecast || "N/A";
 
-				// Step 3: Update weather description
+				// Update weather description
 				setWeatherDescription(
 					`${temperature}${temperatureUnit} in ${city}, ${region} | ${shortForecast}`
 				);
@@ -144,7 +146,7 @@ const Customer = () => {
 							style={{ maxWidth: "100%", height: "60px" }}
 						/>
 					</Box>
-
+					{/* Google Translate Element */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 						<Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
 							<div id="google_translate_element"></div>
@@ -166,7 +168,6 @@ const Customer = () => {
 					</Box>
 				</Toolbar>
 			</AppBar>
-			{/* Google Translate Element */}
 
 			<Container
 				maxWidth="xl"

@@ -1,4 +1,5 @@
-import React, { useContext } from "react";
+// SideSelection.js
+import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -11,13 +12,26 @@ import {
 } from "@mui/material";
 
 function SideSelection({ isLargeText }) {
-	const { menuData, selectedSide, setSelectedSide, setCurrentStep } =
-		useContext(KioskContext);
+	const {
+		setCurrentStep,
+		setSelectedSide,
+		selectedSide,
+		showSnackbar,
+		menuData,
+	} = useContext(KioskContext);
 
-	const handleSideClick = (side) => {
+	// Set currentStep to 'sideSelection' when component mounts
+	useEffect(() => {
+		setCurrentStep("sideSelection");
+	}, [setCurrentStep]);
+
+	// Handle side selection
+	const handleSideSelect = (side) => {
 		setSelectedSide(side);
+		setCurrentStep("entreeSelection");
 	};
 
+	// Define getImageUrl function
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
@@ -42,7 +56,7 @@ function SideSelection({ isLargeText }) {
 					.map((side) => (
 						<Grid item xs={12} sm={4} key={side.menu_id}>
 							<Card
-								onClick={() => handleSideClick(side)}
+								onClick={() => handleSideSelect(side)}
 								sx={{
 									cursor: "pointer",
 									border:
