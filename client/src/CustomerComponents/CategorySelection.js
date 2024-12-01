@@ -1,10 +1,18 @@
 // CategorySelection.js
+
 import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import { Box, Grid, Typography, Card } from "@mui/material";
 
 function CategorySelection({ isLargeText }) {
-	const { setCurrentStep, setSnackbar } = useContext(KioskContext);
+	const {
+		setCurrentStep,
+		setSelectedCombo,
+		setSelectedSide,
+		setSelectedEntrees,
+		showSnackbar,
+		setSelectedCategory,
+	} = useContext(KioskContext);
 
 	// Set currentStep to 'categorySelection' when component mounts
 	useEffect(() => {
@@ -12,13 +20,17 @@ function CategorySelection({ isLargeText }) {
 		console.log("currentStep set to 'categorySelection'");
 	}, [setCurrentStep]);
 
-	// Handle category selection via UI click or voice command
+	// Handle category selection via UI click
 	const handleCategoryClick = (category) => {
 		console.log(`handleCategoryClick called with category: ${category}`);
 		const normalizedCategory = category.toLowerCase();
+		setSelectedCategory(normalizedCategory); // Set selectedCategory
 		switch (normalizedCategory) {
 			case "combos":
 				console.log("Navigating to comboSelection");
+				setSelectedCombo(null);
+				setSelectedSide(null);
+				setSelectedEntrees([]);
 				setCurrentStep("comboSelection");
 				break;
 			case "appetizers":
@@ -31,11 +43,7 @@ function CategorySelection({ isLargeText }) {
 				break;
 			default:
 				console.log("Invalid category selected:", category);
-				setSnackbar({
-					open: true,
-					message: `Category "${category}" is not available.`,
-					severity: "error",
-				});
+				showSnackbar(`Category "${category}" is not available.`, "error");
 				break;
 		}
 	};

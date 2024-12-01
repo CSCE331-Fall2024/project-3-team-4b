@@ -20,6 +20,8 @@ import AlanAIHandler from "./AlanAIHandler";
 
 function Kiosk({ isLargeText }) {
 	const {
+		menuData,
+		containerData,
 		setMenuData,
 		setContainerData,
 		setAppetizerPrice,
@@ -40,6 +42,7 @@ function Kiosk({ isLargeText }) {
 	}, []);
 
 	const fetchMenuData = async () => {
+		console.log("Fetching menu data...");
 		try {
 			const response = await axios.get(
 				"https://project-3-team-4b-server.vercel.app/api/menu"

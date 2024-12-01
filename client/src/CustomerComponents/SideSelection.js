@@ -12,30 +12,21 @@ import {
 } from "@mui/material";
 
 function SideSelection({ isLargeText }) {
-	const {
-		setCurrentStep,
-		setSelectedSide,
-		selectedSide,
-		showSnackbar,
-		menuData,
-	} = useContext(KioskContext);
+  const { menuData, selectedSide, setSelectedSide, setCurrentStep } =
+		useContext(KioskContext);
 
-	// Set currentStep to 'sideSelection' when component mounts
-	useEffect(() => {
+  useEffect(() => {
 		setCurrentStep("sideSelection");
 	}, [setCurrentStep]);
 
-	// Handle side selection
-	const handleSideSelect = (side) => {
+	const handleSideClick = (side) => {
 		setSelectedSide(side);
-		setCurrentStep("entreeSelection");
 	};
 
-	// Define getImageUrl function
-	const getImageUrl = (name) =>
+  const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
-	return (
+  return (
 		<Box sx={{ padding: 2 }}>
 			<Grid container spacing={2} sx={{ marginTop: 2 }}>
 				<Grid item xs={12}>
@@ -56,7 +47,7 @@ function SideSelection({ isLargeText }) {
 					.map((side) => (
 						<Grid item xs={12} sm={4} key={side.menu_id}>
 							<Card
-								onClick={() => handleSideSelect(side)}
+								onClick={() => handleSideClick(side)}
 								sx={{
 									cursor: "pointer",
 									border:

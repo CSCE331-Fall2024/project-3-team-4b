@@ -1,32 +1,32 @@
 // ComboSelection.js
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
 	Grid,
 	Typography,
 	Card,
+	CardMedia,
 	CardContent,
 	Button,
 } from "@mui/material";
 
 function ComboSelection({ isLargeText }) {
-	const { setCurrentStep, setComboType, comboType, showSnackbar } =
+	const { setCurrentStep, setSelectedCombo, containerData } =
 		useContext(KioskContext);
 
-	// Local state for combo types
-	const comboTypes = ["Bowl", "Plate", "Bigger Plate"];
-
-	// Set currentStep to 'comboSelection' when component mounts
 	useEffect(() => {
 		setCurrentStep("comboSelection");
+		console.log("currentStep set to 'comboSelection'");
 	}, [setCurrentStep]);
 
-	// Handle combo selection
-	const handleComboSelect = (combo) => {
-		setComboType(combo);
+	const handleComboClick = (combo) => {
+		setSelectedCombo(combo);
 		setCurrentStep("sideSelection");
 	};
+
+	const getImageUrl = (name) =>
+		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
 	return (
 		<Box sx={{ padding: 2 }}>
@@ -44,27 +44,59 @@ function ComboSelection({ isLargeText }) {
 						Select a Combo
 					</Typography>
 				</Grid>
-				{comboTypes.map((combo) => (
-					<Grid item xs={12} sm={4} key={combo}>
+				{containerData.map((combo) => (
+					<Grid item xs={12} sm={4} key={combo.container_id}>
 						<Card
-							onClick={() => handleComboSelect(combo)}
-							sx={{ cursor: "pointer", padding: 2, textAlign: "center" }}
+							onClick={() => handleComboClick(combo)}
+							sx={{ cursor: "pointer" }}
 						>
+							<CardMedia
+								component="img"
+								image={getImageUrl(combo.name)}
+								alt={combo.name}
+								sx={{ height: 140, objectFit: "contain" }}
+							/>
 							<CardContent>
 								<Typography
-									variant="h5"
+									variant="h6"
 									sx={{
-										fontSize: isLargeText ? "1.75rem" : "1.25rem",
+										fontSize: isLargeText ? "1.5rem" : "1rem",
 										fontWeight: "bold",
+										textTransform: "capitalize",
 									}}
 								>
-									{combo}
+									{combo.name}
 								</Typography>
+								{combo.price !== 0 && (
+									<Typography
+										sx={{
+											fontSize: isLargeText ? "1.25rem" : "0.875rem",
+											fontWeight: "normal",
+										}}
+									>
+										Price: ${combo.price}
+									</Typography>
+								)}
 							</CardContent>
 						</Card>
 					</Grid>
 				))}
 			</Grid>
+			<Box
+				sx={{
+					display: "flex",
+					justifyContent: "space-between",
+					marginTop: 2,
+					maxWidth: "100%",
+				}}
+			>
+				<Button
+					onClick={() => setCurrentStep("categorySelection")}
+					variant="outlined"
+				>
+					Back
+				</Button>
+			</Box>
 		</Box>
 	);
 }
