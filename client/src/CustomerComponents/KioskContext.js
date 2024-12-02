@@ -1,4 +1,6 @@
-import React, { createContext, useState, useEffect } from "react";
+// KioskContext.js
+
+import React, { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 export const KioskContext = createContext();
@@ -27,6 +29,40 @@ export const KioskProvider = ({ children }) => {
 	});
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [orderToRemoveIndex, setOrderToRemoveIndex] = useState(null);
+
+	// Create refs for selectedCombo, selectedSide, and selectedEntrees
+	const selectedComboRef = useRef(selectedCombo);
+	const selectedSideRef = useRef(selectedSide);
+	const selectedEntreesRef = useRef(selectedEntrees);
+
+	// Update refs whenever the state changes
+	useEffect(() => {
+		selectedComboRef.current = selectedCombo;
+	}, [selectedCombo]);
+
+	useEffect(() => {
+		selectedSideRef.current = selectedSide;
+	}, [selectedSide]);
+
+	useEffect(() => {
+		selectedEntreesRef.current = selectedEntrees;
+	}, [selectedEntrees]);
+
+	const getRequiredEntrees = (combo) => {
+		const currentCombo = combo || selectedComboRef.current;
+		console.log("selectedCombo in getRequiredEntrees:", currentCombo);
+		if (!currentCombo) return 0;
+		switch (currentCombo.name) {
+			case "Bowl":
+				return 1;
+			case "Plate":
+				return 2;
+			case "Bigger Plate":
+				return 3;
+			default:
+				return 0;
+		}
+	};
 
 	// Function to show snackbar messages
 	const showSnackbar = (message, severity = "success") => {
@@ -120,26 +156,52 @@ export const KioskProvider = ({ children }) => {
 
 	// Function to add combo to order
 	const handleAddComboToOrder = () => {
-		if (!selectedCombo || !selectedSide || selectedEntrees.length === 0) {
+		const currentCombo = selectedComboRef.current;
+		const currentSide = selectedSideRef.current;
+		const currentSelectedEntrees = selectedEntreesRef.current;
+
+		console.log("selectedCombo:", currentCombo);
+		console.log("selectedSide:", currentSide);
+		console.log("selectedEntrees:", currentSelectedEntrees);
+
+		if (!currentCombo || !currentSide) {
 			showSnackbar("Please complete your combo selection.", "warning");
 			return;
 		}
 
+		const requiredEntrees = getRequiredEntrees(currentCombo);
+
+		const totalSelectedEntrees = currentSelectedEntrees.reduce(
+			(sum, item) => sum + item.quantity,
+			0
+		);
+
+		if (totalSelectedEntrees !== requiredEntrees) {
+			showSnackbar(
+				`Please select ${requiredEntrees} entree(s) for your combo.`,
+				"warning"
+			);
+			return;
+		}
+
 		// Calculate total extra cost for entrees
-		const extraCost = selectedEntrees.reduce((total, { entree, quantity }) => {
-			const entreeExtraCost = parseFloat(entree.extra_cost || 0);
-			return total + entreeExtraCost * quantity;
-		}, 0);
+		const extraCost = currentSelectedEntrees.reduce(
+			(total, { entree, quantity }) => {
+				const entreeExtraCost = parseFloat(entree.extra_cost || 0);
+				return total + entreeExtraCost * quantity;
+			},
+			0
+		);
 
 		// Calculate combo subtotal
-		const subtotal = calculateComboPrice(selectedCombo) + extraCost;
+		const subtotal = calculateComboPrice(currentCombo) + extraCost;
 
 		// Create the combo order
 		const comboOrder = {
 			type: "Combo",
-			combo: selectedCombo, // Contains combo details
-			side: selectedSide,
-			entrees: selectedEntrees,
+			combo: currentCombo,
+			side: currentSide,
+			entrees: currentSelectedEntrees,
 			subtotal,
 		};
 
@@ -273,6 +335,7 @@ export const KioskProvider = ({ children }) => {
 				updateItemQuantity,
 				handleAddComboToOrder,
 				calculateComboPrice,
+				getRequiredEntrees,
 			}}
 		>
 			{children}

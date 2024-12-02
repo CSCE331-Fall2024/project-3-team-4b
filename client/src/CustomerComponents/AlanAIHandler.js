@@ -23,10 +23,21 @@ function AlanAIHandler() {
 		showSnackbar,
 		containerData,
 		menuData,
+		getRequiredEntrees,
 	} = useContext(KioskContext);
 
 	const containerDataRef = useRef(containerData);
 	const menuDataRef = useRef(menuData);
+	const selectedEntreesRef = useRef(selectedEntrees);
+	const selectedComboRef = useRef(selectedCombo);
+
+	useEffect(() => {
+		selectedComboRef.current = selectedCombo;
+	}, [selectedCombo]);
+
+	useEffect(() => {
+		selectedEntreesRef.current = selectedEntrees;
+	}, [selectedEntrees]);
 
 	useEffect(() => {
 		containerDataRef.current = containerData;
@@ -85,7 +96,9 @@ function AlanAIHandler() {
 						alanBtnInstance.current.setVisualState({
 							currentStep,
 							selectedCategory,
+							selectedCombo,
 							selectedSide,
+							selectedEntrees,
 						});
 						console.log(
 							"Initial visual state set with currentStep:",
@@ -99,11 +112,18 @@ function AlanAIHandler() {
 			alanBtnInstance.current.setVisualState({
 				currentStep,
 				selectedCategory,
+				selectedCombo,
 				selectedSide,
+				selectedEntrees,
 			});
 		}
-	}, [currentStep, selectedCategory, selectedSide]);
-
+	}, [
+		currentStep,
+		selectedCategory,
+		selectedCombo,
+		selectedSide,
+		selectedEntrees,
+	]);
 	const handleCategoryClick = (category) => {
 		const normalizedCategory = category.toLowerCase();
 		setSelectedCategory(normalizedCategory);
@@ -159,22 +179,56 @@ function AlanAIHandler() {
 
 	// Handle entree selection
 	const handleEntreeSelect = (entreeName, quantity = 1) => {
+		console.log(
+			"selectedCombo in handleEntreeSelect:",
+			selectedComboRef.current
+		);
 		const entree = menuDataRef.current.find(
 			(item) =>
 				item.type === "Entree" &&
 				item.name.toLowerCase() === entreeName.toLowerCase()
 		);
+
 		if (entree) {
+			const requiredEntrees = getRequiredEntrees(selectedComboRef.current);
+			console.log("getRequiredEntrees():", requiredEntrees);
+
+			const totalSelectedEntrees = selectedEntreesRef.current.reduce(
+				(sum, item) => sum + item.quantity,
+				0
+			);
+
+			if (totalSelectedEntrees + quantity > requiredEntrees) {
+				showSnackbar(
+					`You cannot select more than ${requiredEntrees} entree(s) for your combo.`,
+					"warning"
+				);
+				return;
+			}
+
 			updateItemQuantity("entree", entree, quantity);
 			if (quantity > 0) {
 				showSnackbar(`${entree.name} added to your selection.`, "success");
 			} else {
 				showSnackbar(`${entree.name} removed from your selection.`, "info");
 			}
+
+			// Inform user about remaining entrees to select
+			const newTotalSelectedEntrees = totalSelectedEntrees + quantity;
+			if (newTotalSelectedEntrees < requiredEntrees) {
+				const remaining = requiredEntrees - newTotalSelectedEntrees;
+				showSnackbar(`Please select ${remaining} more entree(s).`, "info");
+			} else if (newTotalSelectedEntrees === requiredEntrees) {
+				showSnackbar(
+					`You have selected the required number of entrees.`,
+					"success"
+				);
+			}
 		} else {
 			showSnackbar(`Entree "${entreeName}" is not available.`, "error");
 		}
 	};
+
 
 	// Handle adding appetizer
 	const handleAddAppetizer = (appetizerName, quantity = 1) => {
