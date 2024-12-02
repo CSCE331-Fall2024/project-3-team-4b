@@ -1,4 +1,3 @@
-// AppetizerSelection.js
 import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import {

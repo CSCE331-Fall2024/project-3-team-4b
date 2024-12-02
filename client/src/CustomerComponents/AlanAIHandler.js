@@ -1,5 +1,3 @@
-// AlanAIHandler.js
-
 import React, { useEffect, useRef, useContext } from "react";
 import alanBtn from "@alan-ai/alan-sdk-web";
 import { KioskContext } from "./KioskContext";
@@ -24,12 +22,14 @@ function AlanAIHandler() {
 		containerData,
 		menuData,
 		getRequiredEntrees,
+		handlePlaceOrder,
 	} = useContext(KioskContext);
 
 	const containerDataRef = useRef(containerData);
 	const menuDataRef = useRef(menuData);
 	const selectedEntreesRef = useRef(selectedEntrees);
 	const selectedComboRef = useRef(selectedCombo);
+	const handlePlaceOrderRef = useRef(handlePlaceOrder);
 
 	useEffect(() => {
 		selectedComboRef.current = selectedCombo;
@@ -46,6 +46,10 @@ function AlanAIHandler() {
 	useEffect(() => {
 		menuDataRef.current = menuData;
 	}, [menuData]);
+
+	useEffect(() => {
+		handlePlaceOrderRef.current = handlePlaceOrder;
+	}, [handlePlaceOrder]);
 
 	useEffect(() => {
 		if (!alanBtnInstance.current) {
@@ -78,6 +82,12 @@ function AlanAIHandler() {
 							break;
 						case "addDrink":
 							handleAddDrink(commandData.drinkName, commandData.quantity);
+							break;
+						case "placeOrder":
+							// Introduce a slight delay to ensure state updates are completed
+							setTimeout(() => {
+								handlePlaceOrderRef.current();
+							}, 500);
 							break;
 						case "goBack":
 							handleGoBack(commandData.targetStep);
@@ -123,7 +133,9 @@ function AlanAIHandler() {
 		selectedCombo,
 		selectedSide,
 		selectedEntrees,
+		handlePlaceOrder,
 	]);
+
 	const handleCategoryClick = (category) => {
 		const normalizedCategory = category.toLowerCase();
 		setSelectedCategory(normalizedCategory);
@@ -228,7 +240,6 @@ function AlanAIHandler() {
 			showSnackbar(`Entree "${entreeName}" is not available.`, "error");
 		}
 	};
-
 
 	// Handle adding appetizer
 	const handleAddAppetizer = (appetizerName, quantity = 1) => {

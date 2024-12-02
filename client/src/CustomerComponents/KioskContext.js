@@ -1,5 +1,3 @@
-// KioskContext.js
-
 import React, { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 
@@ -16,7 +14,7 @@ export const KioskProvider = ({ children }) => {
 
 	// State variables for combo ordering
 	const [selectedCategory, setSelectedCategory] = useState(null);
-	const [selectedCombo, setSelectedCombo] = useState(null); // Renamed from comboType
+	const [selectedCombo, setSelectedCombo] = useState(null);
 	const [selectedSide, setSelectedSide] = useState(null);
 	const [selectedEntrees, setSelectedEntrees] = useState([]);
 	const [selectedAppetizers, setSelectedAppetizers] = useState([]);
@@ -30,10 +28,11 @@ export const KioskProvider = ({ children }) => {
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [orderToRemoveIndex, setOrderToRemoveIndex] = useState(null);
 
-	// Create refs for selectedCombo, selectedSide, and selectedEntrees
+	// Create refs for selectedCombo, selectedSide, selectedEntrees, and mainOrderSummary
 	const selectedComboRef = useRef(selectedCombo);
 	const selectedSideRef = useRef(selectedSide);
 	const selectedEntreesRef = useRef(selectedEntrees);
+	const mainOrderSummaryRef = useRef(mainOrderSummary);
 
 	// Update refs whenever the state changes
 	useEffect(() => {
@@ -47,6 +46,10 @@ export const KioskProvider = ({ children }) => {
 	useEffect(() => {
 		selectedEntreesRef.current = selectedEntrees;
 	}, [selectedEntrees]);
+
+	useEffect(() => {
+		mainOrderSummaryRef.current = mainOrderSummary;
+	}, [mainOrderSummary]);
 
 	const getRequiredEntrees = (combo) => {
 		const currentCombo = combo || selectedComboRef.current;
@@ -71,7 +74,11 @@ export const KioskProvider = ({ children }) => {
 
 	// Function to add items to the main order summary
 	const handleAddItemsToOrder = (items) => {
-		setMainOrderSummary((prev) => [...prev, ...items]);
+		setMainOrderSummary((prev) => {
+			const updatedSummary = [...prev, ...items];
+			console.log("Updated mainOrderSummary:", updatedSummary);
+			return updatedSummary;
+		});
 	};
 
 	// Function to remove an item from the order
@@ -92,39 +99,136 @@ export const KioskProvider = ({ children }) => {
 
 	// Function to place the order
 	const handlePlaceOrder = async () => {
-		if (mainOrderSummary.length === 0) {
+		const currentOrderSummary = mainOrderSummaryRef.current;
+		console.log("Current mainOrderSummary:", currentOrderSummary);
+
+		if (currentOrderSummary.length === 0) {
 			showSnackbar("No items in the order to place.", "warning");
 			return;
 		}
 
+		// Format the date as 'YYYY-MM-DDTHH:mm'
 		const time = new Date().toISOString().slice(0, 16);
 
 		try {
+			// Calculate total order price
+			const totalOrderPrice = currentOrderSummary.reduce(
+				(total, order) => total + order.subtotal,
+				0
+			);
+
+			// Create the order
 			const orderResponse = await axios.post(
 				"https://project-3-team-4b-server.vercel.app/api/orders",
 				{
 					time,
-					total: mainOrderSummary.reduce(
-						(total, order) => total + order.subtotal,
-						0
-					),
+					total: totalOrderPrice,
 					employee_id: 1,
 				}
 			);
 			const orderId = orderResponse.data.order_id;
 
-			// Rest of your order placement logic...
+			// Process each item in the main order summary
+			for (const order of currentOrderSummary) {
+				if (order.type === "Combo") {
+					const orderItemPayload = {
+						order_id: orderId,
+						quantity: 1,
+						container_id: order.combo.container_id,
+					};
+					const orderItemResponse = await axios.post(
+						"https://project-3-team-4b-server.vercel.app/api/order-items",
+						orderItemPayload
+					);
+					const orderItemId = orderItemResponse.data.order_item_id;
 
+					// Add the side to menu-items
+					await axios.post(
+						"https://project-3-team-4b-server.vercel.app/api/menu-items",
+						{
+							order_item_id: orderItemId,
+							menu_id: order.side.menu_id,
+							quantity: 1,
+						}
+					);
+
+					// Add entrees to menu-items
+					for (const { entree, quantity } of order.entrees) {
+						// Send one request per entree with quantity
+						await axios.post(
+							"https://project-3-team-4b-server.vercel.app/api/menu-items",
+							{
+								order_item_id: orderItemId,
+								menu_id: entree.menu_id,
+								quantity: quantity,
+							}
+						);
+					}
+				} else if (order.type === "Appetizer") {
+					if (appetizerContainerId === null) {
+						showSnackbar("Appetizer container not found.", "error");
+						return;
+					}
+					const orderItemPayload = {
+						order_id: orderId,
+						quantity: order.quantity,
+						container_id: appetizerContainerId,
+					};
+					const orderItemResponse = await axios.post(
+						"https://project-3-team-4b-server.vercel.app/api/order-items",
+						orderItemPayload
+					);
+					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Add appetizer to menu-items
+					await axios.post(
+						"https://project-3-team-4b-server.vercel.app/api/menu-items",
+						{
+							order_item_id: orderItemId,
+							menu_id: order.item.menu_id,
+							quantity: order.quantity,
+						}
+					);
+				} else if (order.type === "Drink") {
+					if (drinkContainerId === null) {
+						showSnackbar("Drink container not found.", "error");
+						return;
+					}
+					const orderItemPayload = {
+						order_id: orderId,
+						quantity: order.quantity,
+						container_id: drinkContainerId,
+					};
+					const orderItemResponse = await axios.post(
+						"https://project-3-team-4b-server.vercel.app/api/order-items",
+						orderItemPayload
+					);
+					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Add drink to menu-items
+					await axios.post(
+						"https://project-3-team-4b-server.vercel.app/api/menu-items",
+						{
+							order_item_id: orderItemId,
+							menu_id: order.item.menu_id,
+							quantity: order.quantity,
+						}
+					);
+				}
+			}
 			showSnackbar(`Order placed successfully: Order ID ${orderId}`, "success");
 			setMainOrderSummary([]);
 		} catch (error) {
 			console.error("Error placing order:", error);
-			if (error.response) {
+			if (error.response && error.response.data) {
 				console.error("Server responded with:", error.response.data);
-				showSnackbar(
-					`Failed to place order: ${error.response.data.error}`,
-					"error"
-				);
+				const errorMessage =
+					error.response.data.error ||
+					error.response.data.message ||
+					"An error occurred while placing the order.";
+				showSnackbar(`Failed to place order: ${errorMessage}`, "error");
+			} else if (error.message) {
+				showSnackbar(`Failed to place order: ${error.message}`, "error");
 			} else {
 				showSnackbar("Failed to place order. Please try again.", "error");
 			}
@@ -206,7 +310,11 @@ export const KioskProvider = ({ children }) => {
 		};
 
 		// Add to main order summary
-		setMainOrderSummary((prev) => [...prev, comboOrder]);
+		setMainOrderSummary((prev) => {
+			const updatedSummary = [...prev, comboOrder];
+			console.log("Updated mainOrderSummary:", updatedSummary);
+			return updatedSummary;
+		});
 
 		// Reset selections
 		setSelectedCombo(null);
