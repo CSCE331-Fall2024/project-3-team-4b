@@ -540,7 +540,7 @@ function Analytics() {
 			<Paper
 				sx={{
 					minHeight: "500px",
-					backgroundColor: "#333",
+					backgroundColor: selectedReport ? "#333" : "#fff",
 					color: "#fff",
 					height: "100%",
 				}}
@@ -974,7 +974,6 @@ function Analytics() {
 				height: "100%",
 			}}
 		>
-			<Box sx={{ flexGrow: 1 }}>{renderReportVisualization()}</Box>
 			<Box sx={{ flexShrink: 0, mb: 4, mt: 4 }}>
 				<Grid container spacing={3}>
 					{reportOptions.map((report) => (
@@ -1004,6 +1003,22 @@ function Analytics() {
 						</Grid>
 					))}
 				</Grid>
+			</Box>
+
+			{/* Render report visualization panel */}
+			<Box sx={{ flexGrow: 1, mt: 4 }}>
+				<Paper
+					sx={{
+						minHeight: "500px",
+						backgroundColor: selectedReport ? "#333" : "#fff",
+						color: selectedReport ? "#fff" : "#000",
+						height: "100%",
+					}}
+				>
+					
+					{console.log(selectedReport ? "#333" : "#fff")}
+					{renderReportVisualization()}
+				</Paper>
 			</Box>
 
 			<Dialog open={openDialog} onClose={handleCloseDialog}>
@@ -1046,6 +1061,7 @@ function Analytics() {
 				</Alert>
 			</Snackbar>
 		</Box>
+
 	);
 }
 
