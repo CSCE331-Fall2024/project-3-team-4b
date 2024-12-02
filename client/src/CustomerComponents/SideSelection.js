@@ -1,4 +1,3 @@
-// SideSelection.js
 import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import {
@@ -12,10 +11,10 @@ import {
 } from "@mui/material";
 
 function SideSelection({ isLargeText }) {
-  const { menuData, selectedSide, setSelectedSide, setCurrentStep } =
+	const { menuData, selectedSide, setSelectedSide, setCurrentStep } =
 		useContext(KioskContext);
 
-  useEffect(() => {
+	useEffect(() => {
 		setCurrentStep("sideSelection");
 	}, [setCurrentStep]);
 
@@ -23,10 +22,10 @@ function SideSelection({ isLargeText }) {
 		setSelectedSide(side);
 	};
 
-  const getImageUrl = (name) =>
+	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
-  return (
+	return (
 		<Box sx={{ padding: 2 }}>
 			<Grid container spacing={2} sx={{ marginTop: 2 }}>
 				<Grid item xs={12}>

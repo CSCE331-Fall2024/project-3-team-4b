@@ -1,5 +1,4 @@
-// EntreeSelection.js
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -8,88 +7,51 @@ import {
 	Card,
 	CardMedia,
 	CardContent,
-	Checkbox,
+	IconButton,
 	Button,
 } from "@mui/material";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 function EntreeSelection({ isLargeText }) {
 	const {
-		setCurrentStep,
-		comboType,
 		menuData,
-		handleAddItemsToOrder,
-		setSelectedEntrees,
-		showSnackbar,
+		selectedCombo,
+		selectedEntrees,
+		updateItemQuantity,
+		handleAddComboToOrder,
+		setCurrentStep,
 	} = useContext(KioskContext);
 
-	// Local state for selected entrees
-	const [selectedEntrees, setSelectedEntreesLocal] = useState([]);
-
-	// Set currentStep to 'entreeSelection' when component mounts
-	useEffect(() => {
-		setCurrentStep("entreeSelection");
-	}, [setCurrentStep]);
-
-	const entreeLimit = comboType === "Bowl" ? 1 : comboType === "Plate" ? 2 : 3;
+	const maxEntrees = selectedCombo.number_of_entrees;
+	const totalSelected = selectedEntrees.reduce(
+		(sum, item) => sum + item.quantity,
+		0
+	);
 
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
-	const handleEntreeSelect = (entree) => {
-		setSelectedEntreesLocal((prev) => {
-			if (prev.includes(entree)) {
-				return prev.filter((e) => e !== entree);
-			} else {
-				if (prev.length < entreeLimit) {
-					return [...prev, entree];
-				} else {
-					showSnackbar(
-						`You can select up to ${entreeLimit} entrees for a ${comboType}.`,
-						"warning"
-					);
-					return prev;
-				}
-			}
-		});
-	};
-
-	const handleAddComboToOrder = () => {
-		if (selectedEntrees.length !== entreeLimit) {
-			showSnackbar(
-				`Please select ${entreeLimit} entree(s) to proceed.`,
-				"warning"
-			);
-			return;
+	const handleIncreaseEntreeQuantity = (entree) => {
+		if (totalSelected < maxEntrees) {
+			updateItemQuantity("entree", entree, 1);
 		}
-
-		// Create the combo order
-		const comboOrder = {
-			type: "Combo",
-			comboType,
-			sides: [selectedEntrees],
-			entrees: [...selectedEntrees],
-			// Calculate subtotal as per your pricing logic
-			subtotal: calculateComboPrice(comboType),
-		};
-
-		handleAddItemsToOrder([comboOrder]);
-		setSelectedEntrees(selectedEntrees);
-		setCurrentStep("categorySelection");
-		showSnackbar("Combo added to cart.", "success");
 	};
 
-	const calculateComboPrice = (comboType) => {
-		// Implement your pricing logic here
-		// For example:
-		if (comboType === "Bowl") return 7.5;
-		if (comboType === "Plate") return 9.0;
-		if (comboType === "Bigger Plate") return 10.5;
-		return 0;
+	const handleDecreaseEntreeQuantity = (entree) => {
+		updateItemQuantity("entree", entree, -1);
 	};
 
 	return (
-		<Box sx={{ padding: 2 }}>
-			<Grid container spacing={2} sx={{ marginTop: 2 }}>
+		<Box
+			sx={{
+				padding: 2,
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
+			}}
+		>
+			<Grid container spacing={2} sx={{ marginTop: 2, flexGrow: 1 }}>
 				<Grid item xs={12}>
 					<Typography
 						variant="h4"
@@ -100,42 +62,83 @@ function EntreeSelection({ isLargeText }) {
 							marginBottom: 2,
 						}}
 					>
-						Select {entreeLimit} Entree{entreeLimit > 1 ? "s" : ""}
+						Select Entrees
+					</Typography>
+					<Typography sx={{ marginBottom: 2 }}>
+						Please select {maxEntrees} entree{maxEntrees > 1 ? "s" : ""} (
+						{totalSelected}/{maxEntrees})
 					</Typography>
 				</Grid>
 				{menuData
 					.filter((item) => item.type === "Entree")
-					.map((entree) => (
-						<Grid item xs={12} sm={4} key={entree.menu_id}>
-							<Card
-								sx={{ cursor: "pointer" }}
-								onClick={() => handleEntreeSelect(entree)}
-							>
-								<CardMedia
-									component="img"
-									image={getImageUrl(entree.name)}
-									alt={entree.name}
-									sx={{ height: 140, objectFit: "contain" }}
-								/>
-								<CardContent>
-									<Typography
-										variant="h6"
-										sx={{
-											fontSize: isLargeText ? "1.5rem" : "1rem",
-											fontWeight: "bold",
-										}}
-									>
-										{entree.name}
-									</Typography>
-									<Checkbox
-										checked={selectedEntrees.includes(entree)}
-										onChange={() => handleEntreeSelect(entree)}
-										sx={{ float: "right" }}
+					.map((entree) => {
+						const selectedItem = selectedEntrees.find(
+							(item) => item.entree.menu_id === entree.menu_id
+						);
+						const quantity = selectedItem ? selectedItem.quantity : 0;
+						return (
+							<Grid item xs={12} sm={4} key={entree.menu_id}>
+								<Card sx={{ cursor: "pointer" }}>
+									<CardMedia
+										component="img"
+										image={getImageUrl(entree.name)}
+										alt={entree.name}
+										sx={{ height: 140, objectFit: "contain" }}
 									/>
-								</CardContent>
-							</Card>
-						</Grid>
-					))}
+									<CardContent>
+										<Typography
+											variant="h6"
+											sx={{
+												fontSize: isLargeText ? "1.5rem" : "1rem",
+												fontWeight: "bold",
+											}}
+										>
+											{entree.name}
+										</Typography>
+										{entree.extra_cost && entree.extra_cost !== "0" && (
+											<Typography
+												sx={{
+													fontSize: isLargeText ? "1.25rem" : "0.875rem",
+													fontWeight: "normal",
+												}}
+											>
+												Extra Cost: ${entree.extra_cost}
+											</Typography>
+										)}
+										<Box
+											sx={{
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+												marginTop: 1,
+											}}
+										>
+											<IconButton
+												onClick={() => handleDecreaseEntreeQuantity(entree)}
+												disabled={quantity === 0}
+											>
+												<RemoveCircleOutlineIcon />
+											</IconButton>
+											<Typography
+												sx={{
+													margin: "0 1rem",
+													fontSize: isLargeText ? "1.25rem" : "1rem",
+												}}
+											>
+												{quantity}
+											</Typography>
+											<IconButton
+												onClick={() => handleIncreaseEntreeQuantity(entree)}
+												disabled={totalSelected >= maxEntrees}
+											>
+												<AddCircleOutlineIcon />
+											</IconButton>
+										</Box>
+									</CardContent>
+								</Card>
+							</Grid>
+						);
+					})}
 			</Grid>
 			<Box
 				sx={{
@@ -150,9 +153,11 @@ function EntreeSelection({ isLargeText }) {
 				>
 					Back
 				</Button>
-				<Button variant="contained" onClick={handleAddComboToOrder}>
-					Add to Cart
-				</Button>
+				{totalSelected === maxEntrees && (
+					<Button variant="contained" onClick={handleAddComboToOrder}>
+						Add to Cart
+					</Button>
+				)}
 			</Box>
 		</Box>
 	);

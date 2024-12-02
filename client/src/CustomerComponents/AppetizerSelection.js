@@ -1,5 +1,5 @@
 // AppetizerSelection.js
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -17,14 +17,12 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 function AppetizerSelection({ isLargeText }) {
 	const {
 		menuData,
-		appetizerPrice,
 		handleAddItemsToOrder,
 		setCurrentStep,
 		showSnackbar,
+		selectedAppetizers,
+		setSelectedAppetizers,
 	} = useContext(KioskContext);
-
-	// Local state for selected appetizers
-	const [selectedAppetizers, setSelectedAppetizers] = useState([]);
 
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
@@ -51,6 +49,20 @@ function AppetizerSelection({ isLargeText }) {
 	useEffect(() => {
 		setCurrentStep("appetizerSelection");
 	}, [setCurrentStep]);
+
+	const handleAddToCart = () => {
+		const appetizersOrder = selectedAppetizers.map((appetizer) => ({
+			type: "Appetizer",
+			item: appetizer,
+			quantity: appetizer.quantity,
+			subtotal: parseFloat(appetizer.price) * appetizer.quantity,
+		}));
+		handleAddItemsToOrder(appetizersOrder);
+		setSelectedAppetizers([]);
+		showSnackbar("Appetizers added to cart.", "success");
+
+		// Stay on the appetizer selection page by not changing currentStep
+	};
 
 	return (
 		<Box
@@ -107,7 +119,7 @@ function AppetizerSelection({ isLargeText }) {
 												fontWeight: "normal",
 											}}
 										>
-											Price: ${appetizerPrice.toFixed(2)}
+											Price: ${parseFloat(appetizer.price).toFixed(2)}
 										</Typography>
 										<Box
 											sx={{
@@ -157,21 +169,7 @@ function AppetizerSelection({ isLargeText }) {
 					Back
 				</Button>
 				{selectedAppetizers.length > 0 && (
-					<Button
-						variant="contained"
-						onClick={() => {
-							const appetizersOrder = selectedAppetizers.map((appetizer) => ({
-								type: "Appetizer",
-								item: appetizer,
-								quantity: appetizer.quantity,
-								subtotal: appetizerPrice * appetizer.quantity,
-							}));
-							handleAddItemsToOrder(appetizersOrder);
-							setSelectedAppetizers([]);
-							showSnackbar("Appetizers added to cart.", "success");
-							setCurrentStep("categorySelection");
-						}}
-					>
+					<Button variant="contained" onClick={handleAddToCart}>
 						Add to Cart
 					</Button>
 				)}

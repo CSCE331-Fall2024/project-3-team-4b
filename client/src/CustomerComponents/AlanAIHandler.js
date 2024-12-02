@@ -19,16 +19,15 @@ function AlanAIHandler() {
 		setSelectedCategory,
 		updateItemQuantity,
 		handleAddComboToOrder,
+		handleAddItemsToOrder,
 		showSnackbar,
 		containerData,
 		menuData,
 	} = useContext(KioskContext);
 
-	// Create refs to hold the latest values of containerData and menuData
 	const containerDataRef = useRef(containerData);
 	const menuDataRef = useRef(menuData);
 
-	// Update refs when containerData or menuData change
 	useEffect(() => {
 		containerDataRef.current = containerData;
 	}, [containerData]);
@@ -37,11 +36,10 @@ function AlanAIHandler() {
 		menuDataRef.current = menuData;
 	}, [menuData]);
 
-	// Initialize Alan AI and set up command handling
 	useEffect(() => {
 		if (!alanBtnInstance.current) {
 			alanBtnInstance.current = alanBtn({
-				key: "fcc4852254e3439d87d8ab67e5a08e922e956eca572e1d8b807a3e2338fdd0dc/stage", // Replace with your actual Alan AI SDK key
+				key: "fcc4852254e3439d87d8ab67e5a08e922e956eca572e1d8b807a3e2338fdd0dc/stage",
 				onCommand: (commandData) => {
 					console.log("Received commandData:", commandData);
 					const { command } = commandData;
@@ -60,6 +58,15 @@ function AlanAIHandler() {
 							break;
 						case "addComboToOrder":
 							handleAddComboToOrder();
+							break;
+						case "addAppetizer":
+							handleAddAppetizer(
+								commandData.appetizerName,
+								commandData.quantity
+							);
+							break;
+						case "addDrink":
+							handleAddDrink(commandData.drinkName, commandData.quantity);
 							break;
 						case "goBack":
 							handleGoBack(commandData.targetStep);
@@ -86,7 +93,7 @@ function AlanAIHandler() {
 						);
 					}
 				},
-				rootEl: document.getElementById("alan-btn"), // Ensure this div exists in your HTML
+				rootEl: document.getElementById("alan-btn"),
 			});
 		} else {
 			alanBtnInstance.current.setVisualState({
@@ -97,12 +104,9 @@ function AlanAIHandler() {
 		}
 	}, [currentStep, selectedCategory, selectedSide]);
 
-	// Handler functions
-
-	// Handle category selection
 	const handleCategoryClick = (category) => {
 		const normalizedCategory = category.toLowerCase();
-		setSelectedCategory(normalizedCategory); // Set selectedCategory
+		setSelectedCategory(normalizedCategory);
 		switch (normalizedCategory) {
 			case "combos":
 				setSelectedCombo(null);
@@ -172,9 +176,87 @@ function AlanAIHandler() {
 		}
 	};
 
-	// Handle "Go Back" functionality
-	// AlanAIHandler.js
+	// Handle adding appetizer
+	const handleAddAppetizer = (appetizerName, quantity = 1) => {
+		const appetizer = menuDataRef.current.find(
+			(item) =>
+				item.type === "Appetizer" &&
+				item.name.toLowerCase() === appetizerName.toLowerCase()
+		);
 
+		if (appetizer) {
+			console.log("Appetizer found:", appetizer);
+			console.log("Appetizer price:", appetizer.price);
+
+			const appetizerPriceValue = parseFloat(appetizer.price);
+			if (isNaN(appetizerPriceValue)) {
+				console.error("Invalid appetizer price:", appetizer.price);
+				showSnackbar("Error: Invalid appetizer price.", "error");
+				return;
+			}
+
+			const subtotal = appetizerPriceValue * quantity;
+
+			const appetizerOrder = {
+				type: "Appetizer",
+				item: appetizer,
+				quantity,
+				subtotal,
+			};
+
+			// Add the appetizer order to mainOrderSummary
+			handleAddItemsToOrder([appetizerOrder]);
+
+			showSnackbar(
+				`${quantity} ${appetizer.name}(s) added to your cart.`,
+				"success"
+			);
+		} else {
+			showSnackbar(`Appetizer "${appetizerName}" is not available.`, "error");
+		}
+	};
+
+	// Handle adding drink
+	const handleAddDrink = (drinkName, quantity = 1) => {
+		const drink = menuDataRef.current.find(
+			(item) =>
+				item.type === "Drink" &&
+				item.name.toLowerCase() === drinkName.toLowerCase()
+		);
+
+		if (drink) {
+			console.log("Drink found:", drink);
+			console.log("Drink price:", drink.price);
+
+			const drinkPriceValue = parseFloat(drink.price);
+			if (isNaN(drinkPriceValue)) {
+				console.error("Invalid drink price:", drink.price);
+				showSnackbar("Error: Invalid drink price.", "error");
+				return;
+			}
+
+			const subtotal = drinkPriceValue * quantity;
+
+			const drinkOrder = {
+				type: "Drink",
+				item: drink,
+				quantity,
+				subtotal,
+			};
+
+			// Add the drink order to mainOrderSummary
+			handleAddItemsToOrder([drinkOrder]);
+
+			showSnackbar(
+				`${quantity} ${drink.name}(s) added to your cart.`,
+				"success"
+			);
+		} else {
+			showSnackbar(`Drink "${drinkName}" is not available.`, "error");
+		}
+	};
+
+	// Handle "Go Back" functionality
 	const handleGoBack = (targetStep) => {
 		switch (targetStep) {
 			case "categorySelection":
@@ -186,6 +268,12 @@ function AlanAIHandler() {
 			case "sideSelection":
 				setCurrentStep("sideSelection");
 				break;
+			case "appetizerSelection":
+				setCurrentStep("appetizerSelection");
+				break;
+			case "drinkSelection":
+				setCurrentStep("drinkSelection");
+				break;
 			default:
 				console.log("Invalid target step for goBack:", targetStep);
 				break;
@@ -194,14 +282,12 @@ function AlanAIHandler() {
 	};
 
 	// Handle "Next" functionality
-	// AlanAIHandler.js
-
 	const handleNext = (targetStep) => {
 		setCurrentStep(targetStep);
 		showSnackbar("Proceeding to the next step.", "success");
 	};
 
-	return null; // This component doesn't render any UI
+	return null;
 }
 
 export default AlanAIHandler;

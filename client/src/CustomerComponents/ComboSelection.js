@@ -1,5 +1,4 @@
-// ComboSelection.js
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -14,11 +13,6 @@ import {
 function ComboSelection({ isLargeText }) {
 	const { setCurrentStep, setSelectedCombo, containerData } =
 		useContext(KioskContext);
-
-	useEffect(() => {
-		setCurrentStep("comboSelection");
-		console.log("currentStep set to 'comboSelection'");
-	}, [setCurrentStep]);
 
 	const handleComboClick = (combo) => {
 		setSelectedCombo(combo);

@@ -15,33 +15,27 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 function DrinkSelection({ isLargeText }) {
-	const {
-		menuData,
-		drinkPrice,
-		handleAddItemsToOrder,
-		setCurrentStep,
-		showSnackbar,
-	} = useContext(KioskContext);
+	const { menuData, handleAddItemsToOrder, setCurrentStep, showSnackbar } =
+		useContext(KioskContext);
 
-	// Local state for selected drinks
 	const [selectedDrinks, setSelectedDrinks] = useState([]);
 
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
-	const updateDrinkQuantity = (drink, quantity) => {
+	const updateDrinkQuantity = (drink, delta) => {
 		setSelectedDrinks((prevItems) => {
 			const index = prevItems.findIndex(
 				(item) => item.menu_id === drink.menu_id
 			);
 			const updatedItems = [...prevItems];
 			if (index >= 0) {
-				updatedItems[index].quantity += quantity;
+				updatedItems[index].quantity += delta;
 				if (updatedItems[index].quantity <= 0) {
 					updatedItems.splice(index, 1);
 				}
-			} else if (quantity > 0) {
-				updatedItems.push({ ...drink, quantity: quantity });
+			} else if (delta > 0) {
+				updatedItems.push({ ...drink, quantity: delta });
 			}
 			return updatedItems;
 		});
@@ -51,6 +45,20 @@ function DrinkSelection({ isLargeText }) {
 	useEffect(() => {
 		setCurrentStep("drinkSelection");
 	}, [setCurrentStep]);
+
+	const handleAddToCart = () => {
+		const drinksOrder = selectedDrinks.map((drink) => ({
+			type: "Drink",
+			item: drink,
+			quantity: drink.quantity,
+			subtotal: parseFloat(drink.price) * drink.quantity,
+		}));
+		handleAddItemsToOrder(drinksOrder);
+		setSelectedDrinks([]);
+		showSnackbar("Drinks added to cart.", "success");
+
+		// Stay on the drink selection page by not changing currentStep
+	};
 
 	return (
 		<Box
@@ -107,7 +115,7 @@ function DrinkSelection({ isLargeText }) {
 												fontWeight: "normal",
 											}}
 										>
-											Price: ${drinkPrice.toFixed(2)}
+											Price: ${parseFloat(drink.price).toFixed(2)}
 										</Typography>
 										<Box
 											sx={{
@@ -155,21 +163,7 @@ function DrinkSelection({ isLargeText }) {
 					Back
 				</Button>
 				{selectedDrinks.length > 0 && (
-					<Button
-						variant="contained"
-						onClick={() => {
-							const drinksOrder = selectedDrinks.map((drink) => ({
-								type: "Drink",
-								item: drink,
-								quantity: drink.quantity,
-								subtotal: drinkPrice * drink.quantity,
-							}));
-							handleAddItemsToOrder(drinksOrder);
-							setSelectedDrinks([]);
-							showSnackbar("Drinks added to cart.", "success");
-							setCurrentStep("categorySelection");
-						}}
-					>
+					<Button variant="contained" onClick={handleAddToCart}>
 						Add to Cart
 					</Button>
 				)}

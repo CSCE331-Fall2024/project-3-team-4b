@@ -1,5 +1,4 @@
-// KioskContext.js
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 
 export const KioskContext = createContext();
@@ -18,6 +17,7 @@ export const KioskProvider = ({ children }) => {
 	const [selectedCombo, setSelectedCombo] = useState(null); // Renamed from comboType
 	const [selectedSide, setSelectedSide] = useState(null);
 	const [selectedEntrees, setSelectedEntrees] = useState([]);
+	const [selectedAppetizers, setSelectedAppetizers] = useState([]);
 
 	const [mainOrderSummary, setMainOrderSummary] = useState([]);
 	const [snackbar, setSnackbar] = useState({
@@ -160,6 +160,76 @@ export const KioskProvider = ({ children }) => {
 		return parseFloat(combo.price) || 0;
 	};
 
+	// Data fetching
+	useEffect(() => {
+		fetchContainerData();
+	}, []);
+
+	const fetchContainerData = async () => {
+		try {
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/containers"
+			);
+			const allContainers = response.data;
+			const comboContainers = allContainers.filter((container) =>
+				["Bowl", "Plate", "Bigger Plate"].includes(container.name)
+			);
+			setContainerData(comboContainers);
+
+			const appetizerContainer = allContainers.find(
+				(container) => container.name === "Appetizer"
+			);
+			const drinkContainer = allContainers.find(
+				(container) => container.name === "Drink"
+			);
+
+			const appetizerPriceValue = Number(appetizerContainer?.price) || 0;
+			setAppetizerPrice(appetizerPriceValue);
+
+			const drinkPriceValue = Number(drinkContainer?.price) || 0;
+			setDrinkPrice(drinkPriceValue);
+
+			setAppetizerContainerId(appetizerContainer?.container_id || null);
+			setDrinkContainerId(drinkContainer?.container_id || null);
+
+			// Fetch menu data after appetizerPrice and drinkPrice are set
+			await fetchMenuData(appetizerPriceValue, drinkPriceValue);
+		} catch (error) {
+			console.error("Error fetching container data:", error);
+			showSnackbar("Error fetching container data.", "error");
+		}
+	};
+
+	const fetchMenuData = async (appetizerPriceValue, drinkPriceValue) => {
+		try {
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/menu"
+			);
+			let data = response.data;
+
+			// Add prices to appetizer and drink items
+			data = data.map((item) => {
+				if (item.type === "Appetizer") {
+					return {
+						...item,
+						price: appetizerPriceValue,
+					};
+				} else if (item.type === "Drink") {
+					return {
+						...item,
+						price: drinkPriceValue,
+					};
+				}
+				return item;
+			});
+
+			setMenuData(data);
+		} catch (error) {
+			console.error("Error fetching menu data:", error);
+			showSnackbar("Error fetching menu data.", "error");
+		}
+	};
+
 	return (
 		<KioskContext.Provider
 			value={{
@@ -185,6 +255,8 @@ export const KioskProvider = ({ children }) => {
 				setSelectedSide,
 				selectedEntrees,
 				setSelectedEntrees,
+				selectedAppetizers,
+				setSelectedAppetizers,
 				mainOrderSummary,
 				setMainOrderSummary,
 				snackbar,

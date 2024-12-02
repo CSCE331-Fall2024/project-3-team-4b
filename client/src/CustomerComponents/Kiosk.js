@@ -1,4 +1,3 @@
-// Kiosk.js
 import React, { useContext, useEffect } from "react";
 import axios from "axios";
 import {
@@ -13,9 +12,9 @@ import {
 	DialogActions,
 	Button,
 } from "@mui/material";
-import SelectionSteps from "./SelectionSteps"; // Adjusted import path
-import OrderSummary from "./OrderSummary"; // Ensure this component exists
-import { KioskContext } from "./KioskContext"; // Adjusted import path
+import SelectionSteps from "./SelectionSteps";
+import OrderSummary from "./OrderSummary";
+import { KioskContext } from "./KioskContext";
 import AlanAIHandler from "./AlanAIHandler";
 
 function Kiosk({ isLargeText }) {
@@ -34,21 +33,41 @@ function Kiosk({ isLargeText }) {
 		setConfirmDialogOpen,
 		showSnackbar,
 		confirmRemoveOrder,
+		appetizerPrice,
 	} = useContext(KioskContext);
 
+	// useEffect(() => {
+	// 	fetchMenuData();
+	// 	fetchContainerData();
+	// }, []);
+
 	useEffect(() => {
-		fetchMenuData();
-		fetchContainerData();
+		const fetchData = async () => {
+			await fetchContainerData();
+			await fetchMenuData();
+		};
+		fetchData();
 	}, []);
 
 	const fetchMenuData = async () => {
-		console.log("Fetching menu data...");
 		try {
 			const response = await axios.get(
 				"https://project-3-team-4b-server.vercel.app/api/menu"
 			);
+			let data = response.data;
 
-			setMenuData(response.data);
+			data = data.map((item) => {
+				if (item.type === "Appetizer") {
+					return {
+						...item,
+						price: appetizerPrice,
+					};
+				}
+				return item;
+			});
+
+			setMenuData(data);
+			console.log("Menu data after adding appetizer prices:", data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
 			showSnackbar("Error fetching menu data.", "error");
