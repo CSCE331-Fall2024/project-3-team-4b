@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Paper } from "@mui/material";
 
-/**
- * RestaurantMenu component that displays the menu, including containers, entrees, and sides.
- * It fetches data from the API to dynamically render the menu items.
- *
- * @returns {JSX.Element} The rendered RestaurantMenu component.
- */
 function RestaurantMenu() {
 	const [menuData, setMenuData] = useState([]);
 	const [containerData, setContainerData] = useState([]);
+	const [hoveredItem, setHoveredItem] = useState(null);
+
+	// Nutrition facts sourced and adjusted to the specified items only
+	const nutritionFacts = {
+		"The Original Orange Chicken": { calories: 490, fat: 23, carbs: 51, protein: 20 },
+		"Grilled Teriyaki Chicken": { calories: 300, fat: 13, carbs: 8, protein: 36 },
+		"Honey Walnut Shrimp": { calories: 360, fat: 23, carbs: 35, protein: 13 },
+		"Broccoli Beef": { calories: 150, fat: 7, carbs: 13, protein: 9 },
+		"Mushroom Chicken": { calories: 220, fat: 13, carbs: 12, protein: 16 },
+		"Sweet Fire Chicken Breast": { calories: 380, fat: 13, carbs: 51, protein: 13 },
+		"Chow Mein": { calories: 510, fat: 20, carbs: 68, protein: 13 },
+		"Fried Rice": { calories: 520, fat: 16, carbs: 85, protein: 11 },
+		"White Steamed Rice": { calories: 380, fat: 0, carbs: 87, protein: 7 },
+		"Super Greens": { calories: 90, fat: 2.5, carbs: 7, protein: 6 },
+	};
 
 	useEffect(() => {
 		fetchMenuData();
@@ -18,12 +27,6 @@ function RestaurantMenu() {
 		addGoogleTranslateScript();
 	}, []);
 
-	/**
-	 * Fetches menu data from the server API and sets the menuData state.
-	 *
-	 * @async
-	 * @function fetchMenuData
-	 */
 	const fetchMenuData = async () => {
 		try {
 			const response = await axios.get(
@@ -35,13 +38,6 @@ function RestaurantMenu() {
 		}
 	};
 
-	/**
-	 * Fetches container data from the server API, filters it for specific container types,
-	 * and sets the containerData state.
-	 *
-	 * @async
-	 * @function fetchContainerData
-	 */
 	const fetchContainerData = async () => {
 		try {
 			const response = await axios.get(
@@ -55,13 +51,6 @@ function RestaurantMenu() {
 			console.error("Error fetching container data:", error);
 		}
 	};
-
-	/**
-	 * Generates the image URL for a given menu item or container.
-	 *
-	 * @param {string} name - The name of the item for which to generate the image URL.
-	 * @returns {string} The formatted image URL.
-	 */
 
 	const addGoogleTranslateScript = () => {
 		if (
@@ -98,7 +87,6 @@ function RestaurantMenu() {
 	};
 
 	const removeGoogleTranslateScript = () => {
-		// Remove existing Google Translate script
 		const existingScript = document.querySelector(
 			'script[src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"]'
 		);
@@ -106,18 +94,50 @@ function RestaurantMenu() {
 			existingScript.remove();
 		}
 
-		// Remove the Google Translate element container
-		const translateElement = document.getElementById(
-			"google_translate_element"
-		);
+		const translateElement = document.getElementById("google_translate_element");
 		if (translateElement) {
-			translateElement.innerHTML = ""; // Clear content to avoid duplication
+			translateElement.innerHTML = "";
 		}
 	};
 
 	const getImageUrl = (name) => {
-		const formattedName = name.toLowerCase().replace(/\s+/g, "_");
+		const formattedName = name
+			.toLowerCase()
+			.replace(/\s+/g, "_")
+			.replace(/[^a-z0-9_]/g, ""); // remove any special chars
 		return `/images/${formattedName}.png`;
+	};
+
+	const handleMouseEnter = (item, event) => {
+		const rect = event.currentTarget.getBoundingClientRect();
+		const boxTop = rect.top + window.scrollY - 10;
+		const boxLeft = rect.left + window.scrollX + rect.width + 10;
+
+		setHoveredItem({
+			item,
+			top: boxTop,
+			left: boxLeft,
+		});
+	};
+
+	const handleMouseLeave = () => {
+		setHoveredItem(null);
+	};
+
+	const renderNutritionInfo = (name) => {
+		const data = nutritionFacts[name];
+		if (!data) {
+			return <Typography>No nutrition data available.</Typography>;
+		}
+
+		return (
+			<>
+				<Typography>Calories: {data.calories}</Typography>
+				<Typography>Fat: {data.fat}g</Typography>
+				<Typography>Carbs: {data.carbs}g</Typography>
+				<Typography>Protein: {data.protein}g</Typography>
+			</>
+		);
 	};
 
 	return (
@@ -127,6 +147,7 @@ function RestaurantMenu() {
 				flexDirection: "column",
 				alignItems: "center",
 				padding: 2,
+				position: "relative",
 			}}
 		>
 			{/* Google Translate Element */}
@@ -145,11 +166,16 @@ function RestaurantMenu() {
 				}}
 			>
 				{containerData.map((container) => (
-					<Box key={container.container_id} sx={{ textAlign: "center" }}>
+					<Box
+						key={container.container_id}
+						sx={{ textAlign: "center", position: "relative" }}
+					>
 						<img
 							src={getImageUrl(container.name)}
 							alt={container.name}
 							style={{ width: "214px", height: "164px", borderRadius: 8 }}
+							onMouseEnter={(e) => handleMouseEnter(container, e)}
+							onMouseLeave={handleMouseLeave}
 						/>
 						<Typography sx={{ marginTop: 1 }}>{container.name}</Typography>
 						{container.price !== 0 && (
@@ -174,11 +200,16 @@ function RestaurantMenu() {
 				{menuData
 					.filter((item) => item.type === "Entree")
 					.map((item) => (
-						<Box key={item.menu_id} sx={{ textAlign: "center" }}>
+						<Box
+							key={item.menu_id}
+							sx={{ textAlign: "center", position: "relative" }}
+						>
 							<img
 								src={getImageUrl(item.name)}
 								alt={item.name}
 								style={{ width: "214px", height: "164px", borderRadius: 8 }}
+								onMouseEnter={(e) => handleMouseEnter(item, e)}
+								onMouseLeave={handleMouseLeave}
 							/>
 							<Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
 							{Number(item.extra_cost) !== 0.0 && (
@@ -203,11 +234,16 @@ function RestaurantMenu() {
 				{menuData
 					.filter((item) => item.type === "Side")
 					.map((item) => (
-						<Box key={item.menu_id} sx={{ textAlign: "center" }}>
+						<Box
+							key={item.menu_id}
+							sx={{ textAlign: "center", position: "relative" }}
+						>
 							<img
 								src={getImageUrl(item.name)}
 								alt={item.name}
 								style={{ width: "214px", height: "164px", borderRadius: 8 }}
+								onMouseEnter={(e) => handleMouseEnter(item, e)}
+								onMouseLeave={handleMouseLeave}
 							/>
 							<Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
 							{Number(item.extra_cost) !== 0.0 && (
@@ -216,6 +252,29 @@ function RestaurantMenu() {
 						</Box>
 					))}
 			</Box>
+
+			{/* Hovered Item Nutritional Box */}
+			{hoveredItem && (
+				<Paper
+					elevation={3}
+					sx={{
+						position: "absolute",
+						top: hoveredItem.top,
+						left: hoveredItem.left,
+						width: 200,
+						padding: 2,
+						backgroundColor: "white",
+						border: "1px solid #ccc",
+						borderRadius: 2,
+						zIndex: 9999,
+					}}
+				>
+					<Typography variant="h6" sx={{ marginBottom: 1 }}>
+						{hoveredItem.item.name} Nutrition
+					</Typography>
+					{renderNutritionInfo(hoveredItem.item.name)}
+				</Paper>
+			)}
 		</Box>
 	);
 }
