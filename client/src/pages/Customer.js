@@ -61,7 +61,7 @@ const Customer = () => {
                         const lat = position.coords.latitude;
                         const lon = position.coords.longitude;
 
-                        const apiKey = 'your_openweathermap_api_key'; // Replace with your OpenWeatherMap API key
+						const apiKey = 'c8cd922e4110179020c01d43f93a7df6'; // Replace with your OpenWeatherMap API key
                         const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
 
                         const weatherResponse = await axios.get(weatherUrl);
