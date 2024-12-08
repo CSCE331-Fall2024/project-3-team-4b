@@ -186,7 +186,7 @@ function RestaurantMenu() {
 	};
 
 	/**
-	 * Handles mouse leave event to clear the hovered item state, removing the tooltip.
+	 * Handles mouse leave event to clear the hovered item state, removing the tooltip
 	 * @function handleMouseLeave
 	 * @returns {void}
 	 */
