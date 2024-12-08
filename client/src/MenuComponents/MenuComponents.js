@@ -1,25 +1,52 @@
+/**
+ * @fileoverview A React component that fetches and displays a restaurant's menu and container items,
+ * and shows nutrition facts via a hover effect. Also integrates Google Translate for language support.
+ */
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Box, Typography, Paper } from "@mui/material";
 
-function RestaurantMenu() {
-	const [menuData, setMenuData] = useState([]);
-	const [containerData, setContainerData] = useState([]);
-	const [hoveredItem, setHoveredItem] = useState(null);
+/**
+ * An object mapping item names to their nutritional facts.
+ * @type {Object.<string, {calories: number, fat: number, carbs: number, protein: number}>}
+ */
+const nutritionFacts = {
+	"The Original Orange Chicken": { calories: 490, fat: 23, carbs: 51, protein: 20 },
+	"Grilled Teriyaki Chicken": { calories: 300, fat: 13, carbs: 8, protein: 36 },
+	"Honey Walnut Shrimp": { calories: 360, fat: 23, carbs: 35, protein: 13 },
+	"Broccoli Beef": { calories: 150, fat: 7, carbs: 13, protein: 9 },
+	"Mushroom Chicken": { calories: 220, fat: 13, carbs: 12, protein: 16 },
+	"Sweet Fire Chicken Breast": { calories: 380, fat: 13, carbs: 51, protein: 13 },
+	"Chow Mein": { calories: 510, fat: 20, carbs: 68, protein: 13 },
+	"Fried Rice": { calories: 520, fat: 16, carbs: 85, protein: 11 },
+	"White Steamed Rice": { calories: 380, fat: 0, carbs: 87, protein: 7 },
+	"Super Greens": { calories: 90, fat: 2.5, carbs: 7, protein: 6 },
+};
 
-	// Nutrition facts sourced and adjusted to the specified items only
-	const nutritionFacts = {
-		"The Original Orange Chicken": { calories: 490, fat: 23, carbs: 51, protein: 20 },
-		"Grilled Teriyaki Chicken": { calories: 300, fat: 13, carbs: 8, protein: 36 },
-		"Honey Walnut Shrimp": { calories: 360, fat: 23, carbs: 35, protein: 13 },
-		"Broccoli Beef": { calories: 150, fat: 7, carbs: 13, protein: 9 },
-		"Mushroom Chicken": { calories: 220, fat: 13, carbs: 12, protein: 16 },
-		"Sweet Fire Chicken Breast": { calories: 380, fat: 13, carbs: 51, protein: 13 },
-		"Chow Mein": { calories: 510, fat: 20, carbs: 68, protein: 13 },
-		"Fried Rice": { calories: 520, fat: 16, carbs: 85, protein: 11 },
-		"White Steamed Rice": { calories: 380, fat: 0, carbs: 87, protein: 7 },
-		"Super Greens": { calories: 90, fat: 2.5, carbs: 7, protein: 6 },
-	};
+/**
+ * Fetches data from the server endpoints and renders restaurant menu and container items.
+ * Items can be hovered over to display their nutritional facts.
+ *
+ * @function RestaurantMenu
+ * @returns {JSX.Element} The rendered RestaurantMenu component.
+ */
+function RestaurantMenu() {
+	/**
+	 * @type {[Array, Function]} menuData - State for storing the fetched menu data.
+	 */
+	const [menuData, setMenuData] = useState([]);
+
+	/**
+	 * @type {[Array, Function]} containerData - State for storing the fetched container data.
+	 */
+	const [containerData, setContainerData] = useState([]);
+
+	/**
+	 * @type {[Object|null, Function]} hoveredItem - State for the currently hovered item, including position for tooltip.
+	 * Object shape: { item: Object, top: number, left: number } or null if none is hovered.
+	 */
+	const [hoveredItem, setHoveredItem] = useState(null);
 
 	useEffect(() => {
 		fetchMenuData();
@@ -27,6 +54,12 @@ function RestaurantMenu() {
 		addGoogleTranslateScript();
 	}, []);
 
+	/**
+	 * Fetches menu data from a remote API and updates the state.
+	 * @async
+	 * @function fetchMenuData
+	 * @returns {Promise<void>} A promise that resolves when the data is fetched and state is updated.
+	 */
 	const fetchMenuData = async () => {
 		try {
 			const response = await axios.get(
@@ -38,6 +71,13 @@ function RestaurantMenu() {
 		}
 	};
 
+	/**
+	 * Fetches container data from a remote API and updates the state.
+	 * Filters the containers to only include "Bowl", "Plate", and "Bigger Plate".
+	 * @async
+	 * @function fetchContainerData
+	 * @returns {Promise<void>} A promise that resolves when the data is fetched and state is updated.
+	 */
 	const fetchContainerData = async () => {
 		try {
 			const response = await axios.get(
@@ -52,6 +92,12 @@ function RestaurantMenu() {
 		}
 	};
 
+	/**
+	 * Adds the Google Translate script to the document if it's not already present,
+	 * and initializes the translation element on the page.
+	 * @function addGoogleTranslateScript
+	 * @returns {void}
+	 */
 	const addGoogleTranslateScript = () => {
 		if (
 			document.querySelector(
@@ -86,6 +132,11 @@ function RestaurantMenu() {
 		};
 	};
 
+	/**
+	 * Removes the Google Translate script and resets the translate element if present.
+	 * @function removeGoogleTranslateScript
+	 * @returns {void}
+	 */
 	const removeGoogleTranslateScript = () => {
 		const existingScript = document.querySelector(
 			'script[src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"]'
@@ -100,6 +151,13 @@ function RestaurantMenu() {
 		}
 	};
 
+	/**
+	 * Generates an image URL based on the item's name. Converts name to a lowercase,
+	 * underscore-separated string and returns the corresponding image path.
+	 * @function getImageUrl
+	 * @param {string} name - The name of the item.
+	 * @returns {string} The formatted URL for the item's image.
+	 */
 	const getImageUrl = (name) => {
 		const formattedName = name
 			.toLowerCase()
@@ -108,6 +166,13 @@ function RestaurantMenu() {
 		return `/images/${formattedName}.png`;
 	};
 
+	/**
+	 * Handles mouse enter event on an item image. Calculates tooltip position and sets hovered item state.
+	 * @function handleMouseEnter
+	 * @param {Object} item - The menu or container item that the user hovered over.
+	 * @param {React.MouseEvent} event - The mouse event.
+	 * @returns {void}
+	 */
 	const handleMouseEnter = (item, event) => {
 		const rect = event.currentTarget.getBoundingClientRect();
 		const boxTop = rect.top + window.scrollY - 10;
@@ -120,10 +185,21 @@ function RestaurantMenu() {
 		});
 	};
 
+	/**
+	 * Handles mouse leave event to clear the hovered item state, removing the tooltip.
+	 * @function handleMouseLeave
+	 * @returns {void}
+	 */
 	const handleMouseLeave = () => {
 		setHoveredItem(null);
 	};
 
+	/**
+	 * Renders nutritional information for a given item name.
+	 * @function renderNutritionInfo
+	 * @param {string} name - The name of the item.
+	 * @returns {JSX.Element} JSX elements containing nutrition data, or a message if not available.
+	 */
 	const renderNutritionInfo = (name) => {
 		const data = nutritionFacts[name];
 		if (!data) {
