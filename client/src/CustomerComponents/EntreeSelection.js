@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -13,6 +13,22 @@ import {
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
+/**
+ * @fileoverview A React component that allows users to select entrees for their combo.
+ * Users can add or remove entrees until the required number of entrees for the combo is reached.
+ */
+
+/**
+ * EntreeSelection component.
+ * Displays available entrees and enables the user to increment or decrement the quantity
+ * of each entree until the required total is selected. Once the required number is reached,
+ * the user can add the combo to the cart.
+ *
+ * @function EntreeSelection
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - Determines if larger text should be used for accessibility.
+ * @returns {JSX.Element} The rendered component for entree selection.
+ */
 function EntreeSelection({ isLargeText }) {
 	const {
 		menuData,
@@ -29,15 +45,32 @@ function EntreeSelection({ isLargeText }) {
 		0
 	);
 
+	/**
+	 * Constructs an image URL for a given entree name by converting it into a lowercase,
+	 * underscore-separated format.
+	 *
+	 * @param {string} name - The entree name.
+	 * @returns {string} The constructed image URL.
+	 */
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
+	/**
+	 * Increases the quantity of a given entree by 1, if the maximum required entrees is not exceeded.
+	 *
+	 * @param {Object} entree - The entree object from menuData.
+	 */
 	const handleIncreaseEntreeQuantity = (entree) => {
 		if (totalSelected < maxEntrees) {
 			updateItemQuantity("entree", entree, 1);
 		}
 	};
 
+	/**
+	 * Decreases the quantity of a given entree by 1.
+	 *
+	 * @param {Object} entree - The entree object from menuData.
+	 */
 	const handleDecreaseEntreeQuantity = (entree) => {
 		updateItemQuantity("entree", entree, -1);
 	};

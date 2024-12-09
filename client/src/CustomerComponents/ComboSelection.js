@@ -10,15 +10,43 @@ import {
 	Button,
 } from "@mui/material";
 
+/**
+ * @fileoverview A React component that allows users to select a combo meal from available options.
+ * Users choose a combo, and are then directed to select sides and entrees.
+ */
+
+/**
+ * ComboSelection component.
+ * Displays a list of available combo containers and allows the user to pick one,
+ * after which the user navigates to the side selection step.
+ *
+ * @function ComboSelection
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - Determines if larger text should be used for accessibility.
+ * @returns {JSX.Element} The rendered component for combo selection.
+ */
 function ComboSelection({ isLargeText }) {
 	const { setCurrentStep, setSelectedCombo, containerData } =
 		useContext(KioskContext);
 
+	/**
+	 * Handles the user's click on a specific combo item.
+	 * Sets the selected combo and advances to the side selection step.
+	 *
+	 * @param {Object} combo - The combo container object selected by the user.
+	 */
 	const handleComboClick = (combo) => {
 		setSelectedCombo(combo);
 		setCurrentStep("sideSelection");
 	};
 
+	/**
+	 * Constructs an image URL for a given combo name by converting it into a lowercase,
+	 * underscore-separated format.
+	 *
+	 * @param {string} name - The combo name.
+	 * @returns {string} The constructed image URL.
+	 */
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 

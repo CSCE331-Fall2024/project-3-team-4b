@@ -10,6 +10,20 @@ import {
 	Button,
 } from "@mui/material";
 
+/**
+ * @fileoverview A React component that allows the user to select a side dish as part of a combo meal.
+ * After selecting a side, the user proceeds to entree selection.
+ */
+
+/**
+ * SideSelection component.
+ * Displays a list of side options from the menu. The user can select one side and move on to the next step.
+ *
+ * @function SideSelection
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - Whether to use larger font sizes for accessibility.
+ * @returns {JSX.Element} The rendered side selection interface.
+ */
 function SideSelection({ isLargeText }) {
 	const { menuData, selectedSide, setSelectedSide, setCurrentStep } =
 		useContext(KioskContext);
@@ -18,10 +32,21 @@ function SideSelection({ isLargeText }) {
 		setCurrentStep("sideSelection");
 	}, [setCurrentStep]);
 
+	/**
+	 * Handles the user's click on a side item, setting it as the selected side.
+	 * @param {Object} side - The side item chosen by the user.
+	 */
 	const handleSideClick = (side) => {
 		setSelectedSide(side);
 	};
 
+	/**
+	 * Constructs an image URL for the given side name by converting it into a lowercase,
+	 * underscore-separated format.
+	 *
+	 * @param {string} name - The side item name.
+	 * @returns {string} The constructed image URL.
+	 */
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 

@@ -17,6 +17,22 @@ import OrderSummary from "./OrderSummary";
 import { KioskContext } from "./KioskContext";
 import AlanAIHandler from "./AlanAIHandler";
 
+/**
+ * @fileoverview The main Kiosk component that encapsulates the ordering process.
+ * It fetches menu and container data, manages global states, integrates Alan AI for voice commands,
+ * and displays the ordering steps and summary.
+ */
+
+/**
+ * Kiosk component.
+ * Orchestrates the kiosk functionality by fetching data, handling snackbar notifications,
+ * confirming item removals, and displaying the ordering interface consisting of selection steps and order summary.
+ *
+ * @function Kiosk
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - Determines if larger text should be used for accessibility.
+ * @returns {JSX.Element} The main kiosk interface.
+ */
 function Kiosk({ isLargeText }) {
 	const {
 		menuData,
@@ -36,19 +52,19 @@ function Kiosk({ isLargeText }) {
 		appetizerPrice,
 	} = useContext(KioskContext);
 
-	// useEffect(() => {
-	// 	fetchMenuData();
-	// 	fetchContainerData();
-	// }, []);
-
 	useEffect(() => {
 		const fetchData = async () => {
 			await fetchContainerData();
 			await fetchMenuData();
 		};
 		fetchData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
+	/**
+	 * Fetches menu data from the API and updates the global state.
+	 * Appetizer price is dynamically inserted into appetizer items.
+	 */
 	const fetchMenuData = async () => {
 		try {
 			const response = await axios.get(
@@ -74,6 +90,10 @@ function Kiosk({ isLargeText }) {
 		}
 	};
 
+	/**
+	 * Fetches container data from the API and updates the global state.
+	 * Also sets the appetizer and drink container IDs and their prices.
+	 */
 	const fetchContainerData = async () => {
 		try {
 			const response = await axios.get(
@@ -103,6 +123,9 @@ function Kiosk({ isLargeText }) {
 		}
 	};
 
+	/**
+	 * Closes the currently open snackbar notification.
+	 */
 	const handleSnackbarClose = () => {
 		setSnackbar({ open: false, message: "", severity: "success" });
 	};

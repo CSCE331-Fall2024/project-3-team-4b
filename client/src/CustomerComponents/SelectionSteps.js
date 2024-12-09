@@ -1,4 +1,3 @@
-// SelectionSteps.js
 import React, { useContext } from "react";
 import { KioskContext } from "./KioskContext";
 import CategorySelection from "./CategorySelection";
@@ -8,6 +7,21 @@ import EntreeSelection from "./EntreeSelection";
 import AppetizerSelection from "./AppetizerSelection";
 import DrinkSelection from "./DrinkSelection";
 
+/**
+ * @fileoverview A React component that acts as a central switcher between different selection steps.
+ * Depending on the current step in the ordering process, it displays the appropriate selection component.
+ */
+
+/**
+ * SelectionSteps component.
+ * Renders different selection components (category, combo, side, entree, appetizer, drink)
+ * based on the current step stored in global context.
+ *
+ * @function SelectionSteps
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - Whether to use larger font sizes for accessibility.
+ * @returns {JSX.Element} The rendered selection step component.
+ */
 function SelectionSteps({ isLargeText }) {
 	const { currentStep } = useContext(KioskContext);
 

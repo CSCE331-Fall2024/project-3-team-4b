@@ -3,6 +3,21 @@ import { KioskContext } from "./KioskContext";
 import { Box, Typography, IconButton, Button, Divider } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 
+/**
+ * @fileoverview A React component that displays a summary of the user's current order,
+ * including combos, appetizers, and drinks, along with their quantities and subtotals.
+ * Allows users to remove items and place the order.
+ */
+
+/**
+ * OrderSummary component.
+ * Shows all items in the main order summary with their details, subtotal, and a button to place the order.
+ *
+ * @function OrderSummary
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - Whether to use larger font sizes for accessibility.
+ * @returns {JSX.Element} The rendered order summary interface.
+ */
 function OrderSummary({ isLargeText }) {
 	const { mainOrderSummary, handleRemoveOrder, handlePlaceOrder } =
 		useContext(KioskContext);
@@ -31,17 +46,11 @@ function OrderSummary({ isLargeText }) {
 			) : (
 				<Box sx={{ maxWidth: "100%" }}>
 					{mainOrderSummary.map((order, index) => (
-						<Box
-							key={index}
-							sx={{
-								marginBottom: 2,
-							}}
-						>
+						<Box key={index} sx={{ marginBottom: 2 }}>
 							<Box
 								sx={{
 									display: "flex",
 									alignItems: "center",
-									justifyItems: "left",
 									justifyContent: "space-between",
 								}}
 							>
@@ -63,14 +72,7 @@ function OrderSummary({ isLargeText }) {
 								</IconButton>
 							</Box>
 							{order.type === "Combo" && (
-								<Box
-									sx={{
-										alignSelf: "left",
-										alignContent: "left",
-										justifyContent: "left",
-										justifyItems: "left",
-									}}
-								>
+								<Box>
 									<Typography
 										sx={{
 											fontSize: isLargeText ? "1.25rem" : "0.875rem",
@@ -97,7 +99,6 @@ function OrderSummary({ isLargeText }) {
 									sx={{
 										fontSize: isLargeText ? "1.25rem" : "0.875rem",
 										fontWeight: "normal",
-										justifySelf: "left",
 									}}
 								>
 									Qty: {order.quantity}
@@ -107,7 +108,6 @@ function OrderSummary({ isLargeText }) {
 								sx={{
 									fontSize: isLargeText ? "1.25rem" : "0.875rem",
 									fontWeight: "bold",
-									justifySelf: "left",
 									marginTop: 1.5,
 								}}
 							>

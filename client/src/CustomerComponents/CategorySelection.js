@@ -4,6 +4,20 @@ import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import { Box, Grid, Typography, Card } from "@mui/material";
 
+/**
+ * @fileoverview A React component that allows the user to select a category of items (Combos, Appetizers, Drinks).
+ * Selecting a category updates the kiosk state and navigates the user to the corresponding selection page.
+ */
+
+/**
+ * CategorySelection component.
+ * Displays available categories and navigates to the respective selection pages when a category is chosen.
+ *
+ * @function CategorySelection
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - A boolean to determine if larger text size should be used.
+ * @returns {JSX.Element} The rendered category selection interface.
+ */
 function CategorySelection({ isLargeText }) {
 	const {
 		setCurrentStep,
@@ -20,7 +34,12 @@ function CategorySelection({ isLargeText }) {
 		console.log("currentStep set to 'categorySelection'");
 	}, [setCurrentStep]);
 
-	// Handle category selection via UI click
+	/**
+	 * Handles category selection. Depending on the chosen category,
+	 * updates global state and navigates to the corresponding step.
+	 *
+	 * @param {string} category - The category selected by the user.
+	 */
 	const handleCategoryClick = (category) => {
 		console.log(`handleCategoryClick called with category: ${category}`);
 		const normalizedCategory = category.toLowerCase();
