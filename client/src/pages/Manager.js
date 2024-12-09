@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
  *
  * @returns {JSX.Element} The rendered Manager component.
  */
-function Manager( {role, user} ) {
+function Manager( {role, setRole, user, setUser} ) {
 	const [selectedSection, setSelectedSection] = useState("Menu");
 	const employeeName = user.name;
 
@@ -46,6 +46,10 @@ function Manager( {role, user} ) {
 			}}
 		>
 			<Navbar
+				user={user}
+				setUser={setUser}
+				role={role}
+				setRole={setRole}
 				employeeName={employeeName}
 				selectedSection={selectedSection}
 				onSectionChange={handleSectionChange}

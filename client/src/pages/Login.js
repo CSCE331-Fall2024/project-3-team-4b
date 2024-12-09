@@ -1,20 +1,48 @@
+/**
+ * @file Login.js
+ * @description Login component handling authentication and navigation for employee and customer views.
+ * @module Login
+ */
+
 import React, { useState } from 'react';
 import '../styles/Login.css';
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import axios from 'axios';
-import NavigateButton from '../LoginComponents/NavigateButton'
-import SignIn from '../LoginComponents/SignIn'
+import NavigateButton from '../LoginComponents/NavigateButton';
+import SignIn from '../LoginComponents/SignIn';
 
-function Login({role, setRole, user, setUser}) {
+/**
+ * @function Login
+ * @description Renders the login view for employees and customers with Google authentication.
+ * @param {Object} props - Component properties.
+ * @param {string} props.role - The current role of the user (e.g., "employee", "customer").
+ * @param {function} props.setRole - Function to update the role of the user.
+ * @param {Object} props.user - The current user object.
+ * @param {function} props.setUser - Function to update the user object.
+ * @returns {JSX.Element} The rendered Login component.
+ */
+function Login({ role, setRole, user, setUser }) {
+  /**
+   * @state {string|null} token - Stores the Google authentication token.
+   */
   const [token, setToken] = useState(null);
+
+  /**
+   * @constant {string} clientID - Google OAuth client ID.
+   */
   const clientID = '467685170366-60gbsrll7nor66ru5uaj5k3750kk0g6h.apps.googleusercontent.com';
 
+  /**
+   * @function onSuccess
+   * @description Handles the success response from Google Login.
+   * @param {Object} res - The response object from Google Login.
+   * @param {string} res.credential - The token ID returned by Google.
+   */
   const onSuccess = (res) => {
     const tokenId = res.credential;
     setToken(tokenId);
 
     axios.post('https://project-3-team-4b-server.vercel.app/api/verify-token', { idToken: tokenId }, { withCredentials: true })
-    // axios.post('http://localhost:5001/api/verify-token', { idToken: tokenId }, { withCredentials: true })
       .then((res) => {
         console.log("Verification result:", res.data);
         setUser(res.data.user);
@@ -24,6 +52,11 @@ function Login({role, setRole, user, setUser}) {
       });
   };
 
+  /**
+   * @function onFailure
+   * @description Handles the failure response from Google Login.
+   * @param {Object} res - The response object from Google Login.
+   */
   const onFailure = (res) => {
     console.log("Login Failed! res: ", res);
   };

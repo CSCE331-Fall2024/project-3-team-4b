@@ -1,4 +1,3 @@
-// Customer.js
 import React, { useState, useEffect } from "react";
 import {
 	Container,
@@ -9,10 +8,10 @@ import {
 	Typography,
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import Kiosk from "../CustomerComponents/Kiosk"; // Adjusted import path
-import { KioskProvider } from "../CustomerComponents/KioskContext"; // Adjusted import path
+import Kiosk from "../CustomerComponents/Kiosk";
+import { KioskProvider } from "../CustomerComponents/KioskContext";
 import CssBaseline from "@mui/material/CssBaseline";
-import Logo from "../assets/panda-logo.svg"; // Ensure the logo path is correct
+import Logo from "../assets/panda-logo.svg";
 
 const theme = createTheme({
 	palette: {
@@ -44,66 +43,29 @@ const theme = createTheme({
 	},
 });
 
-const Customer = () => {
+/**
+ * Customer component that serves as the main layout for the customer-facing kiosk interface.
+ * It handles the kiosk display, integrates external services like Google Translate and weather information,
+ * and provides accessibility features like a text-size toggle.
+ *
+ * @returns {JSX.Element} The rendered Customer component.
+ */
+function Customer() {
 	const [isLargeText, setIsLargeText] = useState(false);
 	const [weatherDescription, setWeatherDescription] = useState(
 		"Fetching location..."
 	);
 
+	/**
+	 * Toggles the text size mode for accessibility.
+	 */
 	const toggleTextSize = () => {
 		setIsLargeText((prev) => !prev);
 	};
 
-	useEffect(() => {
-		const fetchLocationAndWeather = async () => {
-			try {
-				const locationResponse = await fetch("https://ipapi.co/json/");
-				if (!locationResponse.ok) {
-					throw new Error("Error fetching location data");
-				}
-				const locationData = await locationResponse.json();
-
-				const {
-					city,
-					region_code: region,
-					latitude: lat,
-					longitude: lon,
-				} = locationData;
-
-				// Fetch weather data using Weather.gov
-				const pointsResponse = await fetch(
-					`https://api.weather.gov/points/${lat},${lon}`
-				);
-				if (!pointsResponse.ok) {
-					throw new Error("Error fetching weather grid points");
-				}
-				const pointsData = await pointsResponse.json();
-				const forecastUrl = pointsData.properties.forecast;
-
-				const forecastResponse = await fetch(forecastUrl);
-				if (!forecastResponse.ok) {
-					throw new Error("Error fetching weather forecast");
-				}
-				const forecastData = await forecastResponse.json();
-
-				const period = forecastData.properties.periods[0];
-				const temperature = period?.temperature || "N/A";
-				const temperatureUnit = period?.temperatureUnit || "°F";
-				const shortForecast = period?.shortForecast || "N/A";
-
-				// Update weather description
-				setWeatherDescription(
-					`${temperature}${temperatureUnit} in ${city}, ${region} | ${shortForecast}`
-				);
-			} catch (error) {
-				console.error("Error fetching geolocation data:", error);
-				setWeatherDescription("Unable to fetch location data");
-			}
-		};
-
-		fetchLocationAndWeather();
-	}, []);
-
+	/**
+	 * Dynamically adds the Google Translate script if it hasn't been added yet.
+	 */
 	const addGoogleTranslateScript = () => {
 		if (!document.getElementById("google-translate-script")) {
 			const script = document.createElement("script");
@@ -127,6 +89,54 @@ const Customer = () => {
 		addGoogleTranslateScript();
 	}, []);
 
+	useEffect(() => {
+		const fetchLocationAndWeather = async () => {
+			try {
+				const locationResponse = await fetch("https://ipapi.co/json/");
+				if (!locationResponse.ok) {
+					throw new Error("Error fetching location data");
+				}
+				const locationData = await locationResponse.json();
+
+				const {
+					city,
+					region_code: region,
+					latitude: lat,
+					longitude: lon,
+				} = locationData;
+
+				const pointsResponse = await fetch(
+					`https://api.weather.gov/points/${lat},${lon}`
+				);
+				if (!pointsResponse.ok) {
+					throw new Error("Error fetching weather grid points");
+				}
+				const pointsData = await pointsResponse.json();
+				const forecastUrl = pointsData.properties.forecast;
+
+				const forecastResponse = await fetch(forecastUrl);
+				if (!forecastResponse.ok) {
+					throw new Error("Error fetching weather forecast");
+				}
+				const forecastData = await forecastResponse.json();
+
+				const period = forecastData.properties.periods[0];
+				const temperature = period?.temperature || "N/A";
+				const temperatureUnit = period?.temperatureUnit || "°F";
+				const shortForecast = period?.shortForecast || "N/A";
+
+				setWeatherDescription(
+					`${temperature}${temperatureUnit} in ${city}, ${region} | ${shortForecast}`
+				);
+			} catch (error) {
+				console.error("Error fetching geolocation data:", error);
+				setWeatherDescription("Unable to fetch location data");
+			}
+		};
+
+		fetchLocationAndWeather();
+	}, []);
+
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
@@ -146,7 +156,6 @@ const Customer = () => {
 							style={{ maxWidth: "100%", height: "60px" }}
 						/>
 					</Box>
-					{/* Google Translate Element */}
 					<Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
 						<Box sx={{ display: "flex", justifyContent: "center", padding: 2 }}>
 							<div id="google_translate_element"></div>
@@ -157,7 +166,6 @@ const Customer = () => {
 						>
 							{weatherDescription}
 						</Typography>
-
 						<Button
 							onClick={toggleTextSize}
 							variant="contained"
@@ -182,6 +190,6 @@ const Customer = () => {
 			</Container>
 		</ThemeProvider>
 	);
-};
+}
 
 export default Customer;

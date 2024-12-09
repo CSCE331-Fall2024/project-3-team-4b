@@ -1,3 +1,9 @@
+/**
+ * @file SignIn.js
+ * @description SignIn component handling role selection and password authentication.
+ * @module SignIn
+ */
+
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -14,6 +20,10 @@ import { useNavigate } from 'react-router-dom';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import axios from 'axios';
 
+/**
+ * Custom styled Card component for consistent layout.
+ * @constant {Object} Card
+ */
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -33,6 +43,10 @@ const Card = styled(MuiCard)(({ theme }) => ({
   }),
 }));
 
+/**
+ * Custom styled Stack container for the SignIn view.
+ * @constant {Object} SignInContainer
+ */
 const SignInContainer = styled(Stack)(({ theme }) => ({
   height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
   minHeight: '100%',
@@ -56,31 +70,61 @@ const SignInContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
+/**
+ * @function SignIn
+ * @description Renders the SignIn component, allowing role selection and password authentication.
+ * @param {Object} props - Component properties.
+ * @param {string} props.role - The current role of the user (e.g., "manager", "cashier").
+ * @param {function} props.setRole - Function to update the role of the user.
+ * @param {Object} props.user - The current user object.
+ * @param {function} props.setUser - Function to update the user object.
+ * @returns {JSX.Element} The rendered SignIn component.
+ */
 export default function SignIn({ role, setRole, user, setUser }) {
+  /**
+   * @state {string} password - Stores the password entered by the user.
+   * @state {boolean} passwordError - Indicates whether there is an error with the password.
+   * @state {string} passwordErrorMessage - Stores the error message for password validation.
+   */
   const [password, setPassword] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+
   const navigate = useNavigate();
 
+  /**
+   * @function handleRoleChange
+   * @description Updates the selected user role.
+   * @param {Object} event - Event triggered by role selection.
+   */
   const handleRoleChange = (event) => {
     setRole(event.target.value);
   };
 
+  /**
+   * @function handlePasswordChange
+   * @description Updates the password state with the user's input.
+   * @param {Object} event - Event triggered by password input change.
+   */
   const handlePasswordChange = (event) => {
     setPassword(event.target.value);
   };
 
+  /**
+   * @function handlePasswordSubmit
+   * @description Verifies the user's role and password, navigating to the appropriate dashboard on success.
+   * @param {Object} event - Form submission event.
+   */
   const handlePasswordSubmit = (event) => {
     event.preventDefault();
-    // axios.post('http://localhost:5001/api/verify-role', { user, password, role })
     axios.post('https://project-3-team-4b-server.vercel.app/api/verify-role', { user, password, role })
       .then((res) => {
         if (res.data.success) {
           console.log(`${role} authenticated successfully.`);
-          if(res.data.role === 'manager'){
+          if (res.data.role === 'manager') {
             navigate('/manager');
           }
-          if(res.data.role === 'cashier'){
+          if (res.data.role === 'cashier') {
             navigate('/cashier');
           }
           setPasswordError(false);
@@ -104,7 +148,6 @@ export default function SignIn({ role, setRole, user, setUser }) {
         <Card variant="outlined">
           <h2>
             Welcome, {user.name}
-            {/* Welcome, Chan */}
           </h2>
           <Box
             component="form"
