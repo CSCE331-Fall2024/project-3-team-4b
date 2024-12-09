@@ -3,6 +3,15 @@ import { Box, Typography, List, ListItem, ListItemText, Divider, Button, IconBut
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Displays the order summary, including items, subtotal, tax, and actions for clearing or placing an order.
+ *
+ * @param {Object} props - Component properties.
+ * @param {Array} props.orderItems - The list of items in the current order.
+ * @param {function} props.onClearOrder - Callback invoked to clear the order.
+ * @param {function} props.onRemoveItem - Callback invoked to remove an item from the order.
+ * @returns {JSX.Element} The rendered OrderSummary component.
+ */
 function OrderSummary({ orderItems, onClearOrder, onRemoveItem }) {
     // Calculate subtotal by summing up the price of all containers and other items
     const subtotal = orderItems.reduce((total, orderItem) => {
