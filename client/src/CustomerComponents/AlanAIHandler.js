@@ -70,7 +70,7 @@ function AlanAIHandler() {
 	useEffect(() => {
 		if (!alanBtnInstance.current) {
 			alanBtnInstance.current = alanBtn({
-				key: "fcc4852254e3439d87d8ab67e5a08e922e956eca572e1d8b807a3e2338fdd0dc/prod",
+				key: "fcc4852254e3439d87d8ab67e5a08e922e956eca572e1d8b807a3e2338fdd0dc/stage",
 				onCommand: (commandData) => {
 					console.log("Received commandData:", commandData);
 					const { command } = commandData;
