@@ -22,7 +22,22 @@ const nutritionFacts = {
 	"Fried Rice": { calories: 520, fat: 16, carbs: 85, protein: 11 },
 	"White Steamed Rice": { calories: 380, fat: 0, carbs: 87, protein: 7 },
 	"Super Greens": { calories: 90, fat: 2.5, carbs: 7, protein: 6 },
+	
+	// Appetizers
+	"Chicken Egg Roll": { calories: 200, fat: 9, carbs: 22, protein: 7 },
+	"Veggie Spring Roll": { calories: 160, fat: 8, carbs: 19, protein: 2 },
+	"Cream Cheese Rangoon": { calories: 190, fat: 11, carbs: 19, protein: 3 },
+	"Apple Pie Roll": { calories: 220, fat: 10, carbs: 30, protein: 2 },
+	
+	// Drinks
+	"Dr Pepper": { calories: 150, fat: 0, carbs: 40, protein: 0 },
+	"Sweet Tea": { calories: 100, fat: 0, carbs: 25, protein: 0 },
+	"Pepsi": { calories: 150, fat: 0, carbs: 41, protein: 0 },
+	"Mountain Dew": { calories: 170, fat: 0, carbs: 46, protein: 0 },
+	"Sierra Mist": { calories: 140, fat: 0, carbs: 37, protein: 0 },
+	"Water": { calories: 0, fat: 0, carbs: 0, protein: 0 },
 };
+
 
 /**
  * Fetches data from the server endpoints and renders restaurant menu and container items.
@@ -328,6 +343,75 @@ function RestaurantMenu() {
 						</Box>
 					))}
 			</Box>
+
+			{/* Appetizers Section */}
+			<Typography variant="h4" sx={{ marginBottom: 3 }}>
+				Appetizers
+			</Typography>
+			<Box
+				sx={{
+					display: "grid",
+					gridTemplateColumns: "repeat(3, 1fr)",
+					gap: 3,
+					marginBottom: 5,
+				}}
+			>
+				{menuData
+					.filter((item) => item.type === "Appetizer")
+					.map((item) => (
+						<Box
+							key={item.menu_id}
+							sx={{ textAlign: "center", position: "relative" }}
+						>
+							<img
+								src={getImageUrl(item.name)}
+								alt={item.name}
+								style={{ width: "214px", height: "164px", borderRadius: 8 }}
+								onMouseEnter={(e) => handleMouseEnter(item, e)}
+								onMouseLeave={handleMouseLeave}
+							/>
+							<Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
+							{Number(item.extra_cost) !== 0.0 && (
+								<Typography>Extra Cost: ${item.extra_cost}</Typography>
+							)}
+						</Box>
+					))}
+			</Box>
+
+			{/* Drinks Section */}
+			<Typography variant="h4" sx={{ marginBottom: 3 }}>
+				Drinks
+			</Typography>
+			<Box
+				sx={{
+					display: "grid",
+					gridTemplateColumns: "repeat(3, 1fr)",
+					gap: 3,
+					marginBottom: 5,
+				}}
+			>
+				{menuData
+					.filter((item) => item.type === "Drink")
+					.map((item) => (
+						<Box
+							key={item.menu_id}
+							sx={{ textAlign: "center", position: "relative" }}
+						>
+							<img
+								src={getImageUrl(item.name)}
+								alt={item.name}
+								style={{ width: "214px", height: "164px", borderRadius: 8 }}
+								onMouseEnter={(e) => handleMouseEnter(item, e)}
+								onMouseLeave={handleMouseLeave}
+							/>
+							<Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
+							{Number(item.extra_cost) !== 0.0 && (
+								<Typography>Extra Cost: ${item.extra_cost}</Typography>
+							)}
+						</Box>
+					))}
+			</Box>
+
 
 			{/* Hovered Item Nutritional Box */}
 			{hoveredItem && (
