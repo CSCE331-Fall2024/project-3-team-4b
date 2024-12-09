@@ -200,8 +200,8 @@ function Cashier({ role, setRole, user, setUser }) {
     
     const handleConfirmLogout = () => {
         setOpenLogoutDialog(false); // Close the dialog
-        setRole(null);
-		setUser(null);
+        setRole("");
+		setUser({});
         navigate('/');  // Navigate to login page after confirmation
     };
     
