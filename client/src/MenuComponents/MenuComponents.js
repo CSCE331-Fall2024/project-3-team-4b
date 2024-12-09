@@ -22,7 +22,22 @@ const nutritionFacts = {
 	"Fried Rice": { calories: 520, fat: 16, carbs: 85, protein: 11 },
 	"White Steamed Rice": { calories: 380, fat: 0, carbs: 87, protein: 7 },
 	"Super Greens": { calories: 90, fat: 2.5, carbs: 7, protein: 6 },
+	
+	// Appetizers
+	"Chicken Egg Roll": { calories: 200, fat: 9, carbs: 22, protein: 7 },
+	"Veggie Spring Roll": { calories: 160, fat: 8, carbs: 19, protein: 2 },
+	"Cream Cheese Rangoon": { calories: 190, fat: 11, carbs: 19, protein: 3 },
+	"Apple Pie Roll": { calories: 220, fat: 10, carbs: 30, protein: 2 },
+	
+	// Drinks
+	"Dr Pepper": { calories: 150, fat: 0, carbs: 40, protein: 0 },
+	"Sweet Tea": { calories: 100, fat: 0, carbs: 25, protein: 0 },
+	"Pepsi": { calories: 150, fat: 0, carbs: 41, protein: 0 },
+	"Mountain Dew": { calories: 170, fat: 0, carbs: 46, protein: 0 },
+	"Sierra Mist": { calories: 140, fat: 0, carbs: 37, protein: 0 },
+	"Water": { calories: 0, fat: 0, carbs: 0, protein: 0 },
 };
+
 
 /**
  * Fetches data from the server endpoints and renders restaurant menu and container items.
