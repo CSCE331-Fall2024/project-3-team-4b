@@ -127,7 +127,25 @@ function Customer() {
 
 	return (
 		<ThemeProvider theme={theme}>
-			<GlobalStyles
+			<style>
+				{`
+        #google_translate_element .skiptranslate {
+          background: #FFFFFF !important;
+        }
+        #google_translate_element .skiptranslate * {
+          background: #FFFFFF !important;
+          color: #000000 !important;
+        }
+        #google_translate_element .skiptranslate a {
+          color: #000000 !important;
+          text-decoration: none;
+        }
+        #google_translate_element .skiptranslate a:hover {
+          color: #000000 !important;
+        }
+      `}
+			</style>
+			{/* <GlobalStyles
 				styles={{
 					"#google_translate_element .skiptranslate *": {
 						color: "#000000 !important",
@@ -138,7 +156,7 @@ function Customer() {
 							color: "#000000 !important",
 						},
 				}}
-			/>
+			/> */}
 			<CssBaseline />
 			<AppBar
 				position="static"
