@@ -20,7 +20,7 @@ function MenuCategories({ selectedCategory, onCategoryChange }) {
                         value={category}
                         sx={{
                             color: selectedCategory === category ? "#D1282E" : "#2B2A2A", // Red for active, Black for inactive
-                            fontFamily: "proxima-nova"
+                            
                         }}
                     />
                 ))}

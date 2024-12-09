@@ -11,7 +11,7 @@ function CategoryItems({ items, selectedCategory, onItemSelect }) {
                         <Button
                             variant="contained"
                             fullWidth
-                            sx={{ bgcolor: "#D1282E", color: "#FFFFFF", fontFamily: "proxima-nova" }} // Red color for item buttons
+                            sx={{ bgcolor: "#D1282E", color: "#FFFFFF" }} // Red color for item buttons
                             onClick={() => onItemSelect(item)}
                         >
                             {item.name}

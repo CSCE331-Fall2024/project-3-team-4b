@@ -139,7 +139,7 @@ function OrderSummary({ orderItems, onClearOrder, onRemoveItem }) {
             <Box sx={{ mt: 2 }}>
                 <Button
                     variant="contained"
-                    sx={{ bgcolor: "#2B2A2A", color: "#FFFFFF", fontFamily: "proxima-nova" }} // Black color for Place Order button
+                    sx={{ bgcolor: "#2B2A2A", color: "#FFFFFF"}}
                     onClick={handlePlaceOrder}
                     fullWidth
                 >
@@ -150,7 +150,7 @@ function OrderSummary({ orderItems, onClearOrder, onRemoveItem }) {
                     color="secondary"
                     onClick={onClearOrder}
                     fullWidth
-                    sx={{ mt: 1, color: "#D1282E", borderColor: "#D1282E", fontFamily: "proxima-nova" }}
+                    sx={{ mt: 1, color: "#D1282E", borderColor: "#D1282E"}}
                 >
                     Clear Order
                 </Button>
