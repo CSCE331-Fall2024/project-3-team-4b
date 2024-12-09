@@ -329,6 +329,75 @@ function RestaurantMenu() {
 					))}
 			</Box>
 
+			{/* Appetizers Section */}
+			<Typography variant="h4" sx={{ marginBottom: 3 }}>
+				Appetizers
+			</Typography>
+			<Box
+				sx={{
+					display: "grid",
+					gridTemplateColumns: "repeat(3, 1fr)",
+					gap: 3,
+					marginBottom: 5,
+				}}
+			>
+				{menuData
+					.filter((item) => item.type === "Appetizer")
+					.map((item) => (
+						<Box
+							key={item.menu_id}
+							sx={{ textAlign: "center", position: "relative" }}
+						>
+							<img
+								src={getImageUrl(item.name)}
+								alt={item.name}
+								style={{ width: "214px", height: "164px", borderRadius: 8 }}
+								onMouseEnter={(e) => handleMouseEnter(item, e)}
+								onMouseLeave={handleMouseLeave}
+							/>
+							<Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
+							{Number(item.extra_cost) !== 0.0 && (
+								<Typography>Extra Cost: ${item.extra_cost}</Typography>
+							)}
+						</Box>
+					))}
+			</Box>
+
+			{/* Drinks Section */}
+			<Typography variant="h4" sx={{ marginBottom: 3 }}>
+				Drinks
+			</Typography>
+			<Box
+				sx={{
+					display: "grid",
+					gridTemplateColumns: "repeat(3, 1fr)",
+					gap: 3,
+					marginBottom: 5,
+				}}
+			>
+				{menuData
+					.filter((item) => item.type === "Drink")
+					.map((item) => (
+						<Box
+							key={item.menu_id}
+							sx={{ textAlign: "center", position: "relative" }}
+						>
+							<img
+								src={getImageUrl(item.name)}
+								alt={item.name}
+								style={{ width: "214px", height: "164px", borderRadius: 8 }}
+								onMouseEnter={(e) => handleMouseEnter(item, e)}
+								onMouseLeave={handleMouseLeave}
+							/>
+							<Typography sx={{ marginTop: 1 }}>{item.name}</Typography>
+							{Number(item.extra_cost) !== 0.0 && (
+								<Typography>Extra Cost: ${item.extra_cost}</Typography>
+							)}
+						</Box>
+					))}
+			</Box>
+
+
 			{/* Hovered Item Nutritional Box */}
 			{hoveredItem && (
 				<Paper
