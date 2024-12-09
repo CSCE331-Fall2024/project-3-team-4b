@@ -13,6 +13,21 @@ import {
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
+/**
+ * @fileoverview A React component that allows the user to browse and select appetizers.
+ * Users can increment or decrement the quantity of selected appetizers before adding them
+ * to their order. This component integrates with the KioskContext for state management.
+ */
+
+/**
+ * AppetizerSelection component.
+ * Provides a UI for selecting appetizers, adjusting their quantities, and adding them to the cart.
+ *
+ * @function AppetizerSelection
+ * @param {Object} props
+ * @param {boolean} props.isLargeText - A boolean indicating if larger text size should be used.
+ * @returns {JSX.Element} The rendered appetizer selection interface.
+ */
 function AppetizerSelection({ isLargeText }) {
 	const {
 		menuData,
@@ -23,9 +38,23 @@ function AppetizerSelection({ isLargeText }) {
 		setSelectedAppetizers,
 	} = useContext(KioskContext);
 
+	/**
+	 * Constructs the URL for an appetizer image based on its name.
+	 * @param {string} name - The name of the appetizer.
+	 * @returns {string} The constructed image URL.
+	 */
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
+	/**
+	 * Updates the quantity of a given appetizer.
+	 * If the appetizer already exists in the selectedAppetizers state, its quantity is updated.
+	 * If it doesn't exist yet and delta > 0, it's added.
+	 * If the quantity drops to 0 or below, the appetizer is removed from the selection.
+	 *
+	 * @param {Object} appetizer - The appetizer object from the menuData.
+	 * @param {number} delta - The change in quantity (positive or negative).
+	 */
 	const updateAppetizerQuantity = (appetizer, delta) => {
 		setSelectedAppetizers((prevItems) => {
 			const index = prevItems.findIndex(
@@ -49,6 +78,10 @@ function AppetizerSelection({ isLargeText }) {
 		setCurrentStep("appetizerSelection");
 	}, [setCurrentStep]);
 
+	/**
+	 * Handles adding the currently selected appetizers to the cart.
+	 * Constructs an order array and passes it to handleAddItemsToOrder.
+	 */
 	const handleAddToCart = () => {
 		const appetizersOrder = selectedAppetizers.map((appetizer) => ({
 			type: "Appetizer",
@@ -59,8 +92,6 @@ function AppetizerSelection({ isLargeText }) {
 		handleAddItemsToOrder(appetizersOrder);
 		setSelectedAppetizers([]);
 		showSnackbar("Appetizers added to cart.", "success");
-
-		// Stay on the appetizer selection page by not changing currentStep
 	};
 
 	return (

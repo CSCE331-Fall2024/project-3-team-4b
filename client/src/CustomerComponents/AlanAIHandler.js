@@ -1,9 +1,25 @@
-import React, { useEffect, useRef, useContext } from "react";
+import { useEffect, useRef, useContext } from "react";
 import alanBtn from "@alan-ai/alan-sdk-web";
 import { KioskContext } from "./KioskContext";
 
+/**
+ * @fileoverview A React component that integrates with the Alan AI Voice Assistant.
+ * It sets up voice commands to navigate between ordering steps, select menu items,
+ * and place orders through voice interactions. This component uses the global state
+ * from KioskContext to interact with the kiosk ordering flow.
+ */
+
+/**
+ * AlanAIHandler component.
+ * Initializes the Alan AI button and handles various voice commands that control
+ * the ordering steps and selected items in the kiosk application.
+ *
+ * @function AlanAIHandler
+ * @returns {null} The component does not render any visible elements.
+ */
 function AlanAIHandler() {
 	const alanBtnInstance = useRef(null);
+
 	const {
 		currentStep,
 		setCurrentStep,
@@ -54,7 +70,7 @@ function AlanAIHandler() {
 	useEffect(() => {
 		if (!alanBtnInstance.current) {
 			alanBtnInstance.current = alanBtn({
-				key: "fcc4852254e3439d87d8ab67e5a08e922e956eca572e1d8b807a3e2338fdd0dc/stage",
+				key: "fcc4852254e3439d87d8ab67e5a08e922e956eca572e1d8b807a3e2338fdd0dc/prod",
 				onCommand: (commandData) => {
 					console.log("Received commandData:", commandData);
 					const { command } = commandData;
@@ -84,7 +100,6 @@ function AlanAIHandler() {
 							handleAddDrink(commandData.drinkName, commandData.quantity);
 							break;
 						case "placeOrder":
-							// Introduce a slight delay to ensure state updates are completed
 							setTimeout(() => {
 								handlePlaceOrderRef.current();
 							}, 500);
@@ -136,6 +151,10 @@ function AlanAIHandler() {
 		handlePlaceOrder,
 	]);
 
+	/**
+	 * Handles selection of a category via voice command.
+	 * @param {string} category - The category name.
+	 */
 	const handleCategoryClick = (category) => {
 		const normalizedCategory = category.toLowerCase();
 		setSelectedCategory(normalizedCategory);
@@ -158,10 +177,12 @@ function AlanAIHandler() {
 		}
 	};
 
-	// Handle combo selection
+	/**
+	 * Handles selection of a combo item via voice command.
+	 * @param {string} comboName - The name of the combo to select.
+	 */
 	const handleComboSelect = (comboName) => {
 		console.log("handleComboSelect called with comboName:", comboName);
-		console.log("containerDataRef.current:", containerDataRef.current);
 		const combo = containerDataRef.current.find(
 			(item) => item.name.toLowerCase() === comboName.toLowerCase()
 		);
@@ -174,7 +195,10 @@ function AlanAIHandler() {
 		}
 	};
 
-	// Handle side selection
+	/**
+	 * Handles selection of a side item via voice command.
+	 * @param {string} sideName - The name of the side to select.
+	 */
 	const handleSideSelect = (sideName) => {
 		const side = menuDataRef.current.find(
 			(item) =>
@@ -189,7 +213,11 @@ function AlanAIHandler() {
 		}
 	};
 
-	// Handle entree selection
+	/**
+	 * Handles selection of an entree item via voice command, including quantity.
+	 * @param {string} entreeName - The name of the entree to select.
+	 * @param {number} [quantity=1] - The quantity of the entree to add or remove.
+	 */
 	const handleEntreeSelect = (entreeName, quantity = 1) => {
 		console.log(
 			"selectedCombo in handleEntreeSelect:",
@@ -203,8 +231,6 @@ function AlanAIHandler() {
 
 		if (entree) {
 			const requiredEntrees = getRequiredEntrees(selectedComboRef.current);
-			console.log("getRequiredEntrees():", requiredEntrees);
-
 			const totalSelectedEntrees = selectedEntreesRef.current.reduce(
 				(sum, item) => sum + item.quantity,
 				0
@@ -241,7 +267,11 @@ function AlanAIHandler() {
 		}
 	};
 
-	// Handle adding appetizer
+	/**
+	 * Handles adding appetizers to the order via voice command.
+	 * @param {string} appetizerName - The name of the appetizer.
+	 * @param {number} [quantity=1] - The quantity to add.
+	 */
 	const handleAddAppetizer = (appetizerName, quantity = 1) => {
 		const appetizer = menuDataRef.current.find(
 			(item) =>
@@ -250,9 +280,6 @@ function AlanAIHandler() {
 		);
 
 		if (appetizer) {
-			console.log("Appetizer found:", appetizer);
-			console.log("Appetizer price:", appetizer.price);
-
 			const appetizerPriceValue = parseFloat(appetizer.price);
 			if (isNaN(appetizerPriceValue)) {
 				console.error("Invalid appetizer price:", appetizer.price);
@@ -269,9 +296,7 @@ function AlanAIHandler() {
 				subtotal,
 			};
 
-			// Add the appetizer order to mainOrderSummary
 			handleAddItemsToOrder([appetizerOrder]);
-
 			showSnackbar(
 				`${quantity} ${appetizer.name}(s) added to your cart.`,
 				"success"
@@ -281,7 +306,11 @@ function AlanAIHandler() {
 		}
 	};
 
-	// Handle adding drink
+	/**
+	 * Handles adding drinks to the order via voice command.
+	 * @param {string} drinkName - The name of the drink.
+	 * @param {number} [quantity=1] - The quantity to add.
+	 */
 	const handleAddDrink = (drinkName, quantity = 1) => {
 		const drink = menuDataRef.current.find(
 			(item) =>
@@ -290,9 +319,6 @@ function AlanAIHandler() {
 		);
 
 		if (drink) {
-			console.log("Drink found:", drink);
-			console.log("Drink price:", drink.price);
-
 			const drinkPriceValue = parseFloat(drink.price);
 			if (isNaN(drinkPriceValue)) {
 				console.error("Invalid drink price:", drink.price);
@@ -301,7 +327,6 @@ function AlanAIHandler() {
 			}
 
 			const subtotal = drinkPriceValue * quantity;
-
 			const drinkOrder = {
 				type: "Drink",
 				item: drink,
@@ -309,9 +334,7 @@ function AlanAIHandler() {
 				subtotal,
 			};
 
-			// Add the drink order to mainOrderSummary
 			handleAddItemsToOrder([drinkOrder]);
-
 			showSnackbar(
 				`${quantity} ${drink.name}(s) added to your cart.`,
 				"success"
@@ -321,7 +344,10 @@ function AlanAIHandler() {
 		}
 	};
 
-	// Handle "Go Back" functionality
+	/**
+	 * Handles the "go back" voice command, navigating to a previous step in the ordering process.
+	 * @param {string} targetStep - The target step to navigate back to.
+	 */
 	const handleGoBack = (targetStep) => {
 		switch (targetStep) {
 			case "categorySelection":
@@ -346,7 +372,10 @@ function AlanAIHandler() {
 		showSnackbar("Going back.", "info");
 	};
 
-	// Handle "Next" functionality
+	/**
+	 * Handles the "next" voice command, moving to the specified next step.
+	 * @param {string} targetStep - The target step to navigate forward to.
+	 */
 	const handleNext = (targetStep) => {
 		setCurrentStep(targetStep);
 		showSnackbar("Proceeding to the next step.", "success");
