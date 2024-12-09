@@ -3,6 +3,15 @@ import { Box, Typography, List, ListItem, ListItemText, Divider, Button, IconBut
 import axios from "axios";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Displays the order summary, including items, subtotal, tax, and actions for clearing or placing an order.
+ *
+ * @param {Object} props - Component properties.
+ * @param {Array} props.orderItems - The list of items in the current order.
+ * @param {function} props.onClearOrder - Callback invoked to clear the order.
+ * @param {function} props.onRemoveItem - Callback invoked to remove an item from the order.
+ * @returns {JSX.Element} The rendered OrderSummary component.
+ */
 function OrderSummary({ orderItems, onClearOrder, onRemoveItem }) {
     // Calculate subtotal by summing up the price of all containers and other items
     const subtotal = orderItems.reduce((total, orderItem) => {
@@ -139,7 +148,7 @@ function OrderSummary({ orderItems, onClearOrder, onRemoveItem }) {
             <Box sx={{ mt: 2 }}>
                 <Button
                     variant="contained"
-                    sx={{ bgcolor: "#2B2A2A", color: "#FFFFFF", fontFamily: "proxima-nova" }} // Black color for Place Order button
+                    sx={{ bgcolor: "#2B2A2A", color: "#FFFFFF"}}
                     onClick={handlePlaceOrder}
                     fullWidth
                 >
@@ -150,7 +159,7 @@ function OrderSummary({ orderItems, onClearOrder, onRemoveItem }) {
                     color="secondary"
                     onClick={onClearOrder}
                     fullWidth
-                    sx={{ mt: 1, color: "#D1282E", borderColor: "#D1282E", fontFamily: "proxima-nova" }}
+                    sx={{ mt: 1, color: "#D1282E", borderColor: "#D1282E"}}
                 >
                     Clear Order
                 </Button>

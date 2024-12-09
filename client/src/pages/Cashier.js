@@ -7,6 +7,18 @@ import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogCo
 import { useNavigate } from 'react-router-dom';
 import "../styles/Cashier.css";
 
+/**
+ * Cashier component for managing orders and menu selections. 
+ * Allows users to interact with various menu categories, add items to orders, and finalize orders.
+ *
+ * @component
+ * @param {Object} props - The component properties.
+ * @param {string} props.role - The role of the current user (e.g., 'cashier').
+ * @param {function} props.setRole - Function to update the user's role.
+ * @param {Object} props.user - Information about the currently logged-in user.
+ * @param {function} props.setUser - Function to update the user's information.
+ * @returns {JSX.Element} The rendered Cashier component.
+ */
 function Cashier({ role, setRole, user, setUser }) {
     const [selectedCategory, setSelectedCategory] = useState("Containers");
     const [currentContainerId, setCurrentContainerId] = useState(null); // Track the active container ID
@@ -33,6 +45,12 @@ function Cashier({ role, setRole, user, setUser }) {
         }
     }, [role, navigate]);
 
+    /**
+     * Fetches menu items and container data from the backend, filtering and formatting
+     * the data for display in the UI.
+     *
+     * @async
+     */
     const fetchMenuAndContainerData = async () => {
         try {
             setLoading(true);
@@ -70,10 +88,20 @@ function Cashier({ role, setRole, user, setUser }) {
         }
     };
 
+    /**
+     * Updates the currently selected category when a user clicks a category tab.
+     *
+     * @param {string} category - The category selected by the user.
+     */
     const handleCategoryChange = (category) => {
         setSelectedCategory(category);
     };
 
+    /**
+     * Handles the selection of a container (e.g., Bowl, Plate, Drink) and updates the order list.
+     *
+     * @param {Object} container - The selected container object.
+     */
     const handleSelectContainer = (container) => {
         const newContainerId = orderItems.length + 1; // Generate a unique ID for the container
         const newContainer = {
@@ -102,6 +130,12 @@ function Cashier({ role, setRole, user, setUser }) {
         setOrderItems([...orderItems, newContainer]);
     };
 
+    /**
+     * Adds an item (e.g., entree, side, appetizer) to the currently selected container.
+     * Validates the item count limits for sides and entrees.
+     *
+     * @param {Object} item - The selected menu item.
+     */
     const handleItemSelect = (item) => {
         if (selectedCategory === "Appetizers" || selectedCategory === "Drinks") {
             setOrderItems((prevOrderItems) => {
@@ -167,13 +201,21 @@ function Cashier({ role, setRole, user, setUser }) {
     };
     
     
-
+    /**
+     * Clears the current order, resetting all selected items and containers.
+     */
     const handleClearOrder = () => {
         setOrderItems([]);
         setCurrentContainerId(null);
         setEntreesRemaining(0);
     };
 
+    /**
+     * Removes an item from a container or deletes a container from the order.
+     *
+     * @param {number} containerId - The ID of the container to modify.
+     * @param {string} [itemName=null] - The name of the specific item to remove (optional).
+     */
     const handleRemoveItem = (containerId, itemName = null) => {
         setOrderItems((prevOrderItems) => {
             return prevOrderItems
@@ -194,18 +236,26 @@ function Cashier({ role, setRole, user, setUser }) {
         });
     };
 
+    /**
+     * Opens the confirmation dialog for logging out.
+     */
     const handleLogoutClick = () => {
         setOpenLogoutDialog(true); // Open the logout confirmation dialog
     };
-    
+
+    /**
+     * Confirms the logout action, clears the user session, and navigates back to the login page.
+     */
     const handleConfirmLogout = () => {
         setOpenLogoutDialog(false); // Close the dialog
-        setRole(null);
-		setUser(null);
+        setRole("");
+		setUser({});
         navigate('/');  // Navigate to login page after confirmation
     };
     
-    
+    /**
+     * Cancels the logout action and closes the confirmation dialog.
+     */
     const handleCancelLogout = () => {
         setOpenLogoutDialog(false); // Close the dialog without logging out
     };

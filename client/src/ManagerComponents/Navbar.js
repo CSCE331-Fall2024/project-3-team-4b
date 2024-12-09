@@ -67,8 +67,8 @@ function Navbar({ role, setRole, user, setUser, selectedSection, onSectionChange
 	const handleLogoutConfirm = () => {
 		setOpenLogoutDialog(false);
 		onSectionChange("Logout");
-		setRole(null);
-		setUser(null);
+		setRole("");
+		setUser({});
 		navigate('/');
 	};
 
