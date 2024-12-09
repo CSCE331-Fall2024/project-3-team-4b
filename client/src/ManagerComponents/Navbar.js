@@ -24,6 +24,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import PeopleIcon from "@mui/icons-material/People";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Navbar component that renders a navigation drawer with sections and user options.
@@ -34,10 +35,10 @@ import ExitToAppIcon from "@mui/icons-material/ExitToApp";
  * @param {function} props.onSectionChange - Callback function invoked when a section is selected.
  * @returns {JSX.Element} The rendered Navbar component.
  */
-function Navbar({ user, selectedSection, onSectionChange }) {
+function Navbar({ role, setRole, user, setUser, selectedSection, onSectionChange }) {
 	/** The width of the navigation drawer in pixels. */
 	const drawerWidth = 240;
-
+	const navigate = useNavigate();
 	/**
 	 * Array of section objects for the navigation menu.
 	 * @type {Array<{text: string, icon: JSX.Element}>}
@@ -66,6 +67,9 @@ function Navbar({ user, selectedSection, onSectionChange }) {
 	const handleLogoutConfirm = () => {
 		setOpenLogoutDialog(false);
 		onSectionChange("Logout");
+		setRole(null);
+		setUser(null);
+		navigate('/');
 	};
 
 	/**

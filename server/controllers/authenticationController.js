@@ -1,8 +1,22 @@
-const pool = require("../config/dbConfig");
+/**
+ * @file userVerification.js
+ * @description Handles user authentication and role verification using Google OAuth and password checks.
+ * @module userVerification
+ */
+
 require('dotenv').config({ path: '../../.env' });
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
+/**
+ * @function verifyUserToken
+ * @description Verifies the Google ID token provided by the user and sets a secure HTTP-only cookie.
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - The request body containing the ID token.
+ * @param {string} req.body.idToken - Google ID token to verify.
+ * @param {Object} res - Express response object.
+ * @returns {void}
+ */
 exports.verifyUserToken = async (req, res) => {
   const { idToken } = req.body;
   try {
@@ -21,6 +35,21 @@ exports.verifyUserToken = async (req, res) => {
   }
 };
 
+/**
+ * @function verifyRole
+ * @description Verifies the user's role and checks the corresponding password.
+ * @param {Object} req - Express request object.
+ * @param {Object} req.body - The request body containing role and password information.
+ * @param {string} req.body.role - The role selected by the user ("cashier" or "manager").
+ * @param {string} req.body.password - Password entered for the selected role.
+ * @param {Object} req.body.user - Authenticated user information.
+ * @param {string} req.body.user.aud - Audience field from the user's Google token.
+ * @param {string} req.body.user.name - Name of the authenticated user.
+ * @param {string} req.body.user.picture - Profile picture URL of the user.
+ * @param {string} req.body.user.email - Email of the authenticated user.
+ * @param {Object} res - Express response object.
+ * @returns {void}
+ */
 exports.verifyRole = async (req, res) => {
   const { password, role } = req.body;
 
@@ -35,7 +64,6 @@ exports.verifyRole = async (req, res) => {
     console.log(process.env.CLIENT_ID);
     if (aud !== process.env.CLIENT_ID) {
       console.log("Invalid Google client ID.");
-      // return res.status(403).json({ success: false, message: 'Invalid Google client ID.' });
       return res.status(403).json({ success: false, message: 'Invalid Google client ID.', clientAud: aud, clientID: process.env.CLIENT_ID });
     }
     
@@ -56,4 +84,4 @@ exports.verifyRole = async (req, res) => {
     console.error('Error verifying auth code:', error.message);
     return res.status(500).json({ success: false, message: 'Error verifying auth code.' });
   }
-}
+};
