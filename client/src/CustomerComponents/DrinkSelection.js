@@ -1,5 +1,4 @@
-// DrinkSelection.js
-import React, { useContext, useEffect, useRef, useCallback } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -13,29 +12,32 @@ import {
 } from "@mui/material";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import alanBtn from "@alan-ai/alan-sdk-web"; // Import the Alan AI SDK
 
 function DrinkSelection({ isLargeText }) {
-	const {
-		menuData,
-		selectedDrinks,
-		drinkPrice,
-		updateItemQuantity,
-		handleAddDrinksToOrder,
-		setCurrentStep,
-		currentStep,
-		showSnackbar,
-	} = useContext(KioskContext);
+	const { menuData, handleAddItemsToOrder, setCurrentStep, showSnackbar } =
+		useContext(KioskContext);
+
+	const [selectedDrinks, setSelectedDrinks] = useState([]);
 
 	const getImageUrl = (name) =>
 		`/images/${name.toLowerCase().replace(/\s+/g, "_")}.png`;
 
-	const handleIncreaseDrinkQuantity = (drink) => {
-		updateItemQuantity("drink", drink, 1);
-	};
-
-	const handleDecreaseDrinkQuantity = (drink) => {
-		updateItemQuantity("drink", drink, -1);
+	const updateDrinkQuantity = (drink, delta) => {
+		setSelectedDrinks((prevItems) => {
+			const index = prevItems.findIndex(
+				(item) => item.menu_id === drink.menu_id
+			);
+			const updatedItems = [...prevItems];
+			if (index >= 0) {
+				updatedItems[index].quantity += delta;
+				if (updatedItems[index].quantity <= 0) {
+					updatedItems.splice(index, 1);
+				}
+			} else if (delta > 0) {
+				updatedItems.push({ ...drink, quantity: delta });
+			}
+			return updatedItems;
+		});
 	};
 
 	// Set currentStep to 'drinkSelection' when component mounts
@@ -43,78 +45,19 @@ function DrinkSelection({ isLargeText }) {
 		setCurrentStep("drinkSelection");
 	}, [setCurrentStep]);
 
-	// Create a ref to store the Alan AI instance
-	const alanBtnInstance = useRef(null);
+	const handleAddToCart = () => {
+		const drinksOrder = selectedDrinks.map((drink) => ({
+			type: "Drink",
+			item: drink,
+			quantity: drink.quantity,
+			subtotal: parseFloat(drink.price) * drink.quantity,
+		}));
+		handleAddItemsToOrder(drinksOrder);
+		setSelectedDrinks([]);
+		showSnackbar("Drinks added to cart.", "success");
 
-	// Memoize functions used in onCommand to prevent stale closures
-	const handleAddDrinkByVoice = useCallback(
-		(drinkName, quantity) => {
-			const normalizedDrinkName = drinkName.toLowerCase().trim();
-			const drink = menuData.find(
-				(item) =>
-					item.type === "Drink" &&
-					item.name.toLowerCase() === normalizedDrinkName
-			);
-			if (drink) {
-				updateItemQuantity("drink", drink, quantity);
-				showSnackbar(
-					`Added ${quantity} ${drink.name}(s) to your selection.`,
-					"success"
-				);
-			} else {
-				showSnackbar(`Drink ${drinkName} is not available.`, "error");
-			}
-		},
-		[menuData, updateItemQuantity, showSnackbar]
-	);
-
-	const handleConfirmDrinksByVoice = useCallback(() => {
-		if (selectedDrinks.length > 0) {
-			handleAddDrinksToOrder();
-		} else {
-			showSnackbar("You have not selected any drinks.", "warning");
-		}
-	}, [selectedDrinks, handleAddDrinksToOrder, showSnackbar]);
-
-	const handleGoBackByVoice = useCallback(() => {
-		setCurrentStep("categorySelection");
-	}, [setCurrentStep]);
-
-	// Initialize Alan AI and store the instance in the ref
-	useEffect(() => {
-		if (!alanBtnInstance.current) {
-			alanBtnInstance.current = alanBtn({
-				key: "fcc4852254e3439d87d8ab67e5a08e922e956eca572e1d8b807a3e2338fdd0dc/stage",
-				onCommand: (commandData) => {
-					const { command, drinkName, quantity } = commandData;
-					if (command === "addDrink") {
-						handleAddDrinkByVoice(drinkName, quantity);
-					} else if (command === "confirmDrinks") {
-						handleConfirmDrinksByVoice();
-					} else if (command === "goBack") {
-						handleGoBackByVoice();
-					}
-				},
-				rootEl: document.getElementById("alan-btn"), // Optional: specify the root element for the Alan AI button
-			});
-		}
-
-		// Cleanup function to remove the Alan AI button
-		return () => {
-			if (alanBtnInstance.current) {
-				alanBtnInstance.current.deactivate();
-				alanBtnInstance.current.remove();
-				alanBtnInstance.current = null;
-			}
-		};
-	}, [handleAddDrinkByVoice, handleConfirmDrinksByVoice, handleGoBackByVoice]);
-
-	// Update Alan AI with the visual state whenever currentStep changes
-	useEffect(() => {
-		if (alanBtnInstance.current) {
-			alanBtnInstance.current.setVisualState({ currentStep });
-		}
-	}, [currentStep]);
+		// Stay on the drink selection page by not changing currentStep
+	};
 
 	return (
 		<Box
@@ -125,7 +68,6 @@ function DrinkSelection({ isLargeText }) {
 				flexDirection: "column",
 			}}
 		>
-			<div id="alan-btn"></div> {/* Placeholder for Alan AI button */}
 			<Grid container spacing={2} sx={{ marginTop: 2, flexGrow: 1 }}>
 				<Grid item xs={12}>
 					<Typography
@@ -144,7 +86,7 @@ function DrinkSelection({ isLargeText }) {
 					.filter((item) => item.type === "Drink")
 					.map((drink) => {
 						const selectedItem = selectedDrinks.find(
-							(dr) => dr.item.menu_id === drink.menu_id
+							(item) => item.menu_id === drink.menu_id
 						);
 						const quantity = selectedItem ? selectedItem.quantity : 0;
 						return (
@@ -172,7 +114,7 @@ function DrinkSelection({ isLargeText }) {
 												fontWeight: "normal",
 											}}
 										>
-											Price: ${drinkPrice.toFixed(2)}
+											Price: ${parseFloat(drink.price).toFixed(2)}
 										</Typography>
 										<Box
 											sx={{
@@ -183,7 +125,7 @@ function DrinkSelection({ isLargeText }) {
 											}}
 										>
 											<IconButton
-												onClick={() => handleDecreaseDrinkQuantity(drink)}
+												onClick={() => updateDrinkQuantity(drink, -1)}
 												disabled={quantity === 0}
 											>
 												<RemoveCircleOutlineIcon />
@@ -196,9 +138,7 @@ function DrinkSelection({ isLargeText }) {
 											>
 												{quantity}
 											</Typography>
-											<IconButton
-												onClick={() => handleIncreaseDrinkQuantity(drink)}
-											>
+											<IconButton onClick={() => updateDrinkQuantity(drink, 1)}>
 												<AddCircleOutlineIcon />
 											</IconButton>
 										</Box>
@@ -222,7 +162,7 @@ function DrinkSelection({ isLargeText }) {
 					Back
 				</Button>
 				{selectedDrinks.length > 0 && (
-					<Button variant="contained" onClick={handleAddDrinksToOrder}>
+					<Button variant="contained" onClick={handleAddToCart}>
 						Add to Cart
 					</Button>
 				)}

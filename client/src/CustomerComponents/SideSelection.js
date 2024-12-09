@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { KioskContext } from "./KioskContext";
 import {
 	Box,
@@ -13,6 +13,10 @@ import {
 function SideSelection({ isLargeText }) {
 	const { menuData, selectedSide, setSelectedSide, setCurrentStep } =
 		useContext(KioskContext);
+
+	useEffect(() => {
+		setCurrentStep("sideSelection");
+	}, [setCurrentStep]);
 
 	const handleSideClick = (side) => {
 		setSelectedSide(side);

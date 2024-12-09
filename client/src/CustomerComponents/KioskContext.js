@@ -1,5 +1,4 @@
-// KioskContext.js
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 
 export const KioskContext = createContext();
@@ -12,11 +11,14 @@ export const KioskProvider = ({ children }) => {
 	const [appetizerContainerId, setAppetizerContainerId] = useState(null);
 	const [drinkContainerId, setDrinkContainerId] = useState(null);
 	const [currentStep, setCurrentStep] = useState("categorySelection");
+
+	// State variables for combo ordering
+	const [selectedCategory, setSelectedCategory] = useState(null);
 	const [selectedCombo, setSelectedCombo] = useState(null);
 	const [selectedSide, setSelectedSide] = useState(null);
 	const [selectedEntrees, setSelectedEntrees] = useState([]);
 	const [selectedAppetizers, setSelectedAppetizers] = useState([]);
-	const [selectedDrinks, setSelectedDrinks] = useState([]);
+
 	const [mainOrderSummary, setMainOrderSummary] = useState([]);
 	const [snackbar, setSnackbar] = useState({
 		open: false,
@@ -26,107 +28,66 @@ export const KioskProvider = ({ children }) => {
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 	const [orderToRemoveIndex, setOrderToRemoveIndex] = useState(null);
 
+	// Create refs for selectedCombo, selectedSide, selectedEntrees, and mainOrderSummary
+	const selectedComboRef = useRef(selectedCombo);
+	const selectedSideRef = useRef(selectedSide);
+	const selectedEntreesRef = useRef(selectedEntrees);
+	const mainOrderSummaryRef = useRef(mainOrderSummary);
+
+	// Update refs whenever the state changes
+	useEffect(() => {
+		selectedComboRef.current = selectedCombo;
+	}, [selectedCombo]);
+
+	useEffect(() => {
+		selectedSideRef.current = selectedSide;
+	}, [selectedSide]);
+
+	useEffect(() => {
+		selectedEntreesRef.current = selectedEntrees;
+	}, [selectedEntrees]);
+
+	useEffect(() => {
+		mainOrderSummaryRef.current = mainOrderSummary;
+	}, [mainOrderSummary]);
+
+	const getRequiredEntrees = (combo) => {
+		const currentCombo = combo || selectedComboRef.current;
+		console.log("selectedCombo in getRequiredEntrees:", currentCombo);
+		if (!currentCombo) return 0;
+		switch (currentCombo.name) {
+			case "Bowl":
+				return 1;
+			case "Plate":
+				return 2;
+			case "Bigger Plate":
+				return 3;
+			default:
+				return 0;
+		}
+	};
+
+	// Function to show snackbar messages
 	const showSnackbar = (message, severity = "success") => {
 		setSnackbar({ open: true, message, severity });
 	};
 
-	const updateItemQuantity = (itemType, item, delta) => {
-		let setter;
-		let itemKey; // 'entree' or 'item'
-		switch (itemType) {
-			case "entree":
-				setter = setSelectedEntrees;
-				itemKey = "entree";
-				break;
-			case "appetizer":
-				setter = setSelectedAppetizers;
-				itemKey = "item";
-				break;
-			case "drink":
-				setter = setSelectedDrinks;
-				itemKey = "item";
-				break;
-			default:
-				return;
-		}
-		setter((prevItems) => {
-			const index = prevItems.findIndex(
-				(i) => i[itemKey].menu_id === item.menu_id
-			);
-			const updatedItems = [...prevItems];
-			if (index >= 0) {
-				updatedItems[index].quantity += delta;
-				if (updatedItems[index].quantity <= 0) {
-					updatedItems.splice(index, 1);
-				}
-			} else if (delta > 0) {
-				updatedItems.push({ [itemKey]: item, quantity: delta });
-			}
-			return updatedItems;
+	// Function to add items to the main order summary
+	const handleAddItemsToOrder = (items) => {
+		setMainOrderSummary((prev) => {
+			const updatedSummary = [...prev, ...items];
+			console.log("Updated mainOrderSummary:", updatedSummary);
+			return updatedSummary;
 		});
 	};
 
-	const calculateComboSubtotal = (combo, side, entrees) => {
-		let subtotal = Number(combo.price) || 0;
-		subtotal += Number(side.extra_cost || 0);
-		entrees.forEach(({ entree, quantity }) => {
-			subtotal += Number(entree.extra_cost || 0) * quantity;
-		});
-		return subtotal;
-	};
-
-	const handleAddComboToOrder = () => {
-		const subtotal = calculateComboSubtotal(
-			selectedCombo,
-			selectedSide,
-			selectedEntrees
-		);
-		const comboOrder = {
-			type: "Combo",
-			combo: selectedCombo,
-			side: selectedSide,
-			entrees: selectedEntrees,
-			subtotal,
-		};
-		setMainOrderSummary([...mainOrderSummary, comboOrder]);
-		setSelectedCombo(null);
-		setSelectedSide(null);
-		setSelectedEntrees([]);
-		setCurrentStep("categorySelection");
-		showSnackbar("Combo added to cart.", "success");
-	};
-
-	const handleAddAppetizersToOrder = () => {
-		const appetizersOrder = selectedAppetizers.map((app) => ({
-			type: "Appetizer",
-			item: app.item,
-			quantity: app.quantity,
-			subtotal: appetizerPrice * app.quantity,
-		}));
-		setMainOrderSummary([...mainOrderSummary, ...appetizersOrder]);
-		setSelectedAppetizers([]);
-		setCurrentStep("categorySelection");
-		showSnackbar("Appetizers added to cart.", "success");
-	};
-
-	const handleAddDrinksToOrder = () => {
-		const drinksOrder = selectedDrinks.map((drink) => ({
-			type: "Drink",
-			item: drink.item,
-			quantity: drink.quantity,
-			subtotal: drinkPrice * drink.quantity,
-		}));
-		setMainOrderSummary([...mainOrderSummary, ...drinksOrder]);
-		setSelectedDrinks([]);
-		setCurrentStep("categorySelection");
-		showSnackbar("Drinks added to cart.", "success");
-	};
-
+	// Function to remove an item from the order
 	const handleRemoveOrder = (index) => {
 		setOrderToRemoveIndex(index);
 		setConfirmDialogOpen(true);
 	};
 
+	// Function to confirm removal of an item
 	const confirmRemoveOrder = () => {
 		setMainOrderSummary((prev) =>
 			prev.filter((_, idx) => idx !== orderToRemoveIndex)
@@ -136,8 +97,12 @@ export const KioskProvider = ({ children }) => {
 		showSnackbar("Item removed from order.", "success");
 	};
 
+	// Function to place the order
 	const handlePlaceOrder = async () => {
-		if (mainOrderSummary.length === 0) {
+		const currentOrderSummary = mainOrderSummaryRef.current;
+		console.log("Current mainOrderSummary:", currentOrderSummary);
+
+		if (currentOrderSummary.length === 0) {
 			showSnackbar("No items in the order to place.", "warning");
 			return;
 		}
@@ -146,20 +111,25 @@ export const KioskProvider = ({ children }) => {
 		const time = new Date().toISOString().slice(0, 16);
 
 		try {
+			// Calculate total order price
+			const totalOrderPrice = currentOrderSummary.reduce(
+				(total, order) => total + order.subtotal,
+				0
+			);
+
+			// Create the order
 			const orderResponse = await axios.post(
 				"https://project-3-team-4b-server.vercel.app/api/orders",
 				{
 					time,
-					total: mainOrderSummary.reduce(
-						(total, order) => total + order.subtotal,
-						0
-					),
+					total: totalOrderPrice,
 					employee_id: 1,
 				}
 			);
 			const orderId = orderResponse.data.order_id;
 
-			for (const order of mainOrderSummary) {
+			// Process each item in the main order summary
+			for (const order of currentOrderSummary) {
 				if (order.type === "Combo") {
 					const orderItemPayload = {
 						order_id: orderId,
@@ -171,23 +141,28 @@ export const KioskProvider = ({ children }) => {
 						orderItemPayload
 					);
 					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Add the side to menu-items
 					await axios.post(
 						"https://project-3-team-4b-server.vercel.app/api/menu-items",
 						{
 							order_item_id: orderItemId,
 							menu_id: order.side.menu_id,
+							quantity: 1,
 						}
 					);
+
+					// Add entrees to menu-items
 					for (const { entree, quantity } of order.entrees) {
-						for (let i = 0; i < quantity; i++) {
-							await axios.post(
-								"https://project-3-team-4b-server.vercel.app/api/menu-items",
-								{
-									order_item_id: orderItemId,
-									menu_id: entree.menu_id,
-								}
-							);
-						}
+						// Send one request per entree with quantity
+						await axios.post(
+							"https://project-3-team-4b-server.vercel.app/api/menu-items",
+							{
+								order_item_id: orderItemId,
+								menu_id: entree.menu_id,
+								quantity: quantity,
+							}
+						);
 					}
 				} else if (order.type === "Appetizer") {
 					if (appetizerContainerId === null) {
@@ -204,11 +179,14 @@ export const KioskProvider = ({ children }) => {
 						orderItemPayload
 					);
 					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Add appetizer to menu-items
 					await axios.post(
 						"https://project-3-team-4b-server.vercel.app/api/menu-items",
 						{
 							order_item_id: orderItemId,
 							menu_id: order.item.menu_id,
+							quantity: order.quantity,
 						}
 					);
 				} else if (order.type === "Drink") {
@@ -226,11 +204,14 @@ export const KioskProvider = ({ children }) => {
 						orderItemPayload
 					);
 					const orderItemId = orderItemResponse.data.order_item_id;
+
+					// Add drink to menu-items
 					await axios.post(
 						"https://project-3-team-4b-server.vercel.app/api/menu-items",
 						{
 							order_item_id: orderItemId,
 							menu_id: order.item.menu_id,
+							quantity: order.quantity,
 						}
 					);
 				}
@@ -239,15 +220,183 @@ export const KioskProvider = ({ children }) => {
 			setMainOrderSummary([]);
 		} catch (error) {
 			console.error("Error placing order:", error);
-			if (error.response) {
+			if (error.response && error.response.data) {
 				console.error("Server responded with:", error.response.data);
-				showSnackbar(
-					`Failed to place order: ${error.response.data.error}`,
-					"error"
-				);
+				const errorMessage =
+					error.response.data.error ||
+					error.response.data.message ||
+					"An error occurred while placing the order.";
+				showSnackbar(`Failed to place order: ${errorMessage}`, "error");
+			} else if (error.message) {
+				showSnackbar(`Failed to place order: ${error.message}`, "error");
 			} else {
 				showSnackbar("Failed to place order. Please try again.", "error");
 			}
+		}
+	};
+
+	// Function to update entree quantities
+	const updateItemQuantity = (type, item, delta) => {
+		if (type === "entree") {
+			setSelectedEntrees((prev) => {
+				const index = prev.findIndex(
+					(selectedItem) => selectedItem.entree.menu_id === item.menu_id
+				);
+				if (index >= 0) {
+					const updatedItems = [...prev];
+					updatedItems[index].quantity += delta;
+					if (updatedItems[index].quantity <= 0) {
+						updatedItems.splice(index, 1);
+					}
+					return updatedItems;
+				} else if (delta > 0) {
+					return [...prev, { entree: item, quantity: delta }];
+				}
+				return prev;
+			});
+		}
+		// Handle other types if necessary
+	};
+
+	// Function to add combo to order
+	const handleAddComboToOrder = () => {
+		const currentCombo = selectedComboRef.current;
+		const currentSide = selectedSideRef.current;
+		const currentSelectedEntrees = selectedEntreesRef.current;
+
+		console.log("selectedCombo:", currentCombo);
+		console.log("selectedSide:", currentSide);
+		console.log("selectedEntrees:", currentSelectedEntrees);
+
+		if (!currentCombo || !currentSide) {
+			showSnackbar("Please complete your combo selection.", "warning");
+			return;
+		}
+
+		const requiredEntrees = getRequiredEntrees(currentCombo);
+
+		const totalSelectedEntrees = currentSelectedEntrees.reduce(
+			(sum, item) => sum + item.quantity,
+			0
+		);
+
+		if (totalSelectedEntrees !== requiredEntrees) {
+			showSnackbar(
+				`Please select ${requiredEntrees} entree(s) for your combo.`,
+				"warning"
+			);
+			return;
+		}
+
+		// Calculate total extra cost for entrees
+		const extraCost = currentSelectedEntrees.reduce(
+			(total, { entree, quantity }) => {
+				const entreeExtraCost = parseFloat(entree.extra_cost || 0);
+				return total + entreeExtraCost * quantity;
+			},
+			0
+		);
+
+		// Calculate combo subtotal
+		const subtotal = calculateComboPrice(currentCombo) + extraCost;
+
+		// Create the combo order
+		const comboOrder = {
+			type: "Combo",
+			combo: currentCombo,
+			side: currentSide,
+			entrees: currentSelectedEntrees,
+			subtotal,
+		};
+
+		// Add to main order summary
+		setMainOrderSummary((prev) => {
+			const updatedSummary = [...prev, comboOrder];
+			console.log("Updated mainOrderSummary:", updatedSummary);
+			return updatedSummary;
+		});
+
+		// Reset selections
+		setSelectedCombo(null);
+		setSelectedSide(null);
+		setSelectedEntrees([]);
+		setCurrentStep("categorySelection");
+		showSnackbar("Combo added to cart.", "success");
+	};
+
+	// Function to calculate combo price
+	const calculateComboPrice = (combo) => {
+		// Use the price from the combo object
+		return parseFloat(combo.price) || 0;
+	};
+
+	// Data fetching
+	useEffect(() => {
+		fetchContainerData();
+	}, []);
+
+	const fetchContainerData = async () => {
+		try {
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/containers"
+			);
+			const allContainers = response.data;
+			const comboContainers = allContainers.filter((container) =>
+				["Bowl", "Plate", "Bigger Plate"].includes(container.name)
+			);
+			setContainerData(comboContainers);
+
+			const appetizerContainer = allContainers.find(
+				(container) => container.name === "Appetizer"
+			);
+			const drinkContainer = allContainers.find(
+				(container) => container.name === "Drink"
+			);
+
+			const appetizerPriceValue = Number(appetizerContainer?.price) || 0;
+			setAppetizerPrice(appetizerPriceValue);
+
+			const drinkPriceValue = Number(drinkContainer?.price) || 0;
+			setDrinkPrice(drinkPriceValue);
+
+			setAppetizerContainerId(appetizerContainer?.container_id || null);
+			setDrinkContainerId(drinkContainer?.container_id || null);
+
+			// Fetch menu data after appetizerPrice and drinkPrice are set
+			await fetchMenuData(appetizerPriceValue, drinkPriceValue);
+		} catch (error) {
+			console.error("Error fetching container data:", error);
+			showSnackbar("Error fetching container data.", "error");
+		}
+	};
+
+	const fetchMenuData = async (appetizerPriceValue, drinkPriceValue) => {
+		try {
+			const response = await axios.get(
+				"https://project-3-team-4b-server.vercel.app/api/menu"
+			);
+			let data = response.data;
+
+			// Add prices to appetizer and drink items
+			data = data.map((item) => {
+				if (item.type === "Appetizer") {
+					return {
+						...item,
+						price: appetizerPriceValue,
+					};
+				} else if (item.type === "Drink") {
+					return {
+						...item,
+						price: drinkPriceValue,
+					};
+				}
+				return item;
+			});
+
+			setMenuData(data);
+		} catch (error) {
+			console.error("Error fetching menu data:", error);
+			showSnackbar("Error fetching menu data.", "error");
 		}
 	};
 
@@ -268,6 +417,8 @@ export const KioskProvider = ({ children }) => {
 				setDrinkContainerId,
 				currentStep,
 				setCurrentStep,
+				selectedCategory,
+				setSelectedCategory,
 				selectedCombo,
 				setSelectedCombo,
 				selectedSide,
@@ -276,8 +427,6 @@ export const KioskProvider = ({ children }) => {
 				setSelectedEntrees,
 				selectedAppetizers,
 				setSelectedAppetizers,
-				selectedDrinks,
-				setSelectedDrinks,
 				mainOrderSummary,
 				setMainOrderSummary,
 				snackbar,
@@ -287,14 +436,14 @@ export const KioskProvider = ({ children }) => {
 				orderToRemoveIndex,
 				setOrderToRemoveIndex,
 				showSnackbar,
-				updateItemQuantity,
-				handleAddComboToOrder,
-				handleAddAppetizersToOrder,
-				handleAddDrinksToOrder,
+				handleAddItemsToOrder,
 				handleRemoveOrder,
 				confirmRemoveOrder,
 				handlePlaceOrder,
-				calculateComboSubtotal,
+				updateItemQuantity,
+				handleAddComboToOrder,
+				calculateComboPrice,
+				getRequiredEntrees,
 			}}
 		>
 			{children}

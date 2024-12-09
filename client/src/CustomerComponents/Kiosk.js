@@ -1,4 +1,3 @@
-// Kiosk.js
 import React, { useContext, useEffect } from "react";
 import axios from "axios";
 import {
@@ -13,23 +12,20 @@ import {
 	DialogActions,
 	Button,
 } from "@mui/material";
-import SelectionSteps from "../CustomerComponents/SelectionSteps";
-import OrderSummary from "../CustomerComponents/OrderSummary";
-import { KioskContext } from "../CustomerComponents/KioskContext";
+import SelectionSteps from "./SelectionSteps";
+import OrderSummary from "./OrderSummary";
+import { KioskContext } from "./KioskContext";
+import AlanAIHandler from "./AlanAIHandler";
 
 function Kiosk({ isLargeText }) {
 	const {
 		menuData,
-		setMenuData,
 		containerData,
+		setMenuData,
 		setContainerData,
-		appetizerPrice,
 		setAppetizerPrice,
-		drinkPrice,
 		setDrinkPrice,
-		appetizerContainerId,
 		setAppetizerContainerId,
-		drinkContainerId,
 		setDrinkContainerId,
 		snackbar,
 		setSnackbar,
@@ -37,11 +33,20 @@ function Kiosk({ isLargeText }) {
 		setConfirmDialogOpen,
 		showSnackbar,
 		confirmRemoveOrder,
+		appetizerPrice,
 	} = useContext(KioskContext);
 
+	// useEffect(() => {
+	// 	fetchMenuData();
+	// 	fetchContainerData();
+	// }, []);
+
 	useEffect(() => {
-		fetchMenuData();
-		fetchContainerData();
+		const fetchData = async () => {
+			await fetchContainerData();
+			await fetchMenuData();
+		};
+		fetchData();
 	}, []);
 
 	const fetchMenuData = async () => {
@@ -49,8 +54,20 @@ function Kiosk({ isLargeText }) {
 			const response = await axios.get(
 				"https://project-3-team-4b-server.vercel.app/api/menu"
 			);
+			let data = response.data;
 
-			setMenuData(response.data);
+			data = data.map((item) => {
+				if (item.type === "Appetizer") {
+					return {
+						...item,
+						price: appetizerPrice,
+					};
+				}
+				return item;
+			});
+
+			setMenuData(data);
+			console.log("Menu data after adding appetizer prices:", data);
 		} catch (error) {
 			console.error("Error fetching menu data:", error);
 			showSnackbar("Error fetching menu data.", "error");
@@ -113,6 +130,7 @@ function Kiosk({ isLargeText }) {
 					{snackbar.message}
 				</Alert>
 			</Snackbar>
+			<AlanAIHandler />
 			<Box sx={{ flex: 2, padding: 2, height: "100%", overflowY: "auto" }}>
 				<SelectionSteps isLargeText={isLargeText} />
 			</Box>

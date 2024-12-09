@@ -1,3 +1,4 @@
+// SelectionSteps.js
 import React, { useContext } from "react";
 import { KioskContext } from "./KioskContext";
 import CategorySelection from "./CategorySelection";
@@ -24,7 +25,7 @@ function SelectionSteps({ isLargeText }) {
 		case "drinkSelection":
 			return <DrinkSelection isLargeText={isLargeText} />;
 		default:
-			return null;
+			return <CategorySelection isLargeText={isLargeText} />;
 	}
 }
 
