@@ -6,11 +6,12 @@ import {
 	Toolbar,
 	Button,
 	Typography,
+	CssBaseline,
 } from "@mui/material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import GlobalStyles from "@mui/material/GlobalStyles"; // Import from here
 import Kiosk from "../CustomerComponents/Kiosk";
 import { KioskProvider } from "../CustomerComponents/KioskContext";
-import CssBaseline from "@mui/material/CssBaseline";
 import Logo from "../assets/panda-logo.svg";
 
 const theme = createTheme({
@@ -43,29 +44,16 @@ const theme = createTheme({
 	},
 });
 
-/**
- * Customer component that serves as the main layout for the customer-facing kiosk interface.
- * It handles the kiosk display, integrates external services like Google Translate and weather information,
- * and provides accessibility features like a text-size toggle.
- *
- * @returns {JSX.Element} The rendered Customer component.
- */
 function Customer() {
 	const [isLargeText, setIsLargeText] = useState(false);
 	const [weatherDescription, setWeatherDescription] = useState(
 		"Fetching location..."
 	);
 
-	/**
-	 * Toggles the text size mode for accessibility.
-	 */
 	const toggleTextSize = () => {
 		setIsLargeText((prev) => !prev);
 	};
 
-	/**
-	 * Dynamically adds the Google Translate script if it hasn't been added yet.
-	 */
 	const addGoogleTranslateScript = () => {
 		if (!document.getElementById("google-translate-script")) {
 			const script = document.createElement("script");
@@ -139,6 +127,18 @@ function Customer() {
 
 	return (
 		<ThemeProvider theme={theme}>
+			<GlobalStyles
+				styles={{
+					"#google_translate_element .skiptranslate *": {
+						color: "#000000 !important",
+						background: "#FFFFFF !important",
+					},
+					"#google_translate_element .skiptranslate a.VIpgJd-ZVi9od-l4eHX-hSRGPd":
+						{
+							color: "#000000 !important",
+						},
+				}}
+			/>
 			<CssBaseline />
 			<AppBar
 				position="static"
