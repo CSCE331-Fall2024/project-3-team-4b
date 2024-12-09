@@ -7,7 +7,7 @@ import { Box, Button, Typography, Dialog, DialogActions, DialogContent, DialogCo
 import { useNavigate } from 'react-router-dom';
 import "../styles/Cashier.css";
 
-function Cashier({ role, user }) {
+function Cashier({ role, setRole, user, setUser }) {
     const [selectedCategory, setSelectedCategory] = useState("Containers");
     const [currentContainerId, setCurrentContainerId] = useState(null); // Track the active container ID
     const [orderItems, setOrderItems] = useState([]);
@@ -200,6 +200,8 @@ function Cashier({ role, user }) {
     
     const handleConfirmLogout = () => {
         setOpenLogoutDialog(false); // Close the dialog
+        setRole(null);
+		setUser(null);
         navigate('/');  // Navigate to login page after confirmation
     };
     

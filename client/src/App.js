@@ -18,11 +18,11 @@ function App() {
 					<Route path="/customer" element={<Customer />} />
 					<Route
 						path="/cashier"
-						element={<Cashier role={role} user={user} />}
+						element={<Cashier role={role} setRole={setRole} user={user} setUser={setUser} />}
 					/>
 					<Route
 						path="/manager"
-						element={<Manager role={role} user={user} />}
+						element={<Manager role={role} setRole={setRole} user={user} setUser={setUser} />}
 					/>
 					<Route
 						path="/"
